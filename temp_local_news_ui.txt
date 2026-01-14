@@ -1,0 +1,57 @@
+                {/* 🌍 LOCAL NEWS LOCATION SELECTOR */}
+                {
+                    isLocalNewsLocationVisible && (
+                        <View style={[styles.modalOverlay, { backgroundColor: '#fff', justifyContent: 'flex-start' }]}>
+                            <SafeAreaView style={styles.fullSpace}>
+                                <View style={styles.localNewsHeader}>
+                                    <TouchableOpacity style={{ padding: 10 }} onPress={() => setIsLocalNewsLocationVisible(false)}>
+                                        <Ionicons name="arrow-back" size={28} color="#000" />
+                                    </TouchableOpacity>
+                                    <Text style={styles.localNewsHeaderTitle}>Change location</Text>
+                                    <View style={{ width: 48 }} />
+                                </View>
+
+                                <ScrollView style={{ flex: 1, padding: 20 }} showsVerticalScrollIndicator={false}>
+                                    <Text style={styles.localNewsPrompt}>మీకు కావాల్సిన నియోజకవర్గం ఎంచుకోండి</Text>
+
+                                    {/* Search Box */}
+                                    <View style={styles.localNewsSearchBox}>
+                                        <Ionicons name="location-sharp" size={20} color="#666" style={{ marginRight: 10 }} />
+                                        <TextInput
+                                            style={styles.localNewsSearchInput}
+                                            placeholder="నియోజకవర్గం పేరు టైప్ చేయండి..."
+                                            value={localNewsSearchQuery}
+                                            onChangeText={setLocalNewsSearchQuery}
+                                        />
+                                        <Ionicons name="search" size={22} color="#999" />
+                                    </View>
+
+                                    {/* Location List */}
+                                    <View style={{ marginTop: 20 }}>
+                                        {['కూకట్‌పల్లి', 'సికింద్రాబాద్', 'శ్రీకాకుళం', 'గుంటూరు', 'విజయవాడ', 'విశాఖపట్నం', 'తిరుపతి', 'నెల్లూరు'].map((location, idx) => (
+                                            <TouchableOpacity
+                                                key={idx}
+                                                style={styles.localNewsLocationItem}
+                                                onPress={() => {
+                                                    setSelectedLocalLocation(location);
+                                                    setActiveCategory('local');
+                                                    setFilterMode('all');
+                                                    setIsTutorialMode(false);
+                                                    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+                                                    setIsLocalNewsLocationVisible(false);
+                                                    setIsHUDVisible(true);
+                                                }}
+                                            >
+                                                <View style={styles.localNewsLocationIcon}>
+                                                    <Ionicons name="location" size={18} color="#1a73e8" />
+                                                </View>
+                                                <Text style={styles.localNewsLocationText}>{location}</Text>
+                                                <Ionicons name="chevron-forward" size={20} color="#999" />
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                </ScrollView>
+                            </SafeAreaView>
+                        </View>
+                    )
+                }

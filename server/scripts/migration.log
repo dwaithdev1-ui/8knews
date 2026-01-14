@@ -1,0 +1,8 @@
+Starting Migration...
+Connected to DB
+Loaded Categories: affairs, bhakti, trending, main, whatsapp, lifestyle, agriculture, sports, cinema, local
+Reading file: D:\8knews\app\newsfeed.tsx
+Array extracted.
+Evaluating...
+Parsed 59 news items.
+Migration Complete: 0 inserted, 59 updated.

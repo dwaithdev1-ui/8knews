@@ -1,0 +1,52 @@
+[
+  {
+    "_id": "696493a4fdc03939d5059363",
+    "name": "కరెంటు అఫైర్స్",
+    "slug": "affairs"
+  },
+  {
+    "_id": "696493a3fdc03939d5059362",
+    "name": "భక్తి",
+    "slug": "bhakti"
+  },
+  {
+    "_id": "69648d87a9d9a59e122e2b92",
+    "name": "ట్రెండింగ్ న్యూస్",
+    "slug": "trending"
+  },
+  {
+    "_id": "69648d87a9d9a59e122e2b8f",
+    "name": "మెయిన్ న్యూస్",
+    "slug": "main"
+  },
+  {
+    "_id": "696493a3fdc03939d5059361",
+    "name": "వాట్సాప్ స్టేటస్",
+    "slug": "whatsapp"
+  },
+  {
+    "_id": "696493a5fdc03939d5059364",
+    "name": "lifestyle",
+    "slug": "lifestyle"
+  },
+  {
+    "_id": "69648d87a9d9a59e122e2b91",
+    "name": "వ్యవసాయం",
+    "slug": "agriculture"
+  },
+  {
+    "_id": "696493a6fdc03939d5059365",
+    "name": "క్రీడలు",
+    "slug": "sports"
+  },
+  {
+    "_id": "69648d87a9d9a59e122e2b90",
+    "name": "సినిమా",
+    "slug": "cinema"
+  },
+  {
+    "_id": "696493a2fdc03939d5059360",
+    "name": "లోకల్ న్యూస్",
+    "slug": "local"
+  }
+]
