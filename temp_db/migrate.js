@@ -1,4 +1,4 @@
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 
 const uri = "mongodb://news8kdbuser:QzKg09S1EiKy-VWmPBOxm7q0gbxP9ds3WwTp6fWrszzmk_KL@be9a526b-891c-4295-bdfb-a64a74b98b8d.nam5.firestore.goog:443/knewsdb?loadBalanced=true&tls=true&authMechanism=SCRAM-SHA-256&retryWrites=false";
 
@@ -48,7 +48,7 @@ const newsData = [
     {
         id: 'cine-3',
         title: 'గ్లోబల్ సినిమా వేదికపై టాలీవుడ్ సత్తా',
-        description: 'మన తెలుగు సినిమాలు అంతర్జాతీయ వేదికలపై అవార్డులు గెలుచుకుంటూ తెలుగు జెండాను ఎగరేస్తున్నాయి.',
+        description: 'మన తెలుగు సినిమాలు అంతర్జాతీయ వేదికలపై అవార్దులు గెలుచుకుంటూ తెలుగు జెండాను ఎగరేస్తున్నాయి.',
         image: '22-Photos-3.png',
         tags: ['cinema']
     },
@@ -70,7 +70,7 @@ const newsData = [
     },
     {
         id: 'bhakti-3',
-        title: 'మహా శివరాత్రి వేడుకల కోసం సిద్ధమవుతున్న ఆలయాలు',
+        title: 'మха శివరాత్రి వేడుకల కోసం సిద్ధమవుతున్న ఆలయాలు',
         description: 'శైవ క్షేత్రాలలో మహా శివరాత్రి సందర్భంగా విద్యుత్ దీపాలతో అలంకరణ మరియు ప్రత్యేక పూజలు.',
         image: '25-Category complete-4.png',
         tags: ['bhakti', 'trending'],
@@ -152,14 +152,14 @@ const newsData = [
         title: 'ఆంధ్రప్రదేశ్ వార్తలు',
         description: 'ఆంధ్రప్రదేశ్ రాష్ట్రంలో జరుగుతున్న తాజా రాజకీయ, సామాజిక పరిణామాలు మరియు అభివృద్ధి పనుల వివరాలు.',
         image: 'andhra.png',
-        tags: ['andhra']
+        tags: ['andhra', 'local']
     },
     {
         id: 'telangana-1',
         title: 'తెలంగాణ వార్తలు',
         description: 'తెలంగాణ రాష్ట్రంలో అమలు అవుతున్న ప్రజా సంక్షేమ పథకాలు మరియు హైదరాబాద్ నగర అభివృద్ధి విశేషాలు.',
         image: 'telangana.png',
-        tags: ['telangana']
+        tags: ['telangana', 'local']
     },
     {
         id: 'national-1',
@@ -211,6 +211,13 @@ const newsData = [
         tags: ['affairs', 'main']
     },
     {
+        id: 'aff-3',
+        title: 'అంతర్జాతీయ సదస్సులో భారత ప్రతినిధి బృందం',
+        description: 'పర్యావరణ మార్పులపై జరుగుతున్న చర్చల్లో భాగంగా భారత్ తన స్వచ్ఛ ఇంధన లక్ష్యాలను వివరించింది.',
+        image: '26-India News-1.png',
+        tags: ['affairs', 'trending']
+    },
+    {
         id: 'photo-1',
         title: 'భారతదేశ అద్భుత ప్రకృతి దృశ్యాలు',
         description: 'హిమాలయాల నుండి కన్యాకుమారి వరకు మన దేశ సౌందర్యం ఫొటోలలో.',
@@ -219,7 +226,7 @@ const newsData = [
     },
     {
         id: 'video-1',
-        title: 'సాంకేతిక విప్ลవం: వీడియో రిపోర్ట్',
+        title: 'సాంకేతిక విప్లవం: వీడియో రిపోర్ట్',
         description: 'రాబోయే కాలంలో ఏయే గ్యాడ్జెట్స్ మన జీవితాలను శాసించబోతున్నాయో చూడండి.',
         image: '8K News_Top Bar Video-1.png',
         tags: ['videos', 'trending'],
@@ -314,18 +321,71 @@ const newsData = [
     }
 ];
 
+// Mapping priorities and logic
+const getCategoryId = (item, categoryMap) => {
+    const tags = item.tags || [];
+
+    // 🌟 SPECIFIC RULE: wishes + isFullCard -> wishes category
+    if (tags.includes('wishes') && item.isFullCard === true) {
+        return categoryMap['wishes'];
+    }
+
+    // Priority order for mapping tags to categories
+    if (tags.includes('whatsapp')) return categoryMap['whatsapp'];
+    if (tags.includes('bhakti')) return categoryMap['bhakti'];
+    if (tags.includes('affairs')) return categoryMap['affairs'];
+    if (tags.includes('lifestyle')) return categoryMap['lifestyle'];
+    if (tags.includes('agriculture')) return categoryMap['agriculture'];
+    if (tags.includes('cinema')) return categoryMap['cinema'];
+    if (tags.includes('sports')) return categoryMap['sports'];
+
+    // Local news detection
+    const localTags = ['local', 'hyderabad', 'guntur', 'andhra', 'telangana', 'vijayawada'];
+    if (tags.some(tag => localTags.includes(tag))) return categoryMap['local'];
+
+    if (tags.includes('main')) return categoryMap['main'];
+    if (tags.includes('trending')) return categoryMap['trending'];
+
+    // Fallback to trending if nothing else matches
+    return categoryMap['trending'];
+};
+
 async function run() {
     const client = new MongoClient(uri);
     try {
         await client.connect();
         const db = client.db("knewsdb");
 
+        console.log("Fetching categories...");
+        const categories = await db.collection("categories").find().toArray();
+        const categoryMap = {};
+        categories.forEach(cat => {
+            categoryMap[cat.slug] = cat._id;
+        });
+
         console.log("Cleaning old data...");
         await db.collection("news").deleteMany({});
 
-        console.log("Inserting news data...");
-        const result = await db.collection("news").insertMany(newsData);
-        console.log(`${result.insertedCount} news items inserted.`);
+        console.log("Processing and inserting news data...");
+        const processedNews = newsData.map(item => {
+            const categoryId = getCategoryId(item, categoryMap);
+            return {
+                ...item,
+                category_id: categoryId,
+                created_at: new Date(),
+                updated_at: new Date()
+            };
+        });
+
+        const result = await db.collection("news").insertMany(processedNews);
+        console.log(`${result.insertedCount} news items inserted with correct category references.`);
+
+        // Verify counts
+        console.log("--- Verification by Category ---");
+        for (const slug of Object.keys(categoryMap)) {
+            const count = await db.collection("news").countDocuments({ category_id: categoryMap[slug] });
+            console.log(`${slug}: ${count} items`);
+        }
 
     } catch (err) {
         console.error("Migration failed:", err);

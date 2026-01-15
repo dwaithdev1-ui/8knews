@@ -3016,51 +3016,8 @@ export default function NewsFeedScreen() {
                     </ScrollView>
                 </Animated.View>
 
-                {/* 🔐 LOGIN MODAL */}
-                {isLoginModalVisible && (
-                    <View style={[styles.modalOverlay, { justifyContent: 'center' }]}>
-                        <View style={styles.loginCard}>
-                            <Pressable style={styles.closeButtonRoundAbsolute} onPress={() => setIsLoginModalVisible(false)}>
-                                <Ionicons name="close" size={20} color="#333" />
-                            </Pressable>
+                {/* 🔐 LOGIN MODAL - REMOVED DUPLICATE MOCK */}
 
-                            <View style={[styles.loginIconCircle, { overflow: 'hidden' }]}>
-                                <Image
-                                    source="https://png.pngtree.com/png-vector/20231019/ourmid/pngtree-user-profile-avatar-png-image_10211469.png"
-                                    style={styles.profileAvatarImg}
-                                    contentFit="cover"
-                                />
-                            </View>
-
-                            <Text style={styles.loginTitle}>Create Account</Text>
-                            <Text style={styles.loginSub}>A user account will be created for you to personalize your experience.</Text>
-
-                            <View style={styles.loginSocialRow}>
-                                <View
-                                    style={[styles.socialIconBtn, { backgroundColor: '#DB4437' }]}
-                                >
-                                    <MaterialCommunityIcons name="gmail" size={28} color="#fff" />
-                                </View>
-
-                                <View
-                                    style={[styles.socialIconBtn, { backgroundColor: '#1DA1F2' }]}
-                                >
-                                    <Ionicons name="logo-twitter" size={28} color="#fff" />
-                                </View>
-
-                                <View
-                                    style={[styles.socialIconBtn, { backgroundColor: '#1877F2' }]}
-                                >
-                                    <Ionicons name="logo-facebook" size={28} color="#fff" />
-                                </View>
-                            </View>
-
-                            <Text style={styles.loginFooter}>
-                                By continuing, you agree to our Terms of Service & Privacy Policy.
-                            </Text>
-                        </View>
-                    </View>
-                )}
 
             </>
 

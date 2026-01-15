@@ -11,14 +11,13 @@ import {
     User
 } from 'firebase/auth';
 
-// Your Firebase configuration
 const firebaseConfig = {
-    apiKey: "ySRV4CZxyihhQDVIq40B00a8A", // You'll need to add this from Firebase Console
+    apiKey: "AIzaSyDAJJBZdot7iJRkF9lqMzlNyxWXfD_z4X8",
     authDomain: "knews-2d1bd.firebaseapp.com",
     projectId: "knews-2d1bd",
-    storageBucket: "knews-2d1bd.appspot.com",
+    storageBucket: "knews-2d1bd.firebasestorage.app",
     messagingSenderId: "823388850788",
-    appId: "1906698630240572" // You'll need to add this from Firebase Console
+    appId: "1:823388850788:web:00ef081bf86b2b29b3ed71"
 };
 
 // Initialize Firebase
