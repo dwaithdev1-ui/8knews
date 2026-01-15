@@ -106,42 +106,92 @@ export default function NewsCard({
                         <View style={{ flex: 1, backgroundColor: '#000' }}>
                             <Video
                                 source={video ? { uri: video } : (typeof image === 'string' ? { uri: image } : image)}
-
                                 style={{ width: '100%', height: '100%' }}
                                 resizeMode={ResizeMode.COVER}
                                 isLooping
                                 shouldPlay={true}
                                 isMuted={isMuted}
                             />
-                            {/* Mute Button for Video */}
-                            <TouchableOpacity
-                                style={{ position: 'absolute', bottom: 40, right: 20, padding: 10, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 20 }}
-                                onPress={onToggleMute}
-                            >
-                                <Ionicons name={isMuted ? "volume-mute" : "volume-high"} size={24} color="#fff" />
-                            </TouchableOpacity>
+
+                            {/* 8K Logo Overlay */}
+                            <Image
+                                source={require('../assets/images/8K-Logo 1.png')}
+                                style={{
+                                    position: 'absolute',
+                                    top: 50,
+                                    right: 20,
+                                    width: 60,
+                                    height: 60,
+                                    zIndex: 20
+                                }}
+                                contentFit="contain"
+                            />
+
+                            {/* Right Vertical Actions (Share & Mute) */}
+                            <View style={styles.videoRightActions}>
+                                <TouchableOpacity style={styles.videoSideButton} onPress={() => onShare?.(id)}>
+                                    <View style={styles.videoSideIconBg}>
+                                        <Ionicons name="arrow-redo" size={28} color="#00C800" />
+                                    </View>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.videoSideButton} onPress={onToggleMute}>
+                                    <View style={styles.videoSideIconBg}>
+                                        <Ionicons name={isMuted ? "volume-mute" : "volume-high"} size={28} color="#fff" />
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Bottom Horizontal Actions (Like, Dislike, Comment) */}
+                            <View style={styles.videoBottomActions}>
+                                <TouchableOpacity style={styles.videoActionButton} onPress={handleLike}>
+                                    <Ionicons
+                                        name={liked ? "thumbs-up" : "thumbs-up-outline"}
+                                        size={28}
+                                        color={liked ? "#1a73e8" : "#fff"}
+                                    />
+                                    <Text style={styles.videoActionText}>2.0K</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity style={styles.videoActionButton} onPress={handleDislike}>
+                                    <Ionicons
+                                        name={disliked ? "thumbs-down" : "thumbs-down-outline"}
+                                        size={28}
+                                        color={disliked ? "#d93025" : "#fff"}
+                                    />
+                                    <Text style={styles.videoActionText}>46</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={styles.videoActionButton}
+                                    onPress={() => onComment?.(id)}
+                                >
+                                    <Ionicons name="chatbubble-outline" size={26} color="#fff" />
+                                    <Text style={styles.videoActionText}>46</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
                     ) : (
-                        <Image
-                            source={image}
-                            style={{ width: '100%', height: '100%' }}
-                            contentFit="cover"
-                        />
+                        <View style={{ flex: 1 }}>
+                            <Image
+                                source={image}
+                                style={{ width: '100%', height: '100%' }}
+                                contentFit="cover"
+                            />
+                            {/* 8K Logo Overlay for Full Image Card */}
+                            <Image
+                                source={require('../assets/images/8K-Logo 1.png')}
+                                style={{
+                                    position: 'absolute',
+                                    top: 50,
+                                    right: 20,
+                                    width: 60,
+                                    height: 60,
+                                    zIndex: 20
+                                }}
+                                contentFit="contain"
+                            />
+                        </View>
                     )}
-
-                    {/* 8K Logo Overlay */}
-                    <Image
-                        source={require('../assets/images/8K-Logo 1.png')}
-                        style={{
-                            position: 'absolute',
-                            top: 50,
-                            right: 20,
-                            width: 60,
-                            height: 60,
-                            zIndex: 20
-                        }}
-                        contentFit="contain"
-                    />
                 </Pressable>
             </Animated.View>
         );
@@ -424,5 +474,45 @@ const styles = StyleSheet.create({
     },
     iconButton: {
         padding: 5,
+    },
+    videoRightActions: {
+        position: 'absolute',
+        bottom: 120, // Positioned above the bottom actions
+        right: 15,
+        gap: 20,
+        alignItems: 'center',
+    },
+    videoSideButton: {
+        padding: 5,
+    },
+    videoSideIconBg: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    videoBottomActions: {
+        position: 'absolute',
+        bottom: 40,
+        left: 20,
+        right: 80, // Leave space for side buttons if they were lower
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 25,
+    },
+    videoActionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    videoActionText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: 'bold',
+        textShadowColor: 'rgba(0, 0, 0, 0.75)',
+        textShadowOffset: { width: -1, height: 1 },
+        textShadowRadius: 10
     }
 });

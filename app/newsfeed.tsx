@@ -969,28 +969,28 @@ export default function NewsFeedScreen() {
 
         // 1. Filter (Unread/Location Modes)
         if (filterMode === 'unread') {
-            // Show only unread regular news items (exclude videos, full cards, ads)
+            // Show only unread regular news items (exclude ALL videos and full cards)
             final = final.filter(item =>
                 !readNewsIds.includes(item.id) &&
                 !item.isVideo &&
+                !item.video && // Double check for video URL presence
                 !item.isFullCard &&
                 !item.tags?.includes('videos') &&
-                !item.id.startsWith('full-card-') &&
-                !item.id.startsWith('full-ad-') &&
-                !item.id.startsWith('full-comp-') &&
-                !item.id.startsWith('video-')
+                !item.tags?.includes('whatsapp') && // Whatsapp often has videos
+                !item.id.toLowerCase().includes('video') &&
+                !item.id.startsWith('full-') &&
+                item.type !== 'rating' // Safety
             );
         } else if (filterMode === 'location') {
             // Show only location-specific regular news items
             final = final.filter(item =>
                 item.tags?.includes(userLocation) &&
                 !item.isVideo &&
+                !item.video &&
                 !item.isFullCard &&
                 !item.tags?.includes('videos') &&
-                !item.id.startsWith('full-card-') &&
-                !item.id.startsWith('full-ad-') &&
-                !item.id.startsWith('full-comp-') &&
-                !item.id.startsWith('video-')
+                !item.id.toLowerCase().includes('video') &&
+                !item.id.startsWith('full-')
             );
         }
 
@@ -1077,6 +1077,10 @@ export default function NewsFeedScreen() {
             setFilterMode('all');
         } else {
             setFilterMode('unread');
+            // Important: Scroll to top when showing unread news so user starts from the most recent
+            setTimeout(() => {
+                flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+            }, 100);
         }
     };
 
@@ -1129,15 +1133,33 @@ export default function NewsFeedScreen() {
                 case 'Instagram':
                 case 'Instagram Chat':
                 case 'Instagram Stories':
-                    // Instagram mostly works through native share for stories/posts
-                    // We'll fallback to native share or just open the app
-                    await Share.share({ message: shareText });
+                    // Instagram mostly works through native share for stories/posts on mobile devices
+                    try {
+                        await Share.share({
+                            message: shareText,
+                            url: shareUrl,
+                        });
+                    } catch (e) {
+                        // If direct share fails, try to open the app as a fallback
+                        await Linking.openURL('instagram://app').catch(() => {
+                            Linking.openURL('https://www.instagram.com/');
+                        });
+                    }
                     break;
                 case 'Telegram':
                     await Linking.openURL(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(item.title)}`);
                     break;
                 case 'Copy Link':
-                    await Share.share({ message: shareUrl });
+                    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                        await navigator.clipboard.writeText(shareUrl);
+                        if (Platform.OS === 'android') {
+                            ToastAndroid.show('లింక్ కాపీ చేయబడింది', ToastAndroid.SHORT);
+                        } else {
+                            alert('లింక్ కాపీ చేయబడింది');
+                        }
+                    } else {
+                        await Share.share({ message: shareUrl });
+                    }
                     break;
                 case 'More':
                     await Share.share({ message: shareText, title: item.title });
@@ -1150,7 +1172,11 @@ export default function NewsFeedScreen() {
             console.error('Sharing error:', error);
             // Fallback for web or if app is not installed
             if (platform !== 'More' && platform !== 'Copy Link') {
-                await Share.share({ message: shareText });
+                try {
+                    await Share.share({ message: shareText });
+                } catch (innerError) {
+                    console.error('Final share fallback failed:', innerError);
+                }
             }
         } finally {
             setShareModalVisible(false);
