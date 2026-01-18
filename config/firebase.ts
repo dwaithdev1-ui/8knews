@@ -14,21 +14,12 @@ import {
 } from 'firebase/auth';
 
 const firebaseConfig = {
-<<<<<<< Updated upstream
-    apiKey: "AIzaSyDAJJBZdot7iJRkF9lqMzlNyxWXfD_z4X8",
-    authDomain: "knews-2d1bd.firebaseapp.com",
-    projectId: "knews-2d1bd",
-    storageBucket: "knews-2d1bd.firebasestorage.app",
-    messagingSenderId: "823388850788",
-    appId: "1:823388850788:web:00ef081bf86b2b29b3ed71"
-=======
   apiKey: "AIzaSyDAJJBZdot7iJRkF9lqMzlNyxWXfD_z4X8",
   authDomain: "knews-2d1bd.firebaseapp.com",
   projectId: "knews-2d1bd",
   storageBucket: "knews-2d1bd.firebasestorage.app",
   messagingSenderId: "823388850788",
   appId: "1:823388850788:web:00ef081bf86b2b29b3ed71"
->>>>>>> Stashed changes
 };
 
 // Initialize Firebase
