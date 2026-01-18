@@ -1,5 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { ResizeMode, Video } from 'expo-av';
+import { useVideoPlayer, VideoView } from 'expo-video';
+// Actually expo-video uses contentFit. Let's remove expo-av entirely if possible.
+
 import { Image } from 'expo-image';
 import React, { useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -47,6 +49,17 @@ export default function NewsCard({
 }: Props) {
     const [liked, setLiked] = useState(false);
     const [disliked, setDisliked] = useState(false);
+
+    const videoSource = video ?? (typeof image === 'string' ? image : null);
+    const player = useVideoPlayer(videoSource, player => {
+        player.loop = true;
+        player.play();
+        player.muted = isMuted ?? false;
+    });
+
+    React.useEffect(() => {
+         if(player) player.muted = isMuted ?? false;
+    }, [isMuted, player]);
 
     const handleLike = () => {
         setLiked(!liked);
@@ -104,13 +117,11 @@ export default function NewsCard({
                 <Pressable style={{ flex: 1 }} onPress={onTap}>
                     {isVideo ? (
                         <View style={{ flex: 1, backgroundColor: '#000' }}>
-                            <Video
-                                source={video ? { uri: video } : (typeof image === 'string' ? { uri: image } : image)}
+                            <VideoView
+                                player={player}
                                 style={{ width: '100%', height: '100%' }}
-                                resizeMode={ResizeMode.COVER}
-                                isLooping
-                                shouldPlay={true}
-                                isMuted={isMuted}
+                                contentFit="cover"
+                                nativeControls={false}
                             />
 
                             {/* 8K Logo Overlay */}
@@ -511,8 +522,7 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 14,
         fontWeight: 'bold',
-        textShadowColor: 'rgba(0, 0, 0, 0.75)',
-        textShadowOffset: { width: -1, height: 1 },
-        textShadowRadius: 10
+        // @ts-ignore
+        textShadow: '-1px 1px 10px rgba(0, 0, 0, 0.75)'
     }
 });
