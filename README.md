@@ -35,6 +35,38 @@ npm run reset-project
 
 This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
+## Admin Dashboard
+
+The project includes a comprehensive Admin Dashboard located in the `admin` directory. This dashboard allows you to manage articles, categories, users, and view analytics.
+
+### Features
+
+- **Dashboard Overview**: View key metrics (Total Articles, Pending Review, Views) and recent activity.
+- **Article Management**: Create, edit, and delete articles with rich text and location targeting (City, State, Country).
+- **Role-Based Access**: Specialized views for Admins and Writers.
+- **Shadcn UI**: Modern, clean, and responsive user interface.
+
+### Running the Admin Dashboard
+
+1. Navigate to the admin directory:
+
+   ```bash
+   cd admin
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+The dashboard will be available at `http://localhost:5173` (or the port shown in the terminal).
+
 ## Learn more
 
 To learn more about developing your project with Expo, look at the following resources:
