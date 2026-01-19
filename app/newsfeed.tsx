@@ -554,6 +554,17 @@ const DEFAULT_NEWS_DATA = [
 
 
 
+const MAGAZINE_DATA = [
+    { id: 'mag1', title: 'వ్యవసాయం', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/mag_agri.png') },
+    { id: 'mag2', title: 'జీవనశైలి', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/mag_life.png') },
+    { id: 'mag3', title: 'పరిశ్రమలు', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/mag_ind.png') },
+    { id: 'mag4', title: 'ఆటోమొబైల్స్', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/mag_auto.png') },
+    { id: 'mag5', title: 'శాస్త్రవేత్తలు', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/mag_sci.png') },
+    { id: 'mag6', title: 'రియల్ ఎస్టేట్', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/mag_real.png') },
+    { id: 'mag7', title: 'క్రికెట్', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/match winning.jpg') },
+    { id: 'mag8', title: 'హైదరాబాద్', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/vijayawada.jpg') },
+];
+
 export default function NewsFeedScreen() {
     const [newsData, setNewsData] = useState<any[]>(DEFAULT_NEWS_DATA);
 
@@ -600,6 +611,7 @@ export default function NewsFeedScreen() {
     const [seenTutIndices, setSeenTutIndices] = useState<number[]>([]);
     const [showMenuBadge, setShowMenuBadge] = useState(false);
     const [isLocalNewsLocationVisible, setIsLocalNewsLocationVisible] = useState(false);
+    const [isDigitalMagazineVisible, setIsDigitalMagazineVisible] = useState(false);
     const [localNewsSearchQuery, setLocalNewsSearchQuery] = useState('');
     const [selectedLocalLocation, setSelectedLocalLocation] = useState('');
 
@@ -2980,7 +2992,10 @@ export default function NewsFeedScreen() {
 
                         {/* 5. Big Cards Row */}
                         <View style={styles.gridRow}>
-                            <TouchableOpacity style={[styles.bigCard, { backgroundColor: '#F8F9FA' }]}>
+                            <TouchableOpacity
+                                style={[styles.bigCard, { backgroundColor: '#F8F9FA' }]}
+                                onPress={() => { toggleMenu(); setIsDigitalMagazineVisible(true); }}
+                            >
                                 <View style={styles.magazineIconCircle}>
                                     <MaterialCommunityIcons name="newspaper-variant-outline" size={24} color="#0F5B8B" />
                                 </View>
@@ -3127,6 +3142,44 @@ export default function NewsFeedScreen() {
                                         </TouchableOpacity>
                                     ))}
                                 </View>
+                            </ScrollView>
+                        </SafeAreaView>
+                    </View>
+                )
+            }
+
+            {/* 📚 DIGITAL MAGAZINES MODAL */}
+            {
+                isDigitalMagazineVisible && (
+                    <View style={styles.fullModalOverlay}>
+                        <SafeAreaView style={styles.fullSpace}>
+                            <View style={styles.magHeader}>
+                                <TouchableOpacity onPress={() => setIsDigitalMagazineVisible(false)} style={styles.magBackRoundBtn}>
+                                    <Ionicons name="chevron-back" size={24} color="#000" />
+                                </TouchableOpacity>
+                                <Text style={styles.magHeaderText}>డిజిటల్ మ్యాగజిన్స్</Text>
+                                <View style={{ width: 44 }} />
+                            </View>
+
+                            <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.magListContent} showsVerticalScrollIndicator={false}>
+                                {MAGAZINE_DATA.map((item) => (
+                                    <View key={item.id} style={styles.magCard}>
+                                        <Image
+                                            source={item.image}
+                                            style={styles.magCardImage}
+                                            contentFit="cover"
+                                        />
+                                        <View style={styles.magCardInfo}>
+                                            <View style={styles.magBadge}>
+                                                <Text style={styles.magBadgeText}>{item.badge}</Text>
+                                            </View>
+                                            <Text style={styles.magCardTitle}>{item.title}</Text>
+                                            <Text style={styles.magCardDate}>{item.date}</Text>
+
+                                        </View>
+                                    </View>
+                                ))}
+                                <View style={{ height: 40 }} />
                             </ScrollView>
                         </SafeAreaView>
                     </View>
@@ -5215,6 +5268,94 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 60,
         alignItems: 'center',
+    },
+    // 📚 DIGITAL MAGAZINES STYLES
+    magHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingVertical: 15,
+        backgroundColor: '#F8F9FA',
+        borderRadius: 30,
+        marginHorizontal: 15,
+        marginTop: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    magBackRoundBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#FFD700',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    magHeaderText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    magListContent: {
+        paddingHorizontal: 20,
+        paddingTop: 20,
+    },
+    magCard: {
+        flexDirection: 'row',
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        marginBottom: 20,
+        gap: 15,
+    },
+    magCardImage: {
+        width: 130,
+        height: 130,
+        borderRadius: 8,
+    },
+    magCardInfo: {
+        flex: 1,
+        justifyContent: 'flex-start',
+        paddingTop: 5,
+    },
+    magBadge: {
+        backgroundColor: '#00A86B',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 4,
+        alignSelf: 'flex-start',
+        marginBottom: 8,
+    },
+    magBadgeText: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: 'bold',
+    },
+    magCardTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#000',
+        marginBottom: 5,
+    },
+    magCardDate: {
+        fontSize: 14,
+        color: '#666',
+        fontWeight: '500',
+    },
+    magBlueBtn: {
+        backgroundColor: '#1E90FF',
+        paddingHorizontal: 15,
+        paddingVertical: 6,
+        borderRadius: 20,
+        alignSelf: 'flex-start',
+        marginTop: 10,
+    },
+    magBlueBtnText: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: 'bold',
     },
 });
 
