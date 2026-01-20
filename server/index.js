@@ -1,31 +1,37 @@
+require('dotenv').config();
 const express = require('express');
-const { MongoClient, ObjectId } = require('mongodb');
+const { ObjectId } = require('mongodb');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const connectDB = require('./config/db.js');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
-const uri = "mongodb://news8kdbuser:QzKg09S1EiKy-VWmPBOxm7q0gbxP9ds3WwTp6fWrszzmk_KL@be9a526b-891c-4295-bdfb-a64a74b98b8d.nam5.firestore.goog:443/knewsdb?loadBalanced=true&tls=true&authMechanism=SCRAM-SHA-256&retryWrites=false";
-
 let db;
 
-async function connectDB() {
-    try {
-        const client = new MongoClient(uri);
-        await client.connect();
-        db = client.db("knewsdb");
-        console.log("Connected to Unified 8K News API (Full ER + Extra Fields)");
-    } catch (err) {
-        console.error("Failed to connect to DB", err);
-    }
-}
-
-connectDB();
-
 const toId = (id) => new ObjectId(id);
+
+// Start Server Function
+const startServer = async () => {
+    try {
+        db = await connectDB();
+
+        app.listen(port, () => {
+            console.log(`Server running at http://localhost:${port}`);
+        });
+    } catch (err) {
+        console.error("Failed to start server:", err);
+        process.exit(1);
+    }
+};
+
+startServer();
+
 
 // --- NEWS ENDPOINTS (JOINED) ---
 
@@ -249,6 +255,31 @@ app.get('/api/admins', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+app.post('/api/admin/login', async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const admin = await db.collection("admins").findOne({ email });
+        if (!admin) {
+            return res.status(401).json({ error: "Invalid credentials" });
+        }
+
+        const isMatch = await bcrypt.compare(password, admin.password);
+        if (!isMatch) {
+            // Check if it's a plain text password (for initial setup/migration)
+            if (password === admin.password) {
+                // Good, but we should hash it eventually
+            } else {
+                return res.status(401).json({ error: "Invalid credentials" });
+            }
+        }
+
+        const token = jwt.sign(
+            { id: admin._id, email: admin.email, role: 'admin' },
+            process.env.JWT_SECRET || 'secret8knews',
+            { expiresIn: '1d' }
+        );
+
+        res.json({ success: true, token, admin: { email: admin.email } });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
+
