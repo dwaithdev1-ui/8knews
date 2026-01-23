@@ -33,6 +33,7 @@ import Animated, {
     withSequence,
     withTiming
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -42,9 +43,9 @@ import NewsCard from '../components/NewsCard';
 import { LAYOUT } from '../constants/Layout';
 import { useAuth } from '../contexts/AuthContext';
 
-const { width: WINDOW_WIDTH } = Dimensions.get('window');
+const { width: WINDOW_WIDTH, height: WINDOW_HEIGHT } = Dimensions.get('window');
 const HEADER_HEIGHT = 0;
-const CARD_HEIGHT = LAYOUT.windowHeight;
+// const CARD_HEIGHT = LAYOUT.windowHeight; // Will define inside component for safe area
 
 const API_URL = 'http://192.168.29.70:3000/api';
 
@@ -54,7 +55,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'national-1',
         title: 'ప్రధాని మోదీ - జర్మన్ ఛాన్సలర్ భేటీ',
         description: 'జర్మన్ ఛాన్సలర్ ఫ్రెడరిక్ మెర్జ్‌తో ప్రధాని మోదీ సమావేశం. ఇరు దేశాల మధ్య వ్యూహాత్మక భాగస్వామ్యం, వాణిజ్యం మరియు టెక్నాలజీ రంగాలలో సహకారంపై కీలక చర్చలు.',
-        image: require('../assets/images/Rectangle 5 (6).png'),
+        image: require('../assets/images/res_rect_5_6.png'),
         tags: ['national', 'trending']
     },
     // // 📸 PHOTOS (Top HUD)
@@ -62,7 +63,7 @@ const DEFAULT_NEWS_DATA = [
     //     id: 'photo-hud-item-1',
     //     title: 'Ethereal Beauty',
     //     description: 'Experience the visual splendor.',
-    //     image: require('../assets/images/71npLSn8+SL._AC_UF894,1000_QL80_.jpg'),
+    //     image: require('../assets/images/res_71nplsn8_sl_ac_uf894_1000_ql80.jpg'),
     //     tags: ['photos', 'trending'],
     //     isFullCard: true
     // },
@@ -71,28 +72,28 @@ const DEFAULT_NEWS_DATA = [
         id: 'main-1',
         title: 'సంక్రాంతి సంబరాలు: తెలుగు లోగిళ్ళలో పండుగ శోభ',
         description: 'భోగి మంటలు, రంగవల్లులు, గాలిపటాలతో తెలుగు రాష్ట్రాల్లో సంక్రాంతి వేడుకలు ఘనంగా జరుగుతున్నాయి. ఇంటి ముందు ముగ్గులు, గొబ్బెమ్మలు, హరిదాసుల కీర్తనలు, బసవన్నల దీవెనలతో పల్లెలు కళకళలాడుతున్నాయి. పిండివంటల ఘుమఘుమలు, కుటుంబ సభ్యుల కలయికలతో ఆనందం వెల్లివిరుస్తోంది. ఈ పండుగ ప్రతింటా సిరులు కురిపించాలని కోరుకుందాం.',
-        image: require('../assets/images/253566-sankrantiii.webp'),
+        image: require('../assets/images/res_253566_sankrantiii.webp'),
         tags: ['main', 'trending']
     },
     {
         id: 'main-2',
         title: 'జీఎస్‌ఎల్‌వీ-ఎఫ్15: నావిగేషన్ ఉపగ్రహ ప్రయోగం',
         description: 'శ్రీహరికోట నుండి జనవరి 29న సాయంత్రం 6:23 గంటలకు ఎన్‌వీఎస్-02 ఉపగ్రహాన్ని మోసుకెళ్లే జీఎస్‌ఎల్‌వీ-ఎఫ్15 రాకెట్ ప్రయోగం జరగనుంది. ఇది భారత నావిగేషన్ వ్యవస్థలో కీలకం.',
-        image: require('../assets/images/high.png'),
+        image: require('../assets/images/res_high.png'),
         tags: ['main', 'trending']
     },
     {
         id: 'main-3',
         title: 'జాతీయ యువజన దినోత్సవం: స్వామి వివేకానంద స్ఫూర్తి',
         description: 'స్వామి వివేకానంద జయంతి సందర్భంగా దేశవ్యాప్తంగా జాతీయ యువజన దినోత్సవ వేడుకలు. యువత దేశాభివృద్ధిలో కీలక పాత్ర పోషించాలని, ఆయన ఆశయాలను స్ఫూర్తిగా తీసుకోవాలని ప్రముఖుల పిలుపు. పాఠశాలలు, కళాశాలల్లో ప్రత్యేక కార్యక్రమాలు.',
-        image: require('../assets/images/National-Youth-Day-Vivekananda.jpg'),
+        image: require('../assets/images/res_national_youth_day_vivekananda.jpg'),
         tags: ['main', 'trending']
     },
     {
         id: 'main-4',
         title: 'జాతీయ హైవే ప్రాజెక్టుల ప్రారంభం',
         description: 'దేశవ్యాప్తంగా రవాణా సౌకర్యాలను మెరుగుపరచడానికి వేల కోట్ల రూపాయలతో నూతన రహదారుల నిర్మాణం.',
-        image: require('../assets/images/Rectangle 5 (1).png'),
+        image: require('../assets/images/res_rectangle_5_1.png'),
         tags: ['main']
     },
 
@@ -101,14 +102,14 @@ const DEFAULT_NEWS_DATA = [
         id: 'cine-pawan',
         title: 'తీవ్ర జ్వరంతో బాధపడుతున్న పవన్ కళ్యాణ్ ను పరామర్శించిన చంద్రబాబు... పవన్ ఆరోగ్యంపై',
         description: 'ఆంధ్రప్రదేశ్ ఉప ముఖ్యమంత్రి పవన్ కళ్యాణ్ ను ముఖ్యమంత్రి చంద్రబాబు నాయుడు పరామర్శించారు. గత కొద్ది రోజులుగా వైరల్ ఫీవర్ తో బాధపడుతున్న పవన్ ఆరోగ్యం కుదుటపడుతోంది.',
-        image: require('../assets/images/Rectangle 5 (1).png'),
+        image: require('../assets/images/res_rectangle_5_1.png'),
         tags: ['cinema', 'trending', 'politics']
     },
     {
         id: 'cine-1',
         title: 'ది రాజా సాబ్',
         description: '',
-        image: require('../assets/images/The-Raja-Saab---27x40.jpg'),
+        image: require('../assets/images/res_the_raja_saab_27x40.jpg'),
         tags: ['cinema', 'trending'],
         isFullCard: true
     },
@@ -116,7 +117,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'cine-2',
         title: 'టాలీవుడ్ అప్‌కమింగ్ బిగ్ బడ్జెట్ సినిమాలు',
         description: 'త్వరలో విడుదల కాబోతున్న టాప్ హీరోల చిత్రాల టీజర్స్ మరియు ట్రైలర్స్ సోషల్ మీడియాలో వైరల్ అవుతున్నాయి.',
-        image: require('../assets/images/Tollywood-Happy-New-Year-2026-HD-Posters-1.webp'),
+        image: require('../assets/images/res_tollywood_happy_new_year_2026_hd_posters_1.webp'),
         tags: ['cinema', 'trending'],
         isFullCard: true
     },
@@ -124,7 +125,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'cine-3',
         title: 'గ్లోబల్ సినిమా వేదికపై టాలీవుడ్ సత్తా',
         description: 'మన తెలుగు సినిమాలు అంతర్జాతీయ వేదికలపై అవార్డులు గెలుచుకుంటూ తెలుగు జెండాను ఎగరేస్తున్నాయి.',
-        image: require('../assets/images/vertical_59065698-c226-41df-b879-f54fb04bdb48.jpg'),
+        image: require('../assets/images/res_vertical_59065698_c226_41df_b879_f54fb04bdb48.jpg'),
         tags: ['cinema'],
         isFullCard: true
     },
@@ -134,7 +135,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'bhakti-1',
         title: 'ఆధ్యాత్మిక శాంతి: ధ్యానం ప్రాముఖ్యత',
         description: 'ధ్యానం చేయడం వల్ల మనస్సు ప్రశాంతంగా ఉండటమే కాకుండా ఆరోగ్యం కూడా మెరుగుపడుతుంది.',
-        image: require('../assets/images/lordshive.png'),
+        image: require('../assets/images/res_lordshive.png'),
         tags: ['bhakti', 'trending'],
         isFullCard: true
     },
@@ -142,7 +143,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'bhakti-2',
         title: 'ప్రసిద్ధ పుణ్యక్షేత్రాల దర్శనం - యాత్రా విశేషాలు',
         description: 'ఈ పండుగ సీజన్ లో తప్పక సందర్శించాల్సిన ముఖ్యమైన దర్శనీయ క్షేత్రాల జాబితా మీ కోసం.',
-        image: require('../assets/images/bhakthi.jpg'),
+        image: require('../assets/images/res_bhakthi.jpg'),
         tags: ['bhakti'],
         isFullCard: true
     },
@@ -150,7 +151,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'bhakti-3',
         title: 'మహా శివరాత్రి వేడుకల కోసం సిద్ధమవుతున్న ఆలయాలు',
         description: 'శైవ క్షేత్రాలలో మహా శివరాత్రి సందర్భంగా విద్యుత్ దీపాలతో అలంకరణ మరియు ప్రత్యేక పూజలు.',
-        image: require('../assets/images/bhogi-festival-images-education.png'),
+        image: require('../assets/images/res_bhogi_festival_images_education.png'),
         tags: ['bhakti', 'trending'],
         isFullCard: true
     },
@@ -160,7 +161,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'agri-1',
         title: 'వ్యవసాయంలో డ్రోన్ టెక్నాలజీ వినియోగం',
         description: 'రైతులకు సాగులో సహాయం చేయడానికి ప్రభుత్వం ప్రవేశపెట్టిన మల్టీ-పర్పస్ డ్రోన్స్ మంచి ఫలితాలను ఇస్తున్నాయి.',
-        image: require('../assets/images/pad_screenshot_P4V5D7Z8J6.webp'),
+        image: require('../assets/images/res_pad_screenshot_p4v5d7z8j6.webp'),
         tags: ['agriculture', 'trending'],
         isFullCard: true
     },
@@ -168,7 +169,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'agri-2',
         title: 'సేంద్రీయ సాగుతో అధిక లాభాలు: రైతుల అనుభవం',
         description: 'కెమికల్స్ వాడకుండా సహజ సిద్ధంగా పండించిన పంటలకు మార్కెట్లో మంచి గిరాకీ ఏర్పడింది.',
-        image: require('../assets/images/premium_photo-1682092016074-b136e1acb26e.jpg'),
+        image: require('../assets/images/res_premium_photo_1682092016074_b136e1acb26e.jpg'),
         tags: ['agriculture', 'trending'],
         isFullCard: true
     },
@@ -176,7 +177,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'agri-3',
         title: 'గుంటూరు మిర్చి యార్డ్‌లో రికార్డ్ లావాదేవీలు',
         description: 'ఈ ఏడాది మిర్చి దిగుబడి ఆశాజనకంగా ఉండటంతో రైతులు హర్షం వ్యక్తం చేస్తున్నారు.',
-        image: require('../assets/images/Picture5.png'),
+        image: require('../assets/images/res_picture5.png'),
         tags: ['agriculture', 'guntur', 'local'],
         isFullCard: true
     },
@@ -186,7 +187,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'sports-1',
         title: 'క్రికెట్: భారత్ అద్భుత విజయం',
         description: 'తొలి టెస్టులో ప్రత్యర్థి జట్టును మట్టికరిపించిన భారత జట్టు. రోహిత్ శర్మ వీరోచిత సెంచరీ.',
-        image: require('../assets/images/vk18.jpg'),
+        image: require('../assets/images/res_vk18.jpg'),
         tags: ['sports', 'trending'],
         isFullCard: true
     },
@@ -195,7 +196,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'sports-2',
         title: 'నేషనల్ గేమ్స్: తెలుగు రాష్ట్రాల క్రీడాకారుల జోరు',
         description: 'పలు విభాగాల్లో గోల్డ్ మెడల్స్ గెలుచుకుంటూ మన అథ్లెట్లు సత్తా చాటుతున్నారు.',
-        image: require('../assets/images/match winning.jpg'),
+        image: require('../assets/images/res_match_winning.jpg'),
         tags: ['sports', 'trending'],
         isFullCard: true
     },
@@ -205,7 +206,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'wish-1',
         title: 'సంక్రాంతి శుభాకాంక్షలు: పండుగ సందడి',
         description: 'ముంగిట ముగ్గులు, గొబ్బెమ్మలు మరియు కోడి పందేలతో పల్లెల్లో పండుగ వాతావరణం నెలకొంది.',
-        image: require('../assets/images/vivekanandha 2.jpg'),
+        image: require('../assets/images/res_vivekanandha_2.jpg'),
         tags: ['wishes', 'whatsapp'],
         isFullCard: true
     },
@@ -213,7 +214,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'wish-2',
         title: 'హ్యాపీ బర్త్‌డే: విషెస్ కార్డ్స్',
         description: 'మీ స్నేహితులకు మరియు కుటుంబ సభ్యులకు ఈ ప్రత్యేకమైన విషెస్ మెసేజ్‌లను పంపండి.',
-        image: require('../assets/images/whatsapp.jpg'),
+        image: require('../assets/images/res_whatsapp.jpg'),
         tags: ['wishes', 'whatsapp', 'trending'],
         isFullCard: true
     },
@@ -223,7 +224,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'wa-1',
         title: 'లేటెస్ట్ మొటివేషనల్ స్టేటస్ వీడియోలు',
         description: 'జీవితంలో ఏదైనా సాధించాలనుకునే వారికి స్ఫూర్తినిచ్చే అద్భుతమైన స్టేటస్ కలెక్షన్.',
-        image: require('../assets/images/monday.jpg'),
+        image: require('../assets/images/res_monday.jpg'),
         tags: ['whatsapp'],
         isFullCard: true
     },
@@ -231,7 +232,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'wa-2',
         title: 'వైరల్ వాట్సాప్ స్టేటస్ అప్‌డేట్స్',
         description: 'సోషల్ మీడియాలో ట్రెండింగ్ లో ఉన్న వీడియోలు మరియు చిత్రాలు ఇక్కడ చూడండి.',
-        image: require('../assets/images/vivekanadha.jpg'),
+        image: require('../assets/images/res_vivekanadha.jpg'),
         tags: ['whatsapp', 'trending'],
         isFullCard: true
     },
@@ -241,28 +242,28 @@ const DEFAULT_NEWS_DATA = [
         id: 'loc-vij-1',
         title: 'సంక్రాంతి రద్దీ: విజయవాడ బస్టాండ్ కిటకిట',
         description: 'పండుగకు సొంతూళ్లకు వెళ్లే ప్రయాణికులతో విజయవాడ పండిట్ నెహ్రూ బస్ స్టేషన్ కిక్కిరిసిపోయింది. బస్సులు ప్రయాణికులతో నిండిపోవడంతో అధికారులు ప్రత్యేక సర్వీసులు ఏర్పాటు చేస్తున్నారు.',
-        image: require('../assets/images/vijayawada.jpg'),
+        image: require('../assets/images/res_vijayawada.jpg'),
         tags: ['vijayawada', 'local', 'trending']
     },
     {
         id: 'hyd-traffic-1',
         title: 'హైదరాబాద్‌ ట్రాఫిక్ జామ్: పండుగ పయనం',
         description: 'సంక్రాంతి పండుగకు సొంతూళ్లకు వెళ్లే వారితో హైదరాబాద్ రహదారులు కిక్కిరిసిపోయాయి. విజయవాడ హైవేపై భారీగా ట్రాఫిక్ నిలిచిపోయింది.',
-        image: require('../assets/images/traffic-1-1.jpg'),
+        image: require('../assets/images/res_traffic_1_1.jpg'),
         tags: ['hyderabad', 'local', 'trending']
     },
     {
         id: 'andhra-2',
         title: 'ఆంధ్రప్రదేశ్ వార్తలు',
         description: 'ఆంధ్రప్రదేశ్ రాష్ట్రంలో జరుగుతున్న తాజా రాజకీయ, సామాజిక పరిణామాలు మరియు అభివృద్ధి పనుల వివరాలు.',
-        image: require('../assets/images/Rectangle 5 (4).png'),
+        image: require('../assets/images/res_rectangle_5_4.png'),
         tags: ['andhra']
     },
     {
         id: 'telangana-1',
         title: 'తెలంగాణ వార్తలు',
         description: 'తెలంగాణ రాష్ట్రంలో అమలు అవుతున్న ప్రజా సంక్షేమ పథకాలు మరియు హైదరాబాద్ నగర అభివృద్ధి విశేషాలు.',
-        image: require('../assets/images/Rectangle 5 (5).png'),
+        image: require('../assets/images/res_rectangle_5_5.png'),
         tags: ['telangana']
     },
 
@@ -270,14 +271,14 @@ const DEFAULT_NEWS_DATA = [
         id: 'cold-wave-1',
         title: 'ఉత్తర భారతంలో గజగజ వణికిస్తున్న చలి',
         description: 'ఢిల్లీతో సహా ఉత్తర భారత రాష్ట్రాల్లో ఉష్ణోగ్రతలు కనిష్ట స్థాయికి పడిపోయాయి. పొగమంచు కారణంగా జనజీవనం స్తంభించింది. ప్రజలు అప్రమత్తంగా ఉండాలని వాతావరణ శాఖ హెచ్చరిక.',
-        image: require('../assets/images/11delhi-cold.png'),
+        image: require('../assets/images/res_11delhi_cold.png'),
         tags: ['national', 'trending']
     },
     {
         id: 'loc-gun-1',
         title: 'గుంటూరు: అభివృద్ధి పనుల వేగవంతం',
         description: 'నగర అభివృద్ధి కోసం మంజూరైన నిధులతో కొత్త రోడ్లు మరియు డ్రైనేజీ పనులు ప్రారంభం.',
-        image: require('../assets/images/news_hero.png'),
+        image: require('../assets/images/res_news_hero.png'),
         tags: ['guntur', 'local', 'trending']
     },
 
@@ -286,7 +287,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'life-1',
         title: 'ఆరోగ్యకరమైన ఆహారపు అలవాట్లు: చిట్కాలు',
         description: 'ప్రతిరోజూ తాజా కూరగాయలు మరియు పండ్లను మీ డైట్ లో చేర్చుకోవడం వల్ల ఇమ్యూనిటీ పెరుగుతుంది.',
-        image: require('../assets/images/8K News_Trending page-23.png'),
+        image: require('../assets/images/res_8k_news_trending_page_23.png'),
         tags: ['lifestyle', 'trending'],
         isFullCard: true
     },
@@ -294,7 +295,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'life-2',
         title: 'మోడ్రన్ హోమ్ ఇంటీరియర్ డిజైన్స్ 2024',
         description: 'తక్కువ ఖర్చుతో మీ ఇంటిని అందంగా మార్చుకునే సరికొత్త ఇంటీరియర్ ఐడియాలు.',
-        image: require('../assets/images/71vzKYTFriS._AC_UF894,1000_QL80_.jpg'),
+        image: require('../assets/images/res_71vzkytfris_ac_uf894_1000_ql80.jpg'),
         tags: ['lifestyle', 'trending'],
         isFullCard: true
     },
@@ -302,7 +303,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'life-3',
         title: 'మోడ్రన్ హోమ్ ఇంటీరియర్ డిజైన్స్ 2024',
         description: 'తక్కువ ఖర్చుతో మీ ఇంటిని అందంగా మార్చుకునే సరికొత్త ఇంటీరియర్ ఐడియాలు.',
-        image: require('../assets/images/71npLSn8+SL._AC_UF894,1000_QL80_.jpg'),
+        image: require('../assets/images/res_71nplsn8_sl_ac_uf894_1000_ql80.jpg'),
         tags: ['lifestyle', 'trending'],
         isFullCard: true
     },
@@ -312,7 +313,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'aff-1',
         title: 'కరెంటు అఫైర్స్: రాష్ట్ర బడ్జెట్ విశ్లేషణ',
         description: 'ప్రభుత్వం ప్రకటించిన రాబోయే ఆర్థిక సంవత్సర బడ్జెట్ పై పూర్తి అవగాహన పొందండి.',
-        image: require('../assets/images/1757262949538.jpg'),
+        image: require('../assets/images/res_1757262949538.jpg'),
         tags: ['affairs', 'trending'],
         isFullCard: true
     },
@@ -320,7 +321,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'aff-2',
         title: 'మెరుగైన పాలన కోసం డిజిటల్ రిఫార్మ్స్',
         description: 'ప్రభుత్వ సేవలను ప్రజలకు మరింత సులభంగా చేరవేసేందుకు టెక్నాలజీ వినియోగం.',
-        image: require('../assets/images/25-Category complete-5.png'),
+        image: require('../assets/images/res_25_category_complete_5.png'),
         tags: ['affairs', 'main'],
         isFullCard: true
     },
@@ -330,7 +331,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'photo-1',
         title: 'భారతదేశ అద్భుత ప్రకృతి దృశ్యాలు',
         description: 'హిమాలయాల నుండి కన్యాకుమారి వరకు మన దేశ సౌందర్యం ఫొటోలలో.',
-        image: require('../assets/images/pexels-jeswinthomas-1007431.png'),
+        image: require('../assets/images/res_pexels_jeswinthomas_1007431.png'),
         tags: ['photos', 'trending'],
         isFullCard: true
     },
@@ -339,7 +340,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'video-custom-hud',
         title: 'Trending Viral Video',
         description: 'Watch the latest viral sensation now.',
-        image: require('../assets/images/200297-912370117_medium.mp4'),
+        image: require('../assets/images/res_200297_912370117_medium.mp4'),
         tags: ['videos', 'trending'],
         isVideo: true
     },
@@ -347,7 +348,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'video-1',
         title: 'సాంకేతిక విప్లవం: వీడియో రిపోర్ట్',
         description: 'రాబోయే కాలంలో ఏయే గ్యాడ్జెట్స్ మన జీవితాలను శాసించబోతున్నాయో చూడండి.',
-        image: require('../assets/images/8K News_Top Bar Video-1.png'),
+        image: require('../assets/images/res_8k_news_top_bar_video_1.png'),
         tags: ['videos', 'trending'],
         isVideo: true
     },
@@ -355,7 +356,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'video-new-2',
         title: 'తాజా వీడియో వార్తలు',
         description: 'రండి చూడండి! ఈ రోజు సోషల్ మీడియాలో వైరల్ అవుతున్న ఆసక్తికరమైన వీడియో.',
-        image: require('../assets/images/Picture11.png'),
+        image: require('../assets/images/res_picture11.png'),
         tags: ['videos', 'trending'],
         isVideo: true
     },
@@ -364,7 +365,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'full-card-1',
         title: 'Full Card 1',
         description: 'Displaying full card image 1',
-        image: require('../assets/images/20-Photos-1.png'),
+        image: require('../assets/images/res_20_photos_1.png'),
         tags: ['wishes'],
         isFullCard: true
     },
@@ -372,7 +373,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'full-card-2',
         title: 'Full Card 2',
         description: 'Displaying full card image 2',
-        image: require('../assets/images/22-Photos-3.png'),
+        image: require('../assets/images/res_22_photos_3.png'),
         tags: ['wishes'],
         isFullCard: true
     },
@@ -380,7 +381,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'full-card-3',
         title: 'Full Card 3',
         description: 'Displaying full card image 3',
-        image: require('../assets/images/23-Photos-4.png'),
+        image: require('../assets/images/res_23_photos_4.png'),
         tags: ['wishes'],
         isFullCard: true
     },
@@ -388,7 +389,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'full-card-4',
         title: 'Full Card 4',
         description: 'Displaying full card image 4',
-        image: require('../assets/images/23- Ad Page.png'),
+        image: require('../assets/images/res_23_ad_page.png'),
         tags: ['wishes'],
         isFullCard: true
     },
@@ -396,7 +397,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'full-card-5',
         title: 'Full Card 5',
         description: 'Displaying full card image 5',
-        image: require('../assets/images/24-Photos-5.png'),
+        image: require('../assets/images/res_24_photos_5.png'),
         tags: ['wishes'],
         isFullCard: true
     },
@@ -404,7 +405,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'full-card-6',
         title: 'Full Card 6',
         description: 'Displaying full card image 6',
-        image: require('../assets/images/25-Category complete-2.png'),
+        image: require('../assets/images/res_25_category_complete_2.png'),
         tags: ['wishes'],
         isFullCard: true
     },
@@ -413,7 +414,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'full-card-8',
         title: 'Full Card 8',
         description: 'Displaying full card image 8',
-        image: require('../assets/images/25-Category complete-4.png'),
+        image: require('../assets/images/res_25_category_complete_4.png'),
         tags: ['wishes'],
         isFullCard: true
     },
@@ -421,7 +422,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'full-card-9',
         title: 'Full Card 9',
         description: 'Displaying full card image 9',
-        image: require('../assets/images/25-Category complete-5.png'),
+        image: require('../assets/images/res_25_category_complete_5.png'),
         tags: ['wishes'],
         isFullCard: true
     },
@@ -429,7 +430,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'full-card-10',
         title: 'Full Card 10',
         description: 'Displaying full card image 10',
-        image: require('../assets/images/25-Category complete-6.png'),
+        image: require('../assets/images/res_25_category_complete_6.png'),
         tags: ['wishes'],
         isFullCard: true
     },
@@ -437,7 +438,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'full-card-11',
         title: 'Full Card 11',
         description: 'Displaying full card image 11',
-        image: require('../assets/images/25-Category complete-7.png'),
+        image: require('../assets/images/res_25_category_complete_7.png'),
         tags: ['wishes'],
         isFullCard: true
     },
@@ -445,7 +446,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'full-card-12',
         title: 'Full Card 12',
         description: 'Displaying full card image 12',
-        image: require('../assets/images/25-Category complete-8.png'),
+        image: require('../assets/images/res_25_category_complete_8.png'),
         tags: ['wishes'],
         isFullCard: true
     },
@@ -455,14 +456,14 @@ const DEFAULT_NEWS_DATA = [
         id: 'local-1',
         title: 'ప్రాంతీయ వార్తలు: మీ జిల్లా విశేషాలు',
         description: 'మీ చుట్టూ జరుగుతున్న తాజా సంఘటనలు మరియు అభివృద్ధి పనుల సమాచారం.',
-        image: require('../assets/images/news_hero.png'),
+        image: require('../assets/images/res_news_hero.png'),
         tags: ['local', 'guntur']
     },
     {
         id: 'whatsapp-1',
         title: 'వాట్సాప్ స్టేటస్ వీడియోలు',
         description: 'మీకు నచ్చిన వీడియోలను డౌన్లోడ్ చేసుకోండి మరియు స్టేటస్ గా పెట్టుకోండి.',
-        image: require('../assets/images/whatsapp.png'), // Fixed missing image
+        image: require('../assets/images/res_whatsapp.png'), // Fixed missing image
         tags: ['whatsapp'],
         isVideo: true,
         video: 'https://www.w3schools.com/html/mov_bbb.mp4'
@@ -472,7 +473,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'wish-new-1',
         title: 'దీపావళి శుభాకాంక్షలు',
         description: 'ఈ దీపావళి మీ ఇంట వెలుగులు నింపాలని, సుఖసంతోషాలతో వర్ధిల్లాలని కోరుకుంటున్నాము.',
-        image: require('../assets/images/wishes1.png'),
+        image: require('../assets/images/res_wishes1.png'),
         tags: ['wishes', 'trending'],
         isFullCard: true
     },
@@ -480,7 +481,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'tech-new-1',
         title: 'కొత్త స్మార్ట్‌ఫోన్ రివ్యూ 2024',
         description: 'మార్కెట్లోకి వచ్చిన లేటెస్ట్ ఫీచర్స్ తో కూడిన స్మార్ట్‌ఫోన్ పనితీరు ఎలా ఉందో చూడండి.',
-        image: require('../assets/images/8K News_Top Bar Video-2.png'),
+        image: require('../assets/images/res_8k_news_top_bar_video_2.png'),
         tags: ['videos', 'trending'],
         isVideo: true
     },
@@ -488,7 +489,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'photo-new-1',
         title: 'ప్రకృతి అందాలు: అరకు లోయ',
         description: 'విశాఖ మన్యంలో పర్యాటకులను కట్టిపడేస్తున్న ప్రకృతి రమణీయ దృశ్యాలు. తప్పక చూడాల్సిన ప్రదేశం.',
-        image: require('../assets/images/Picture3.png'),
+        image: require('../assets/images/res_picture3.png'),
         tags: ['photos', 'trending', 'lifestyle'],
         isFullCard: true
     },
@@ -496,7 +497,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'local-new-1',
         title: 'నగరంలో ట్రాఫిక్ నిబంధనలు కఠినతరం',
         description: 'హెల్మెట్ ధరించని వాహనదారులకు భారీ జరిమానాలు విధించనున్న ట్రాఫిక్ పోలీసులు.',
-        image: require('../assets/images/Picture4.png'),
+        image: require('../assets/images/res_picture4.png'),
         tags: ['local', 'hyderabad'],
         isFullCard: true
     },
@@ -504,14 +505,14 @@ const DEFAULT_NEWS_DATA = [
         id: 'cine-new-1',
         title: 'ఓటీటీలో ఈ వారం విడుదలయ్యే చిత్రాలు',
         description: 'ఇంట్లోనే కూర్చుని వినోదాన్ని ఆస్వాదించడానికి సిద్ధంగా ఉండండి. ఈ వారం ముచ్చటగొలిపే చిత్రాల జాబితా.',
-        image: require('../assets/images/Picture5.png'),
+        image: require('../assets/images/res_picture5.png'),
         tags: ['cinema', 'trending']
     },
     {
         id: 'full-ad-1',
         title: 'Special Promotion',
         description: 'Exclusive Ad Page',
-        image: require('../assets/images/23- Ad Page.png'),
+        image: require('../assets/images/res_23_ad_page.png'),
         tags: ['main', 'trending'],
         isFullCard: true
     },
@@ -519,7 +520,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'full-comp-6',
         title: 'Category Complete',
         description: 'You have caught up with all stories.',
-        image: require('../assets/images/25-Category complete-6.png'),
+        image: require('../assets/images/res_25_category_complete_6.png'),
         tags: ['main', 'trending'],
         isFullCard: true
     },
@@ -527,7 +528,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'full-comp-7',
         title: 'Category Complete',
         description: 'Stay tuned for more updates.',
-        image: require('../assets/images/25-Category complete-7.png'),
+        image: require('../assets/images/res_25_category_complete_7.png'),
         tags: ['main', 'trending'],
         isFullCard: true
     },
@@ -535,7 +536,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'full-comp-8',
         title: 'Category Complete',
         description: 'Fresh news coming soon.',
-        image: require('../assets/images/25-Category complete-8.png'),
+        image: require('../assets/images/res_25_category_complete_8.png'),
         tags: ['main', 'trending'],
         isFullCard: true
     },
@@ -543,7 +544,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'full-wish-2',
         title: 'Greetings',
         description: 'Best wishes for you.',
-        image: require('../assets/images/wishes2.png'),
+        image: require('../assets/images/res_wishes2.png'),
         tags: ['wishes', 'whatsapp', 'trending'],
         isFullCard: true
     }
@@ -555,17 +556,21 @@ const DEFAULT_NEWS_DATA = [
 
 
 const MAGAZINE_DATA = [
-    { id: 'mag1', title: 'వ్యవసాయం', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/mag_agri.png') },
-    { id: 'mag2', title: 'జీవనశైలి', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/mag_life.png') },
-    { id: 'mag3', title: 'పరిశ్రమలు', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/mag_ind.png') },
-    { id: 'mag4', title: 'ఆటోమొబైల్స్', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/mag_auto.png') },
-    { id: 'mag5', title: 'శాస్త్రవేత్తలు', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/mag_sci.png') },
-    { id: 'mag6', title: 'రియల్ ఎస్టేట్', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/mag_real.png') },
-    { id: 'mag7', title: 'క్రికెట్', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/match winning.jpg') },
-    { id: 'mag8', title: 'హైదరాబాద్', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/vijayawada.jpg') },
+    { id: 'mag1', title: 'వ్యవసాయం', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/res_mag_agri.png') },
+    { id: 'mag2', title: 'జీవనశైలి', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/res_mag_life.png') },
+    { id: 'mag3', title: 'పరిశ్రమలు', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/res_mag_ind.png') },
+    { id: 'mag4', title: 'ఆటోమొబైల్స్', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/res_mag_auto.png') },
+    { id: 'mag5', title: 'శాస్త్రవేత్తలు', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/res_mag_sci.png') },
+    { id: 'mag6', title: 'రియల్ ఎస్టేట్', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/res_mag_real.png') },
+    { id: 'mag7', title: 'క్రికెట్', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/res_match_winning.jpg') },
+    { id: 'mag8', title: 'హైదరాబాద్', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/res_vijayawada.jpg') },
 ];
 
 export default function NewsFeedScreen() {
+    const insets = useSafeAreaInsets();
+    // 📐 Precise height calculation - matching physical screen for one-page fit
+    const CARD_HEIGHT = LAYOUT.windowHeight;
+
     const [newsData, setNewsData] = useState<any[]>(DEFAULT_NEWS_DATA);
 
     useEffect(() => {
@@ -575,17 +580,55 @@ export default function NewsFeedScreen() {
                 const data = await response.json();
                 if (data && data.length > 0) {
                     const mappedData = data.map((item: any) => {
+                        // Find local match once to reuse properly
+                        const localMatch = DEFAULT_NEWS_DATA.find(d => d.title === item.title);
+
                         // Extract primary image from media array
                         const primaryMedia = item.media?.find((m: any) => m.is_primary) || item.media?.[0];
-                        const mediaUrl = primaryMedia?.url;
+                        let mediaUrl = primaryMedia?.url;
+
+                        // Fix localhost URLs for Emulator/Device
+                        if (mediaUrl && mediaUrl.includes('localhost')) {
+                            mediaUrl = mediaUrl.replace('localhost', '192.168.29.70');
+                        }
+
+                        // Map Layout Properties (DB snake_case -> App camelCase)
+                        let isFullCard = item.is_full_card || localMatch?.isFullCard;
+                        let isVideo = item.is_video || localMatch?.isVideo;
+
+                        // 🛠️ FORCE FIX: Ensure specific Main News items are NEVER Full Card (Yellow Card Fix)
+                        const categorySlug = item.category?.slug || '';
+                        if (categorySlug === 'main' || categorySlug === 'national' ||
+                            item.tags?.includes('main') || item.tags?.includes('national') ||
+                            item.title?.includes('జర్మన్') || item.title?.includes('IPL') ||
+                            item.title?.includes('ఐపీల్') || item.title?.includes('ఐపీఎల్') ||
+                            item.title?.includes('ప్రధాని మోదీ')) {
+                            isFullCard = false;
+                        }
+
+                        // 🖼️ Image Selection Logic
+                        let finalImage = localMatch ? localMatch.image : (mediaUrl || DEFAULT_NEWS_DATA[0].image);
+
+                        // ⚾ IPL 2026 Image Fix (Broaden match and ensure correct asset)
+                        if (item.title?.toLowerCase().includes('ipl') ||
+                            item.title?.includes('ఐపీఎల్ 2026') ||
+                            item.title?.includes('ఐపీల్ 2026')) {
+                            finalImage = require('../assets/images/gettyimages-2218439512-612x612.jpg');
+                        }
 
                         return {
                             ...item,
                             id: item._id, // Use MongoDB _id as id
                             likeCount: item.like_count || 0, // Map API like_count to app likeCount
-                            image: typeof mediaUrl === 'string' && !mediaUrl.startsWith('http')
-                                ? DEFAULT_NEWS_DATA.find(d => d.title === item.title)?.image || mediaUrl
-                                : mediaUrl || DEFAULT_NEWS_DATA[0].image
+
+                            // Image: Prioritize Local Asset -> Media URL -> Default
+                            image: finalImage,
+
+                            tags: item.tags || [item.category?.slug, 'trending', 'main'],
+
+                            isFullCard,
+                            isVideo,
+                            video: item.video || localMatch?.video
                         };
                     });
                     setNewsData(mappedData);
@@ -599,7 +642,7 @@ export default function NewsFeedScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
     const flatListRef = React.useRef<any>(null);
-    const [isTutorialMode, setIsTutorialMode] = useState(true); // Default to TRUE for debug
+    const [isTutorialMode, setIsTutorialMode] = useState(false);
     const [tutorialStep, setTutorialStep] = useState(1);
 
     const scrollY = useSharedValue(0);
@@ -660,11 +703,15 @@ export default function NewsFeedScreen() {
                 }
 
                 const hasSeenTutorial = await AsyncStorage.getItem('HAS_SEEN_TUTORIAL_V17');
-                // if (!hasSeenTutorial) {
-                //    setIsTutorialMode(true);
-                // }
-                // FORCE:
-                setIsTutorialMode(true);
+                // 🎓 FORCE TUTORIAL: If ?isTutorial=true is in URL, force show it
+                if (params.isTutorial === 'true' || !hasSeenTutorial) {
+                    setIsTutorialMode(true);
+                }
+
+                const ratedStatus = await AsyncStorage.getItem('HAS_RATED_APP');
+                if (ratedStatus === 'true') {
+                    setHasRated(true);
+                }
             } catch (error) {
                 console.error('Error checking status:', error);
             }
@@ -804,17 +851,17 @@ export default function NewsFeedScreen() {
     const [isCategoriesVisible, setIsCategoriesVisible] = useState(false);
 
     const CATEGORY_TABS = [
-        { id: 'main', title: 'మెయిన్ న్యూస్', bg: require('../assets/images/20-Main News.png'), accent: '#0083B0', titleColor: '#d93025' },
-        { id: 'local', title: 'లోకల్ న్యూస్', bg: require('../assets/images/21-Local News.png'), accent: '#2C3E50', titleColor: '#000' },
-        { id: 'wishes', title: 'విషెస్', bg: require('../assets/images/21-Local News.png'), accent: '#D32F2F', titleColor: '#E91E63' },
-        { id: 'trending', title: 'ట్రెండింగ్ న్యూస్', bg: require('../assets/images/20-Main News.png'), accent: '#FF8F00', titleColor: '#fff' },
-        { id: 'whatsapp', title: 'వాట్సాప్ స్టేటస్', bg: require('../assets/images/25 Telangana News.png'), accent: '#2E7D32', titleColor: '#2E7D32' },
-        { id: 'bhakti', title: 'భక్తి', bg: require('../assets/images/20-Main News.png'), accent: '#FBC02D', titleColor: '#6A1B9A' },
-        { id: 'affairs', title: 'కరెంటు అఫైర్స్', bg: require('../assets/images/26-India News-1.png'), accent: '#1976D2', titleColor: '#1565C0' },
-        { id: 'lifestyle', title: 'లైఫ్          స్టైల్', bg: require('../assets/images/20-Main News.png'), accent: '#C2185B', titleColor: '#C62828' },
-        { id: 'agriculture', title: 'వ్యవసాయం', bg: require('../assets/images/24-Andhrapradesh News.png'), accent: '#388E3C', titleColor: '#fff' },
-        { id: 'cinema', title: 'సినిమా', bg: require('../assets/images/20-Main News.png'), accent: '#0097A7', titleColor: '#FFf' },
-        { id: 'sports', title: 'క్రీడలు', bg: require('../assets/images/26-India News.png'), accent: '#E64A19', titleColor: '#fff' },
+        { id: 'main', title: 'మెయిన్ న్యూస్', bg: require('../assets/images/res_20_main_news.png'), accent: '#0083B0', titleColor: '#d93025' },
+        { id: 'local', title: 'లోకల్ న్యూస్', bg: require('../assets/images/res_21_local_news.png'), accent: '#2C3E50', titleColor: '#000' },
+        { id: 'wishes', title: 'విషెస్', bg: require('../assets/images/res_21_local_news.png'), accent: '#D32F2F', titleColor: '#E91E63' },
+        { id: 'trending', title: 'ట్రెండింగ్ న్యూస్', bg: require('../assets/images/res_20_main_news.png'), accent: '#FF8F00', titleColor: '#fff' },
+        { id: 'whatsapp', title: 'వాట్సాప్ స్టేటస్', bg: require('../assets/images/res_25_telangana_news.png'), accent: '#2E7D32', titleColor: '#2E7D32' },
+        { id: 'bhakti', title: 'భక్తి', bg: require('../assets/images/res_20_main_news.png'), accent: '#FBC02D', titleColor: '#6A1B9A' },
+        { id: 'affairs', title: 'కరెంటు అఫైర్స్', bg: require('../assets/images/res_26_india_news_1.png'), accent: '#1976D2', titleColor: '#1565C0' },
+        { id: 'lifestyle', title: 'లైఫ్          స్టైల్', bg: require('../assets/images/res_20_main_news.png'), accent: '#C2185B', titleColor: '#C62828' },
+        { id: 'agriculture', title: 'వ్యవసాయం', bg: require('../assets/images/res_24_andhrapradesh_news.png'), accent: '#388E3C', titleColor: '#fff' },
+        { id: 'cinema', title: 'సినిమా', bg: require('../assets/images/res_20_main_news.png'), accent: '#0097A7', titleColor: '#FFf' },
+        { id: 'sports', title: 'క్రీడలు', bg: require('../assets/images/res_26_india_news.png'), accent: '#E64A19', titleColor: '#fff' },
     ];
 
     // 📍 LOCATION & CATEGORY LOGIC
@@ -1100,6 +1147,7 @@ export default function NewsFeedScreen() {
         opacity: blinkOpacity.value,
     }));
 
+
     const handleOptionsOpen = () => {
         setReportStep('menu');
         setIsOptionsVisible(true);
@@ -1210,7 +1258,7 @@ export default function NewsFeedScreen() {
         // Show thank you page immediately
         setShowThankYouPage(true);
         setHasRated(true);
-        AsyncStorage.setItem('USER_HAS_RATED', 'true').catch(() => { });
+        AsyncStorage.setItem('HAS_RATED_APP', 'true').catch(() => { });
 
         if (Platform.OS === 'android') {
             ToastAndroid.show('Opening Play Store...', ToastAndroid.SHORT);
@@ -1528,6 +1576,8 @@ export default function NewsFeedScreen() {
                 extraData={showSwipeHint} // ✅ Force re-render when hint toggles
                 keyExtractor={(item) => item.id}
                 pagingEnabled={true} // ✅ Strict One-Card Paging
+                snapToInterval={CARD_HEIGHT}
+                snapToAlignment="start"
                 decelerationRate="fast"
                 showsVerticalScrollIndicator={false}
                 onScroll={onScroll}
@@ -1535,7 +1585,7 @@ export default function NewsFeedScreen() {
                     // if (isTutorialMode) setShowHint(false);
                 }}
                 onScrollEndDrag={(e) => {
-                    const idx = Math.round(e.nativeEvent.contentOffset.y / LAYOUT.windowHeight);
+                    const idx = Math.round(e.nativeEvent.contentOffset.y / CARD_HEIGHT);
                     if (idx !== activeTutIndex) {
                         setActiveTutIndex(idx);
                         if (isTutorialMode && idx <= 2) {
@@ -1553,8 +1603,8 @@ export default function NewsFeedScreen() {
                 initialNumToRender={4}
                 maxToRenderPerBatch={5}
                 getItemLayout={(data, index) => ({
-                    length: LAYOUT.windowHeight,
-                    offset: LAYOUT.windowHeight * index,
+                    length: CARD_HEIGHT,
+                    offset: CARD_HEIGHT * index,
                     index,
                 })}
                 ListEmptyComponent={() => (
@@ -1563,7 +1613,7 @@ export default function NewsFeedScreen() {
                     </View>
                 )}
                 onMomentumScrollEnd={(e) => {
-                    const idx = Math.round(e.nativeEvent.contentOffset.y / LAYOUT.windowHeight);
+                    const idx = Math.round(e.nativeEvent.contentOffset.y / CARD_HEIGHT);
                     if (idx !== activeTutIndex) {
                         setActiveTutIndex(idx);
 
@@ -1585,7 +1635,12 @@ export default function NewsFeedScreen() {
                                 key="end-card"
                                 onBack={() => {
                                     setActiveCategory('trending');
-                                    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+                                    setFilterMode('all');
+                                    setIsTutorialMode(false);
+                                    setIsHUDVisible(true);
+                                    setTimeout(() => {
+                                        flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+                                    }, 100);
                                 }}
                             />
                         );
@@ -1598,7 +1653,7 @@ export default function NewsFeedScreen() {
                                     // Thank You View
                                     <View style={styles.thankYouContainer}>
                                         <Image
-                                            source={require('../assets/images/praying-hands.png')}
+                                            source={require('../assets/images/res_praying_hands.png')}
                                             style={styles.prayingHandsIcon}
                                             contentFit="contain"
                                         />
@@ -1620,7 +1675,7 @@ export default function NewsFeedScreen() {
                                     // Rating View
                                     <View style={styles.ratingContainer}>
                                         <Image
-                                            source={require('../assets/images/8K-Logo 1.png')}
+                                            source={require('../assets/images/res_8k_logo_1.png')}
                                             style={styles.ratingLogo}
                                             contentFit="contain"
                                         />
@@ -1632,23 +1687,9 @@ export default function NewsFeedScreen() {
                                         {/* Primary Rating Action */}
                                         <TouchableOpacity
                                             onPress={handleRateOnPlayStore}
-                                            style={{
-                                                backgroundColor: '#007AFF', // Standard Blue
-                                                paddingVertical: 12,
-                                                paddingHorizontal: 30,
-                                                borderRadius: 25,
-                                                marginBottom: 20,
-                                                width: '80%',
-                                                maxWidth: 300,
-                                                alignItems: 'center',
-                                                shadowColor: '#000',
-                                                shadowOffset: { width: 0, height: 2 },
-                                                shadowOpacity: 0.2,
-                                                shadowRadius: 4,
-                                                elevation: 3,
-                                            }}
+                                            style={styles.rateButton}
                                         >
-                                            <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>Rate on Play Store</Text>
+                                            <Text style={styles.rateButtonText}>Rate on Play Store</Text>
                                         </TouchableOpacity>
 
                                         {/* Not Now / Skip */}
@@ -1656,11 +1697,10 @@ export default function NewsFeedScreen() {
                                             onPress={() => {
                                                 flatListRef.current?.scrollToIndex({ index: index + 1, animated: true });
                                             }}
-                                            style={{ padding: 10 }}
+                                            style={styles.notNowButton}
                                         >
-                                            <Text style={{ color: '#666', fontSize: 16, fontWeight: '500' }}>Not now</Text>
+                                            <Text style={styles.notNowText}>Not now</Text>
                                         </TouchableOpacity>
-
                                     </View>
                                 )}
                             </View>
@@ -1688,6 +1728,7 @@ export default function NewsFeedScreen() {
                             video={item.video}
                             isMuted={isMuted}
                             onToggleMute={toggleMute}
+                            cardHeight={CARD_HEIGHT}
                             onTap={() => {
                                 const nextHUDState = !isHUDVisible;
                                 setIsHUDVisible(nextHUDState);
@@ -2003,7 +2044,7 @@ export default function NewsFeedScreen() {
                                                 {cat.id === 'main' ? (
                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
                                                         <Image
-                                                            source={require('../assets/images/Vector 1.png')}
+                                                            source={require('../assets/images/res_vector_1.png')}
                                                             style={{ width: '100%', height: '100%' }}
                                                             contentFit="cover"
                                                         />
@@ -2011,7 +2052,7 @@ export default function NewsFeedScreen() {
                                                 ) : cat.id === 'local' ? (
                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
                                                         <Image
-                                                            source={require('../assets/images/Vector 2.png')}
+                                                            source={require('../assets/images/res_vector_2.png')}
                                                             style={{ width: '100%', height: '100%' }}
                                                             contentFit="cover"
                                                         />
@@ -2019,7 +2060,7 @@ export default function NewsFeedScreen() {
                                                 ) : cat.id === 'wishes' ? (
                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
                                                         <Image
-                                                            source={require('../assets/images/Vector 3.png')}
+                                                            source={require('../assets/images/res_vector_3.png')}
                                                             style={{ width: '100%', height: '100%' }}
                                                             contentFit="cover"
                                                         />
@@ -2027,7 +2068,7 @@ export default function NewsFeedScreen() {
                                                 ) : cat.id === 'trending' ? (
                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
                                                         <Image
-                                                            source={require('../assets/images/Vector 4.png')}
+                                                            source={require('../assets/images/res_vector_4.png')}
                                                             style={{
                                                                 width: '140%',
                                                                 height: '140%',
@@ -2040,7 +2081,7 @@ export default function NewsFeedScreen() {
                                                 ) : cat.id === 'whatsapp' ? (
                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
                                                         <Image
-                                                            source={require('../assets/images/Vector 5.png')}
+                                                            source={require('../assets/images/res_vector_5.png')}
                                                             style={{ width: '100%', height: '100%' }}
                                                             contentFit="cover"
                                                         />
@@ -2048,7 +2089,7 @@ export default function NewsFeedScreen() {
                                                 ) : cat.id === 'bhakti' ? (
                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
                                                         <Image
-                                                            source={require('../assets/images/Vector 6.png')}
+                                                            source={require('../assets/images/res_vector_6.png')}
                                                             style={{ width: '100%', height: '100%' }}
                                                             contentFit="cover"
                                                         />
@@ -2056,7 +2097,7 @@ export default function NewsFeedScreen() {
                                                 ) : cat.id === 'affairs' ? (
                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
                                                         <Image
-                                                            source={require('../assets/images/Vector 7.png')}
+                                                            source={require('../assets/images/res_vector_7.png')}
                                                             style={{ width: '100%', height: '100%' }}
                                                             contentFit="cover"
                                                         />
@@ -2064,7 +2105,7 @@ export default function NewsFeedScreen() {
                                                 ) : cat.id === 'lifestyle' ? (
                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
                                                         <Image
-                                                            source={require('../assets/images/Vector 8.png')}
+                                                            source={require('../assets/images/res_vector_8.png')}
                                                             style={{
                                                                 width: '100%',
                                                                 height: '110%',
@@ -2076,7 +2117,7 @@ export default function NewsFeedScreen() {
                                                 ) : cat.id === 'agriculture' ? (
                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
                                                         <Image
-                                                            source={require('../assets/images/Vector 9.png')}
+                                                            source={require('../assets/images/res_vector_9.png')}
                                                             style={{
                                                                 width: '100%',
                                                                 height: '110%',
@@ -2088,7 +2129,7 @@ export default function NewsFeedScreen() {
                                                 ) : cat.id === 'cinema' ? (
                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
                                                         <Image
-                                                            source={require('../assets/images/Vector 10.png')}
+                                                            source={require('../assets/images/res_vector_10.png')}
                                                             style={{
                                                                 width: '100%',
                                                                 height: '110%',
@@ -2100,7 +2141,7 @@ export default function NewsFeedScreen() {
                                                 ) : cat.id === 'sports' ? (
                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
                                                         <Image
-                                                            source={require('../assets/images/Vector 11.png')}
+                                                            source={require('../assets/images/res_vector_11.png')}
                                                             style={{
                                                                 width: '100%',
                                                                 height: '110%',
@@ -2136,7 +2177,7 @@ export default function NewsFeedScreen() {
                                                 }}>
                                                     {(cat.id === 'whatsapp') && (
                                                         <Image
-                                                            source={require('../assets/images/Rectangle.png')}
+                                                            source={require('../assets/images/res_rectangle.png')}
                                                             style={{ width: 80, height: 80, marginLeft: -10 }}
                                                             contentFit="contain"
                                                         />
@@ -2184,7 +2225,7 @@ export default function NewsFeedScreen() {
                                                     )}
                                                     {cat.id === 'main' && (
                                                         <Image
-                                                            source={require('../assets/images/Rectangle.png')}
+                                                            source={require('../assets/images/res_rectangle.png')}
                                                             style={{ width: 70, height: 70, marginRight: -5 }}
                                                             contentFit="contain"
                                                         />
@@ -2209,7 +2250,7 @@ export default function NewsFeedScreen() {
                                     <Text style={styles.locHeaderLeftText}>Change location</Text>
                                     <View style={styles.locHeaderCenter}>
                                         <Image
-                                            source={require('../assets/images/8K-Logo 1.png')}
+                                            source={require('../assets/images/res_8k_logo_1.png')}
                                             style={styles.locHeaderLogo}
                                             contentFit="contain"
                                         />
@@ -2927,7 +2968,7 @@ export default function NewsFeedScreen() {
                             <Ionicons name="settings-outline" size={24} color="#666" />
                         </TouchableOpacity>
                         <Image
-                            source={require('../assets/images/Screenshot 2026-01-06 170338.png')}
+                            source={require('../assets/images/res_screenshot_2026_01_06_170338.png')}
                             style={styles.menuLogo}
                             contentFit="contain"
                         />
@@ -2958,7 +2999,7 @@ export default function NewsFeedScreen() {
                         {/* 3. States Grid (Row 1) */}
                         <View style={styles.gridRow}>
                             <TouchableOpacity style={styles.gridItemState} onPress={() => { setActiveCategory('andhra'); toggleMenu(); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}>
-                                <Image source={require('../assets/images/ap_map_outline.png')} style={styles.stateMapIcon} contentFit="contain" />
+                                <Image source={require('../assets/images/res_ap_map_outline.png')} style={styles.stateMapIcon} contentFit="contain" />
                                 <View style={{ flex: 1 }}>
                                     <Text style={styles.stateTitle}>ఆంధ్రప్రదేశ్</Text>
                                     <Text style={styles.stateSubText}>Only Andhra Pradesh News</Text>
@@ -2966,7 +3007,7 @@ export default function NewsFeedScreen() {
                             </TouchableOpacity>
                             <View style={{ width: 10 }} />
                             <TouchableOpacity style={styles.gridItemState} onPress={() => { setActiveCategory('telangana'); toggleMenu(); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}>
-                                <Image source={require('../assets/images/telangana_map_outline.png')} style={styles.stateMapIcon} contentFit="contain" />
+                                <Image source={require('../assets/images/res_telangana_map_outline.png')} style={styles.stateMapIcon} contentFit="contain" />
                                 <View style={{ flex: 1 }}>
                                     <Text style={styles.stateTitle}>తెలంగాణ</Text>
                                     <Text style={styles.stateSubText}>Only Telangana News</Text>
@@ -3086,7 +3127,7 @@ export default function NewsFeedScreen() {
                                 <Text style={styles.locHeaderLeftText}>Change location</Text>
                                 <View style={styles.locHeaderCenter}>
                                     <Image
-                                        source={require('../assets/images/8K-Logo 1.png')}
+                                        source={require('../assets/images/res_8k_logo_1.png')}
                                         style={styles.locHeaderLogo}
                                         contentFit="contain"
                                     />
@@ -5200,42 +5241,50 @@ const styles = StyleSheet.create({
         paddingHorizontal: 30,
     },
     ratingLogo: {
-        width: 100,
-        height: 100,
-        marginBottom: 30,
+        width: 140,
+        height: 140,
+        marginBottom: 50,
     },
     ratingQuestion: {
-        fontSize: 22,
+        fontSize: 28,
         fontWeight: 'bold',
         color: '#000',
         marginBottom: 15,
         textAlign: 'center',
+        paddingHorizontal: 20,
     },
     ratingDescription: {
-        fontSize: 15,
-        color: '#555',
-        textAlign: 'center',
-        marginBottom: 40,
-        lineHeight: 24,
-    },
-    starsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 15,
-        marginBottom: 50,
-    },
-    starButton: {
-        padding: 5,
-    },
-    skipContainer: {
-        position: 'absolute',
-        bottom: 60,
-        alignItems: 'center',
-    },
-    skipText: {
         fontSize: 16,
-        color: '#000',
-        marginTop: 8,
+        color: '#666',
+        textAlign: 'center',
+        marginBottom: 60,
+        lineHeight: 24,
+        paddingHorizontal: 15,
+    },
+    rateButton: {
+        backgroundColor: '#007AFF',
+        width: '85%',
+        paddingVertical: 18,
+        borderRadius: 35,
+        alignItems: 'center',
+        marginBottom: 35,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 5,
+    },
+    rateButtonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    notNowButton: {
+        padding: 15,
+    },
+    notNowText: {
+        color: '#999',
+        fontSize: 16,
         fontWeight: '500',
     },
     // 🙏 THANK YOU PAGE STYLES

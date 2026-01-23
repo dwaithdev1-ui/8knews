@@ -5,14 +5,45 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const connectDB = require('./config/db.js');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
+
+// Multer Setup
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const dir = 'uploads';
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+        cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage });
 
 let db;
+
+// Middleware for JWT verification
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) return res.status(401).json({ error: "Access denied. Token missing." });
+
+    jwt.verify(token, process.env.JWT_SECRET || 'secret8knews', (err, user) => {
+        if (err) return res.status(403).json({ error: "Invalid token" });
+        req.user = user;
+        next();
+    });
+};
 
 const toId = (id) => new ObjectId(id);
 
@@ -92,6 +123,77 @@ app.get('/api/news', async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: "Failed to fetch news" });
     }
+});
+
+app.post('/api/news', authenticateToken, upload.single('image'), async (req, res) => {
+    try {
+        const { title, description, category_id, location_id, is_full_card, is_video, language } = req.body;
+        const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+        const creatorEmail = req.user.email;
+
+        // Basic validation
+        if (!title || !category_id) return res.status(400).json({ error: "Title and Category are required" });
+
+        const newItem = {
+            title,
+            description,
+            category_id: new ObjectId(category_id),
+            location_id: location_id ? new ObjectId(location_id) : null,
+            image: imageUrl,
+            is_full_card: is_full_card === 'true',
+            is_video: is_video === 'true',
+            language: language || 'te',
+            status: 'draft', // Default status
+            created_by: creatorEmail,
+            created_at: new Date(),
+            updated_at: new Date(),
+            history: [{ status: 'draft', date: new Date(), updated_by: creatorEmail, remarks: 'Initial creation' }]
+        };
+
+        const result = await db.collection("news").insertOne(newItem);
+        const newsId = result.insertedId;
+
+        // Automatically create news_media entry if image exists for mobile app compatibility
+        if (imageUrl) {
+            await db.collection("news_media").insertOne({
+                news_id: newsId,
+                type: is_video === 'true' ? 'video' : 'image',
+                url: `http://localhost:3000${imageUrl}`,
+                is_primary: true,
+                created_at: new Date()
+            });
+        }
+
+        res.json({ success: true, id: newsId });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.patch('/api/news/:id/status', async (req, res) => {
+    const { status, remarks } = req.body;
+    try {
+        await db.collection("news").updateOne(
+            { _id: new ObjectId(req.params.id) },
+            {
+                $set: { status, updated_at: new Date() },
+                $push: { history: { status, date: new Date(), updated_by: 'admin', remarks } }
+            }
+        );
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/categories', async (req, res) => {
+    try {
+        const categories = await db.collection("categories").find({}).toArray();
+        res.json(categories);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/locations', async (req, res) => {
+    try {
+        const locations = await db.collection("locations").find({}).toArray();
+        res.json(locations);
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // --- INTERACTIONS ---
@@ -274,12 +376,12 @@ app.post('/api/admin/login', async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: admin._id, email: admin.email, role: 'admin' },
+            { id: admin._id, email: admin.email, role: admin.role || 'admin' },
             process.env.JWT_SECRET || 'secret8knews',
             { expiresIn: '1d' }
         );
 
-        res.json({ success: true, token, admin: { email: admin.email } });
+        res.json({ success: true, token, role: admin.role || 'admin', admin: { email: admin.email, role: admin.role || 'admin' } });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 

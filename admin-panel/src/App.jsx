@@ -16,6 +16,41 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
+
+                {/* Role-Based Routes */}
+                <Route
+                    path="/inputter"
+                    element={
+                        <ProtectedRoute allowedRoles={['content_inputter', 'admin']}>
+                            <Dashboard />{/* Replace with specific component if exists */}
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/editor"
+                    element={
+                        <ProtectedRoute allowedRoles={['sub_editor', 'senior_editor', 'admin']}>
+                            <Dashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/legal"
+                    element={
+                        <ProtectedRoute allowedRoles={['legal', 'admin']}>
+                            <Dashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/publisher"
+                    element={
+                        <ProtectedRoute allowedRoles={['publisher', 'admin']}>
+                            <Dashboard />
+                        </ProtectedRoute>
+                    }
+                />
+
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
             </Routes>
         </Router>

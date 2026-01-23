@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dimensions, SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import { Dimensions, StatusBar, StyleSheet, View } from 'react-native';
 import Animated, {
     useAnimatedScrollHandler,
     useSharedValue,
@@ -60,7 +60,7 @@ export default function NewsFeedScreen() {
     });
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <StatusBar barStyle="dark-content" backgroundColor="white" />
 
             <Animated.FlatList
@@ -77,15 +77,17 @@ export default function NewsFeedScreen() {
                 scrollEventThrottle={8}
                 renderItem={({ item, index }) => (
                     <NewsCard
+                        id={item.id}
                         image={item.image}
                         title={item.title}
                         description={item.description}
                         index={index}
                         scrollY={scrollY}
+                        totalItems={newsData.length}
                     />
                 )}
             />
-        </SafeAreaView>
+        </View>
     );
 }
 

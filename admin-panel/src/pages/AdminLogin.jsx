@@ -28,6 +28,8 @@ const AdminLogin = () => {
 
             if (response.data.success) {
                 localStorage.setItem('adminToken', response.data.token);
+                localStorage.setItem('adminRole', response.data.role); // Store Role
+                localStorage.setItem('adminEmail', response.data.admin.email);
                 navigate('/dashboard');
             }
         } catch (err) {

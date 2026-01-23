@@ -1,0 +1,766 @@
+﻿diff --git a/app/newsfeed.tsx b/app/newsfeed.tsx
+index 01cdc15..e50f00f 100644
+--- a/app/newsfeed.tsx
++++ b/app/newsfeed.tsx
+@@ -54,7 +54,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'national-1',
+         title: 'α░¬α▒ìα░░α░ºα░╛α░¿α░┐ α░«α▒ïα░ªα▒Ç - α░£α░░α▒ìα░«α░¿α▒ì α░¢α░╛α░¿α▒ìα░╕α░▓α░░α▒ì α░¡α▒çα░ƒα▒Ç',
+         description: 'α░£α░░α▒ìα░«α░¿α▒ì α░¢α░╛α░¿α▒ìα░╕α░▓α░░α▒ì α░½α▒ìα░░α▒åα░íα░░α░┐α░òα▒ì α░«α▒åα░░α▒ìα░£α▒ìΓÇîα░ñα▒ï α░¬α▒ìα░░α░ºα░╛α░¿α░┐ α░«α▒ïα░ªα▒Ç α░╕α░«α░╛α░╡α▒çα░╢α░é. α░çα░░α▒ü α░ªα▒çα░╢α░╛α░▓ α░«α░ºα▒ìα░» α░╡α▒ìα░»α▒éα░╣α░╛α░ñα▒ìα░«α░ò α░¡α░╛α░ùα░╕α▒ìα░╡α░╛α░«α▒ìα░»α░é, α░╡α░╛α░úα░┐α░£α▒ìα░»α░é α░«α░░α░┐α░»α▒ü α░ƒα▒åα░òα▒ìα░¿α░╛α░▓α░£α▒Ç α░░α░éα░ùα░╛α░▓α░▓α▒ï α░╕α░╣α░òα░╛α░░α░éα░¬α▒ê α░òα▒Çα░▓α░ò α░Üα░░α▒ìα░Üα░▓α▒ü.',
+-        image: require('../assets/images/Rectangle 5 (6).png'),
++        image: require('../assets/images/res_rectangle_5_6.png'),
+         tags: ['national', 'trending']
+     },
+     // // ≡ƒô╕ PHOTOS (Top HUD)
+@@ -62,7 +62,7 @@ const DEFAULT_NEWS_DATA = [
+     //     id: 'photo-hud-item-1',
+     //     title: 'Ethereal Beauty',
+     //     description: 'Experience the visual splendor.',
+-    //     image: require('../assets/images/71npLSn8+SL._AC_UF894,1000_QL80_.jpg'),
++    //     image: require('../assets/images/res_71nplsn8_sl_ac_uf894_1000_ql80.jpg'),
+     //     tags: ['photos', 'trending'],
+     //     isFullCard: true
+     // },
+@@ -71,28 +71,28 @@ const DEFAULT_NEWS_DATA = [
+         id: 'main-1',
+         title: 'α░╕α░éα░òα▒ìα░░α░╛α░éα░ñα░┐ α░╕α░éα░¼α░░α░╛α░▓α▒ü: α░ñα▒åα░▓α▒üα░ùα▒ü α░▓α▒ïα░ùα░┐α░│α▒ìα░│α░▓α▒ï α░¬α░éα░íα▒üα░ù α░╢α▒ïα░¡',
+         description: 'α░¡α▒ïα░ùα░┐ α░«α░éα░ƒα░▓α▒ü, α░░α░éα░ùα░╡α░▓α▒ìα░▓α▒üα░▓α▒ü, α░ùα░╛α░▓α░┐α░¬α░ƒα░╛α░▓α░ñα▒ï α░ñα▒åα░▓α▒üα░ùα▒ü α░░α░╛α░╖α▒ìα░ƒα▒ìα░░α░╛α░▓α▒ìα░▓α▒ï α░╕α░éα░òα▒ìα░░α░╛α░éα░ñα░┐ α░╡α▒çα░íα▒üα░òα░▓α▒ü α░ÿα░¿α░éα░ùα░╛ α░£α░░α▒üα░ùα▒üα░ñα▒üα░¿α▒ìα░¿α░╛α░»α░┐. α░çα░éα░ƒα░┐ α░«α▒üα░éα░ªα▒ü α░«α▒üα░ùα▒ìα░ùα▒üα░▓α▒ü, α░ùα▒èα░¼α▒ìα░¼α▒åα░«α▒ìα░«α░▓α▒ü, α░╣α░░α░┐α░ªα░╛α░╕α▒üα░▓ α░òα▒Çα░░α▒ìα░ñα░¿α░▓α▒ü, α░¼α░╕α░╡α░¿α▒ìα░¿α░▓ α░ªα▒Çα░╡α▒åα░¿α░▓α░ñα▒ï α░¬α░▓α▒ìα░▓α▒åα░▓α▒ü α░òα░│α░òα░│α░▓α░╛α░íα▒üα░ñα▒üα░¿α▒ìα░¿α░╛α░»α░┐. α░¬α░┐α░éα░íα░┐α░╡α░éα░ƒα░▓ α░ÿα▒üα░«α░ÿα▒üα░«α░▓α▒ü, α░òα▒üα░ƒα▒üα░éα░¼ α░╕α░¡α▒ìα░»α▒üα░▓ α░òα░▓α░»α░┐α░òα░▓α░ñα▒ï α░åα░¿α░éα░ªα░é α░╡α▒åα░▓α▒ìα░▓α░┐α░╡α░┐α░░α▒üα░╕α▒ìα░ñα▒ïα░éα░ªα░┐. α░ê α░¬α░éα░íα▒üα░ù α░¬α▒ìα░░α░ñα░┐α░éα░ƒα░╛ α░╕α░┐α░░α▒üα░▓α▒ü α░òα▒üα░░α░┐α░¬α░┐α░éα░Üα░╛α░▓α░¿α░┐ α░òα▒ïα░░α▒üα░òα▒üα░éα░ªα░╛α░é.',
+-        image: require('../assets/images/253566-sankrantiii.webp'),
++        image: require('../assets/images/res_253566_sankrantiii.webp'),
+         tags: ['main', 'trending']
+     },
+     {
+         id: 'main-2',
+         title: 'α░£α▒Çα░Äα░╕α▒ìΓÇîα░Äα░▓α▒ìΓÇîα░╡α▒Ç-α░Äα░½α▒ì15: α░¿α░╛α░╡α░┐α░ùα▒çα░╖α░¿α▒ì α░ëα░¬α░ùα▒ìα░░α░╣ α░¬α▒ìα░░α░»α▒ïα░ùα░é',
+         description: 'α░╢α▒ìα░░α▒Çα░╣α░░α░┐α░òα▒ïα░ƒ α░¿α▒üα░éα░íα░┐ α░£α░¿α░╡α░░α░┐ 29α░¿ α░╕α░╛α░»α░éα░ñα▒ìα░░α░é 6:23 α░ùα░éα░ƒα░▓α░òα▒ü α░Äα░¿α▒ìΓÇîα░╡α▒Çα░Äα░╕α▒ì-02 α░ëα░¬α░ùα▒ìα░░α░╣α░╛α░¿α▒ìα░¿α░┐ α░«α▒ïα░╕α▒üα░òα▒åα░│α▒ìα░▓α▒ç α░£α▒Çα░Äα░╕α▒ìΓÇîα░Äα░▓α▒ìΓÇîα░╡α▒Ç-α░Äα░½α▒ì15 α░░α░╛α░òα▒åα░ƒα▒ì α░¬α▒ìα░░α░»α▒ïα░ùα░é α░£α░░α░ùα░¿α▒üα░éα░ªα░┐. α░çα░ªα░┐ α░¡α░╛α░░α░ñ α░¿α░╛α░╡α░┐α░ùα▒çα░╖α░¿α▒ì α░╡α▒ìα░»α░╡α░╕α▒ìα░Ñα░▓α▒ï α░òα▒Çα░▓α░òα░é.',
+-        image: require('../assets/images/high.png'),
++        image: require('../assets/images/res_high.png'),
+         tags: ['main', 'trending']
+     },
+     {
+         id: 'main-3',
+         title: 'α░£α░╛α░ñα▒Çα░» α░»α▒üα░╡α░£α░¿ α░ªα░┐α░¿α▒ïα░ñα▒ìα░╕α░╡α░é: α░╕α▒ìα░╡α░╛α░«α░┐ α░╡α░┐α░╡α▒çα░òα░╛α░¿α░éα░ª α░╕α▒ìα░½α▒éα░░α▒ìα░ñα░┐',
+         description: 'α░╕α▒ìα░╡α░╛α░«α░┐ α░╡α░┐α░╡α▒çα░òα░╛α░¿α░éα░ª α░£α░»α░éα░ñα░┐ α░╕α░éα░ªα░░α▒ìα░¡α░éα░ùα░╛ α░ªα▒çα░╢α░╡α▒ìα░»α░╛α░¬α▒ìα░ñα░éα░ùα░╛ α░£α░╛α░ñα▒Çα░» α░»α▒üα░╡α░£α░¿ α░ªα░┐α░¿α▒ïα░ñα▒ìα░╕α░╡ α░╡α▒çα░íα▒üα░òα░▓α▒ü. α░»α▒üα░╡α░ñ α░ªα▒çα░╢α░╛α░¡α░┐α░╡α▒âα░ªα▒ìα░ºα░┐α░▓α▒ï α░òα▒Çα░▓α░ò α░¬α░╛α░ñα▒ìα░░ α░¬α▒ïα░╖α░┐α░éα░Üα░╛α░▓α░¿α░┐, α░åα░»α░¿ α░åα░╢α░»α░╛α░▓α░¿α▒ü α░╕α▒ìα░½α▒éα░░α▒ìα░ñα░┐α░ùα░╛ α░ñα▒Çα░╕α▒üα░òα▒ïα░╡α░╛α░▓α░¿α░┐ α░¬α▒ìα░░α░«α▒üα░ûα▒üα░▓ α░¬α░┐α░▓α▒üα░¬α▒ü. α░¬α░╛α░áα░╢α░╛α░▓α░▓α▒ü, α░òα░│α░╛α░╢α░╛α░▓α░▓α▒ìα░▓α▒ï α░¬α▒ìα░░α░ñα▒ìα░»α▒çα░ò α░òα░╛α░░α▒ìα░»α░òα▒ìα░░α░«α░╛α░▓α▒ü.',
+-        image: require('../assets/images/National-Youth-Day-Vivekananda.jpg'),
++        image: require('../assets/images/res_national_youth_day_vivekananda.jpg'),
+         tags: ['main', 'trending']
+     },
+     {
+         id: 'main-4',
+         title: 'α░£α░╛α░ñα▒Çα░» α░╣α▒êα░╡α▒ç α░¬α▒ìα░░α░╛α░£α▒åα░òα▒ìα░ƒα▒üα░▓ α░¬α▒ìα░░α░╛α░░α░éα░¡α░é',
+         description: 'α░ªα▒çα░╢α░╡α▒ìα░»α░╛α░¬α▒ìα░ñα░éα░ùα░╛ α░░α░╡α░╛α░úα░╛ α░╕α▒îα░òα░░α▒ìα░»α░╛α░▓α░¿α▒ü α░«α▒åα░░α▒üα░ùα▒üα░¬α░░α░Üα░íα░╛α░¿α░┐α░òα░┐ α░╡α▒çα░▓ α░òα▒ïα░ƒα▒ìα░▓ α░░α▒éα░¬α░╛α░»α░▓α░ñα▒ï α░¿α▒éα░ñα░¿ α░░α░╣α░ªα░╛α░░α▒üα░▓ α░¿α░┐α░░α▒ìα░«α░╛α░úα░é.',
+-        image: require('../assets/images/Rectangle 5 (1).png'),
++        image: require('../assets/images/res_rectangle_5_1.png'),
+         tags: ['main']
+     },
+ 
+@@ -101,14 +101,14 @@ const DEFAULT_NEWS_DATA = [
+         id: 'cine-pawan',
+         title: 'α░ñα▒Çα░╡α▒ìα░░ α░£α▒ìα░╡α░░α░éα░ñα▒ï α░¼α░╛α░ºα░¬α░íα▒üα░ñα▒üα░¿α▒ìα░¿ α░¬α░╡α░¿α▒ì α░òα░│α▒ìα░»α░╛α░úα▒ì α░¿α▒ü α░¬α░░α░╛α░«α░░α▒ìα░╢α░┐α░éα░Üα░┐α░¿ α░Üα░éα░ªα▒ìα░░α░¼α░╛α░¼α▒ü... α░¬α░╡α░¿α▒ì α░åα░░α▒ïα░ùα▒ìα░»α░éα░¬α▒ê',
+         description: 'α░åα░éα░ºα▒ìα░░α░¬α▒ìα░░α░ªα▒çα░╢α▒ì α░ëα░¬ α░«α▒üα░ûα▒ìα░»α░«α░éα░ñα▒ìα░░α░┐ α░¬α░╡α░¿α▒ì α░òα░│α▒ìα░»α░╛α░úα▒ì α░¿α▒ü α░«α▒üα░ûα▒ìα░»α░«α░éα░ñα▒ìα░░α░┐ α░Üα░éα░ªα▒ìα░░α░¼α░╛α░¼α▒ü α░¿α░╛α░»α▒üα░íα▒ü α░¬α░░α░╛α░«α░░α▒ìα░╢α░┐α░éα░Üα░╛α░░α▒ü. α░ùα░ñ α░òα▒èα░ªα▒ìα░ªα░┐ α░░α▒ïα░£α▒üα░▓α▒üα░ùα░╛ α░╡α▒êα░░α░▓α▒ì α░½α▒Çα░╡α░░α▒ì α░ñα▒ï α░¼α░╛α░ºα░¬α░íα▒üα░ñα▒üα░¿α▒ìα░¿ α░¬α░╡α░¿α▒ì α░åα░░α▒ïα░ùα▒ìα░»α░é α░òα▒üα░ªα▒üα░ƒα░¬α░íα▒üα░ñα▒ïα░éα░ªα░┐.',
+-        image: require('../assets/images/Rectangle 5 (1).png'),
++        image: require('../assets/images/res_rectangle_5_1.png'),
+         tags: ['cinema', 'trending', 'politics']
+     },
+     {
+         id: 'cine-1',
+         title: 'α░ªα░┐ α░░α░╛α░£α░╛ α░╕α░╛α░¼α▒ì',
+         description: '',
+-        image: require('../assets/images/The-Raja-Saab---27x40.jpg'),
++        image: require('../assets/images/res_the_raja_saab_27x40.jpg'),
+         tags: ['cinema', 'trending'],
+         isFullCard: true
+     },
+@@ -116,7 +116,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'cine-2',
+         title: 'α░ƒα░╛α░▓α▒Çα░╡α▒üα░íα▒ì α░àα░¬α▒ìΓÇîα░òα░«α░┐α░éα░ùα▒ì α░¼α░┐α░ùα▒ì α░¼α░íα▒ìα░£α▒åα░ƒα▒ì α░╕α░┐α░¿α░┐α░«α░╛α░▓α▒ü',
+         description: 'α░ñα▒ìα░╡α░░α░▓α▒ï α░╡α░┐α░íα▒üα░ªα░▓ α░òα░╛α░¼α▒ïα░ñα▒üα░¿α▒ìα░¿ α░ƒα░╛α░¬α▒ì α░╣α▒Çα░░α▒ïα░▓ α░Üα░┐α░ñα▒ìα░░α░╛α░▓ α░ƒα▒Çα░£α░░α▒ìα░╕α▒ì α░«α░░α░┐α░»α▒ü α░ƒα▒ìα░░α▒êα░▓α░░α▒ìα░╕α▒ì α░╕α▒ïα░╖α░▓α▒ì α░«α▒Çα░íα░┐α░»α░╛α░▓α▒ï α░╡α▒êα░░α░▓α▒ì α░àα░╡α▒üα░ñα▒üα░¿α▒ìα░¿α░╛α░»α░┐.',
+-        image: require('../assets/images/Tollywood-Happy-New-Year-2026-HD-Posters-1.webp'),
++        image: require('../assets/images/res_tollywood_happy_new_year_2026_hd_posters_1.webp'),
+         tags: ['cinema', 'trending'],
+         isFullCard: true
+     },
+@@ -124,7 +124,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'cine-3',
+         title: 'α░ùα▒ìα░▓α▒ïα░¼α░▓α▒ì α░╕α░┐α░¿α░┐α░«α░╛ α░╡α▒çα░ªα░┐α░òα░¬α▒ê α░ƒα░╛α░▓α▒Çα░╡α▒üα░íα▒ì α░╕α░ñα▒ìα░ñα░╛',
+         description: 'α░«α░¿ α░ñα▒åα░▓α▒üα░ùα▒ü α░╕α░┐α░¿α░┐α░«α░╛α░▓α▒ü α░àα░éα░ñα░░α▒ìα░£α░╛α░ñα▒Çα░» α░╡α▒çα░ªα░┐α░òα░▓α░¬α▒ê α░àα░╡α░╛α░░α▒ìα░íα▒üα░▓α▒ü α░ùα▒åα░▓α▒üα░Üα▒üα░òα▒üα░éα░ƒα▒é α░ñα▒åα░▓α▒üα░ùα▒ü α░£α▒åα░éα░íα░╛α░¿α▒ü α░Äα░ùα░░α▒çα░╕α▒ìα░ñα▒üα░¿α▒ìα░¿α░╛α░»α░┐.',
+-        image: require('../assets/images/vertical_59065698-c226-41df-b879-f54fb04bdb48.jpg'),
++        image: require('../assets/images/res_vertical_59065698_c226_41df_b879_f54fb04bdb48.jpg'),
+         tags: ['cinema'],
+         isFullCard: true
+     },
+@@ -134,7 +134,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'bhakti-1',
+         title: 'α░åα░ºα▒ìα░»α░╛α░ñα▒ìα░«α░┐α░ò α░╢α░╛α░éα░ñα░┐: α░ºα▒ìα░»α░╛α░¿α░é α░¬α▒ìα░░α░╛α░«α▒üα░ûα▒ìα░»α░ñ',
+         description: 'α░ºα▒ìα░»α░╛α░¿α░é α░Üα▒çα░»α░íα░é α░╡α░▓α▒ìα░▓ α░«α░¿α░╕α▒ìα░╕α▒ü α░¬α▒ìα░░α░╢α░╛α░éα░ñα░éα░ùα░╛ α░ëα░éα░íα░ƒα░«α▒ç α░òα░╛α░òα▒üα░éα░íα░╛ α░åα░░α▒ïα░ùα▒ìα░»α░é α░òα▒éα░íα░╛ α░«α▒åα░░α▒üα░ùα▒üα░¬α░íα▒üα░ñα▒üα░éα░ªα░┐.',
+-        image: require('../assets/images/lordshive.png'),
++        image: require('../assets/images/res_lordshive.png'),
+         tags: ['bhakti', 'trending'],
+         isFullCard: true
+     },
+@@ -142,7 +142,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'bhakti-2',
+         title: 'α░¬α▒ìα░░α░╕α░┐α░ªα▒ìα░º α░¬α▒üα░úα▒ìα░»α░òα▒ìα░╖α▒çα░ñα▒ìα░░α░╛α░▓ α░ªα░░α▒ìα░╢α░¿α░é - α░»α░╛α░ñα▒ìα░░α░╛ α░╡α░┐α░╢α▒çα░╖α░╛α░▓α▒ü',
+         description: 'α░ê α░¬α░éα░íα▒üα░ù α░╕α▒Çα░£α░¿α▒ì α░▓α▒ï α░ñα░¬α▒ìα░¬α░ò α░╕α░éα░ªα░░α▒ìα░╢α░┐α░éα░Üα░╛α░▓α▒ìα░╕α░┐α░¿ α░«α▒üα░ûα▒ìα░»α░«α▒êα░¿ α░ªα░░α▒ìα░╢α░¿α▒Çα░» α░òα▒ìα░╖α▒çα░ñα▒ìα░░α░╛α░▓ α░£α░╛α░¼α░┐α░ñα░╛ α░«α▒Ç α░òα▒ïα░╕α░é.',
+-        image: require('../assets/images/bhakthi.jpg'),
++        image: require('../assets/images/res_bhakthi.jpg'),
+         tags: ['bhakti'],
+         isFullCard: true
+     },
+@@ -150,7 +150,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'bhakti-3',
+         title: 'α░«α░╣α░╛ α░╢α░┐α░╡α░░α░╛α░ñα▒ìα░░α░┐ α░╡α▒çα░íα▒üα░òα░▓ α░òα▒ïα░╕α░é α░╕α░┐α░ªα▒ìα░ºα░«α░╡α▒üα░ñα▒üα░¿α▒ìα░¿ α░åα░▓α░»α░╛α░▓α▒ü',
+         description: 'α░╢α▒êα░╡ α░òα▒ìα░╖α▒çα░ñα▒ìα░░α░╛α░▓α░▓α▒ï α░«α░╣α░╛ α░╢α░┐α░╡α░░α░╛α░ñα▒ìα░░α░┐ α░╕α░éα░ªα░░α▒ìα░¡α░éα░ùα░╛ α░╡α░┐α░ªα▒ìα░»α▒üα░ñα▒ì α░ªα▒Çα░¬α░╛α░▓α░ñα▒ï α░àα░▓α░éα░òα░░α░ú α░«α░░α░┐α░»α▒ü α░¬α▒ìα░░α░ñα▒ìα░»α▒çα░ò α░¬α▒éα░£α░▓α▒ü.',
+-        image: require('../assets/images/bhogi-festival-images-education.png'),
++        image: require('../assets/images/res_bhogi_festival_images_education.png'),
+         tags: ['bhakti', 'trending'],
+         isFullCard: true
+     },
+@@ -160,7 +160,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'agri-1',
+         title: 'α░╡α▒ìα░»α░╡α░╕α░╛α░»α░éα░▓α▒ï α░íα▒ìα░░α▒ïα░¿α▒ì α░ƒα▒åα░òα▒ìα░¿α░╛α░▓α░£α▒Ç α░╡α░┐α░¿α░┐α░»α▒ïα░ùα░é',
+         description: 'α░░α▒êα░ñα▒üα░▓α░òα▒ü α░╕α░╛α░ùα▒üα░▓α▒ï α░╕α░╣α░╛α░»α░é α░Üα▒çα░»α░íα░╛α░¿α░┐α░òα░┐ α░¬α▒ìα░░α░¡α▒üα░ñα▒ìα░╡α░é α░¬α▒ìα░░α░╡α▒çα░╢α░¬α▒åα░ƒα▒ìα░ƒα░┐α░¿ α░«α░▓α▒ìα░ƒα▒Ç-α░¬α░░α▒ìα░¬α░╕α▒ì α░íα▒ìα░░α▒ïα░¿α▒ìα░╕α▒ì α░«α░éα░Üα░┐ α░½α░▓α░┐α░ñα░╛α░▓α░¿α▒ü α░çα░╕α▒ìα░ñα▒üα░¿α▒ìα░¿α░╛α░»α░┐.',
+-        image: require('../assets/images/pad_screenshot_P4V5D7Z8J6.webp'),
++        image: require('../assets/images/res_pad_screenshot_p4v5d7z8j6.webp'),
+         tags: ['agriculture', 'trending'],
+         isFullCard: true
+     },
+@@ -168,7 +168,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'agri-2',
+         title: 'α░╕α▒çα░éα░ªα▒ìα░░α▒Çα░» α░╕α░╛α░ùα▒üα░ñα▒ï α░àα░ºα░┐α░ò α░▓α░╛α░¡α░╛α░▓α▒ü: α░░α▒êα░ñα▒üα░▓ α░àα░¿α▒üα░¡α░╡α░é',
+         description: 'α░òα▒åα░«α░┐α░òα░▓α▒ìα░╕α▒ì α░╡α░╛α░íα░òα▒üα░éα░íα░╛ α░╕α░╣α░£ α░╕α░┐α░ªα▒ìα░ºα░éα░ùα░╛ α░¬α░éα░íα░┐α░éα░Üα░┐α░¿ α░¬α░éα░ƒα░▓α░òα▒ü α░«α░╛α░░α▒ìα░òα▒åα░ƒα▒ìα░▓α▒ï α░«α░éα░Üα░┐ α░ùα░┐α░░α░╛α░òα▒Ç α░Åα░░α▒ìα░¬α░íα░┐α░éα░ªα░┐.',
+-        image: require('../assets/images/premium_photo-1682092016074-b136e1acb26e.jpg'),
++        image: require('../assets/images/res_premium_photo_1682092016074_b136e1acb26e.jpg'),
+         tags: ['agriculture', 'trending'],
+         isFullCard: true
+     },
+@@ -176,7 +176,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'agri-3',
+         title: 'α░ùα▒üα░éα░ƒα▒éα░░α▒ü α░«α░┐α░░α▒ìα░Üα░┐ α░»α░╛α░░α▒ìα░íα▒ìΓÇîα░▓α▒ï α░░α░┐α░òα░╛α░░α▒ìα░íα▒ì α░▓α░╛α░╡α░╛α░ªα▒çα░╡α▒Çα░▓α▒ü',
+         description: 'α░ê α░Åα░íα░╛α░ªα░┐ α░«α░┐α░░α▒ìα░Üα░┐ α░ªα░┐α░ùα▒üα░¼α░íα░┐ α░åα░╢α░╛α░£α░¿α░òα░éα░ùα░╛ α░ëα░éα░íα░ƒα░éα░ñα▒ï α░░α▒êα░ñα▒üα░▓α▒ü α░╣α░░α▒ìα░╖α░é α░╡α▒ìα░»α░òα▒ìα░ñα░é α░Üα▒çα░╕α▒ìα░ñα▒üα░¿α▒ìα░¿α░╛α░░α▒ü.',
+-        image: require('../assets/images/Picture5.png'),
++        image: require('../assets/images/res_picture5.png'),
+         tags: ['agriculture', 'guntur', 'local'],
+         isFullCard: true
+     },
+@@ -186,7 +186,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'sports-1',
+         title: 'α░òα▒ìα░░α░┐α░òα▒åα░ƒα▒ì: α░¡α░╛α░░α░ñα▒ì α░àα░ªα▒ìα░¡α▒üα░ñ α░╡α░┐α░£α░»α░é',
+         description: 'α░ñα▒èα░▓α░┐ α░ƒα▒åα░╕α▒ìα░ƒα▒üα░▓α▒ï α░¬α▒ìα░░α░ñα▒ìα░»α░░α▒ìα░Ñα░┐ α░£α░ƒα▒ìα░ƒα▒üα░¿α▒ü α░«α░ƒα▒ìα░ƒα░┐α░òα░░α░┐α░¬α░┐α░éα░Üα░┐α░¿ α░¡α░╛α░░α░ñ α░£α░ƒα▒ìα░ƒα▒ü. α░░α▒ïα░╣α░┐α░ñα▒ì α░╢α░░α▒ìα░« α░╡α▒Çα░░α▒ïα░Üα░┐α░ñ α░╕α▒åα░éα░Üα░░α▒Ç.',
+-        image: require('../assets/images/vk18.jpg'),
++        image: require('../assets/images/res_vk18.jpg'),
+         tags: ['sports', 'trending'],
+         isFullCard: true
+     },
+@@ -195,7 +195,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'sports-2',
+         title: 'α░¿α▒çα░╖α░¿α░▓α▒ì α░ùα▒çα░«α▒ìα░╕α▒ì: α░ñα▒åα░▓α▒üα░ùα▒ü α░░α░╛α░╖α▒ìα░ƒα▒ìα░░α░╛α░▓ α░òα▒ìα░░α▒Çα░íα░╛α░òα░╛α░░α▒üα░▓ α░£α▒ïα░░α▒ü',
+         description: 'α░¬α░▓α▒ü α░╡α░┐α░¡α░╛α░ùα░╛α░▓α▒ìα░▓α▒ï α░ùα▒ïα░▓α▒ìα░íα▒ì α░«α▒åα░íα░▓α▒ìα░╕α▒ì α░ùα▒åα░▓α▒üα░Üα▒üα░òα▒üα░éα░ƒα▒é α░«α░¿ α░àα░Ñα▒ìα░▓α▒åα░ƒα▒ìα░▓α▒ü α░╕α░ñα▒ìα░ñα░╛ α░Üα░╛α░ƒα▒üα░ñα▒üα░¿α▒ìα░¿α░╛α░░α▒ü.',
+-        image: require('../assets/images/match winning.jpg'),
++        image: require('../assets/images/res_match_winning.jpg'),
+         tags: ['sports', 'trending'],
+         isFullCard: true
+     },
+@@ -205,7 +205,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'wish-1',
+         title: 'α░╕α░éα░òα▒ìα░░α░╛α░éα░ñα░┐ α░╢α▒üα░¡α░╛α░òα░╛α░éα░òα▒ìα░╖α░▓α▒ü: α░¬α░éα░íα▒üα░ù α░╕α░éα░ªα░íα░┐',
+         description: 'α░«α▒üα░éα░ùα░┐α░ƒ α░«α▒üα░ùα▒ìα░ùα▒üα░▓α▒ü, α░ùα▒èα░¼α▒ìα░¼α▒åα░«α▒ìα░«α░▓α▒ü α░«α░░α░┐α░»α▒ü α░òα▒ïα░íα░┐ α░¬α░éα░ªα▒çα░▓α░ñα▒ï α░¬α░▓α▒ìα░▓α▒åα░▓α▒ìα░▓α▒ï α░¬α░éα░íα▒üα░ù α░╡α░╛α░ñα░╛α░╡α░░α░úα░é α░¿α▒åα░▓α░òα▒èα░éα░ªα░┐.',
+-        image: require('../assets/images/vivekanandha 2.jpg'),
++        image: require('../assets/images/res_vivekanandha_2.jpg'),
+         tags: ['wishes', 'whatsapp'],
+         isFullCard: true
+     },
+@@ -213,7 +213,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'wish-2',
+         title: 'α░╣α▒ìα░»α░╛α░¬α▒Ç α░¼α░░α▒ìα░ñα▒ìΓÇîα░íα▒ç: α░╡α░┐α░╖α▒åα░╕α▒ì α░òα░╛α░░α▒ìα░íα▒ìα░╕α▒ì',
+         description: 'α░«α▒Ç α░╕α▒ìα░¿α▒çα░╣α░┐α░ñα▒üα░▓α░òα▒ü α░«α░░α░┐α░»α▒ü α░òα▒üα░ƒα▒üα░éα░¼ α░╕α░¡α▒ìα░»α▒üα░▓α░òα▒ü α░ê α░¬α▒ìα░░α░ñα▒ìα░»α▒çα░òα░«α▒êα░¿ α░╡α░┐α░╖α▒åα░╕α▒ì α░«α▒åα░╕α▒çα░£α▒ìΓÇîα░▓α░¿α▒ü α░¬α░éα░¬α░éα░íα░┐.',
+-        image: require('../assets/images/whatsapp.jpg'),
++        image: require('../assets/images/res_whatsapp.jpg'),
+         tags: ['wishes', 'whatsapp', 'trending'],
+         isFullCard: true
+     },
+@@ -223,7 +223,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'wa-1',
+         title: 'α░▓α▒çα░ƒα▒åα░╕α▒ìα░ƒα▒ì α░«α▒èα░ƒα░┐α░╡α▒çα░╖α░¿α░▓α▒ì α░╕α▒ìα░ƒα▒çα░ƒα░╕α▒ì α░╡α▒Çα░íα░┐α░»α▒ïα░▓α▒ü',
+         description: 'α░£α▒Çα░╡α░┐α░ñα░éα░▓α▒ï α░Åα░ªα▒êα░¿α░╛ α░╕α░╛α░ºα░┐α░éα░Üα░╛α░▓α░¿α▒üα░òα▒üα░¿α▒ç α░╡α░╛α░░α░┐α░òα░┐ α░╕α▒ìα░½α▒éα░░α▒ìα░ñα░┐α░¿α░┐α░Üα▒ìα░Üα▒ç α░àα░ªα▒ìα░¡α▒üα░ñα░«α▒êα░¿ α░╕α▒ìα░ƒα▒çα░ƒα░╕α▒ì α░òα░▓α▒åα░òα▒ìα░╖α░¿α▒ì.',
+-        image: require('../assets/images/monday.jpg'),
++        image: require('../assets/images/res_monday.jpg'),
+         tags: ['whatsapp'],
+         isFullCard: true
+     },
+@@ -231,7 +231,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'wa-2',
+         title: 'α░╡α▒êα░░α░▓α▒ì α░╡α░╛α░ƒα▒ìα░╕α░╛α░¬α▒ì α░╕α▒ìα░ƒα▒çα░ƒα░╕α▒ì α░àα░¬α▒ìΓÇîα░íα▒çα░ƒα▒ìα░╕α▒ì',
+         description: 'α░╕α▒ïα░╖α░▓α▒ì α░«α▒Çα░íα░┐α░»α░╛α░▓α▒ï α░ƒα▒ìα░░α▒åα░éα░íα░┐α░éα░ùα▒ì α░▓α▒ï α░ëα░¿α▒ìα░¿ α░╡α▒Çα░íα░┐α░»α▒ïα░▓α▒ü α░«α░░α░┐α░»α▒ü α░Üα░┐α░ñα▒ìα░░α░╛α░▓α▒ü α░çα░òα▒ìα░òα░í α░Üα▒éα░íα░éα░íα░┐.',
+-        image: require('../assets/images/vivekanadha.jpg'),
++        image: require('../assets/images/res_vivekanadha.jpg'),
+         tags: ['whatsapp', 'trending'],
+         isFullCard: true
+     },
+@@ -241,28 +241,28 @@ const DEFAULT_NEWS_DATA = [
+         id: 'loc-vij-1',
+         title: 'α░╕α░éα░òα▒ìα░░α░╛α░éα░ñα░┐ α░░α░ªα▒ìα░ªα▒Ç: α░╡α░┐α░£α░»α░╡α░╛α░í α░¼α░╕α▒ìα░ƒα░╛α░éα░íα▒ì α░òα░┐α░ƒα░òα░┐α░ƒ',
+         description: 'α░¬α░éα░íα▒üα░ùα░òα▒ü α░╕α▒èα░éα░ñα▒éα░│α▒ìα░▓α░òα▒ü α░╡α▒åα░│α▒ìα░▓α▒ç α░¬α▒ìα░░α░»α░╛α░úα░┐α░òα▒üα░▓α░ñα▒ï α░╡α░┐α░£α░»α░╡α░╛α░í α░¬α░éα░íα░┐α░ƒα▒ì α░¿α▒åα░╣α▒ìα░░α▒é α░¼α░╕α▒ì α░╕α▒ìα░ƒα▒çα░╖α░¿α▒ì α░òα░┐α░òα▒ìα░òα░┐α░░α░┐α░╕α░┐α░¬α▒ïα░»α░┐α░éα░ªα░┐. α░¼α░╕α▒ìα░╕α▒üα░▓α▒ü α░¬α▒ìα░░α░»α░╛α░úα░┐α░òα▒üα░▓α░ñα▒ï α░¿α░┐α░éα░íα░┐α░¬α▒ïα░╡α░íα░éα░ñα▒ï α░àα░ºα░┐α░òα░╛α░░α▒üα░▓α▒ü α░¬α▒ìα░░α░ñα▒ìα░»α▒çα░ò α░╕α░░α▒ìα░╡α▒Çα░╕α▒üα░▓α▒ü α░Åα░░α▒ìα░¬α░╛α░ƒα▒ü α░Üα▒çα░╕α▒ìα░ñα▒üα░¿α▒ìα░¿α░╛α░░α▒ü.',
+-        image: require('../assets/images/vijayawada.jpg'),
++        image: require('../assets/images/res_vijayawada.jpg'),
+         tags: ['vijayawada', 'local', 'trending']
+     },
+     {
+         id: 'hyd-traffic-1',
+         title: 'α░╣α▒êα░ªα░░α░╛α░¼α░╛α░ªα▒ìΓÇî α░ƒα▒ìα░░α░╛α░½α░┐α░òα▒ì α░£α░╛α░«α▒ì: α░¬α░éα░íα▒üα░ù α░¬α░»α░¿α░é',
+         description: 'α░╕α░éα░òα▒ìα░░α░╛α░éα░ñα░┐ α░¬α░éα░íα▒üα░ùα░òα▒ü α░╕α▒èα░éα░ñα▒éα░│α▒ìα░▓α░òα▒ü α░╡α▒åα░│α▒ìα░▓α▒ç α░╡α░╛α░░α░┐α░ñα▒ï α░╣α▒êα░ªα░░α░╛α░¼α░╛α░ªα▒ì α░░α░╣α░ªα░╛α░░α▒üα░▓α▒ü α░òα░┐α░òα▒ìα░òα░┐α░░α░┐α░╕α░┐α░¬α▒ïα░»α░╛α░»α░┐. α░╡α░┐α░£α░»α░╡α░╛α░í α░╣α▒êα░╡α▒çα░¬α▒ê α░¡α░╛α░░α▒Çα░ùα░╛ α░ƒα▒ìα░░α░╛α░½α░┐α░òα▒ì α░¿α░┐α░▓α░┐α░Üα░┐α░¬α▒ïα░»α░┐α░éα░ªα░┐.',
+-        image: require('../assets/images/traffic-1-1.jpg'),
++        image: require('../assets/images/res_traffic_1_1.jpg'),
+         tags: ['hyderabad', 'local', 'trending']
+     },
+     {
+         id: 'andhra-2',
+         title: 'α░åα░éα░ºα▒ìα░░α░¬α▒ìα░░α░ªα▒çα░╢α▒ì α░╡α░╛α░░α▒ìα░ñα░▓α▒ü',
+         description: 'α░åα░éα░ºα▒ìα░░α░¬α▒ìα░░α░ªα▒çα░╢α▒ì α░░α░╛α░╖α▒ìα░ƒα▒ìα░░α░éα░▓α▒ï α░£α░░α▒üα░ùα▒üα░ñα▒üα░¿α▒ìα░¿ α░ñα░╛α░£α░╛ α░░α░╛α░£α░òα▒Çα░», α░╕α░╛α░«α░╛α░£α░┐α░ò α░¬α░░α░┐α░úα░╛α░«α░╛α░▓α▒ü α░«α░░α░┐α░»α▒ü α░àα░¡α░┐α░╡α▒âα░ªα▒ìα░ºα░┐ α░¬α░¿α▒üα░▓ α░╡α░┐α░╡α░░α░╛α░▓α▒ü.',
+-        image: require('../assets/images/Rectangle 5 (4).png'),
++        image: require('../assets/images/res_rectangle_5_4.png'),
+         tags: ['andhra']
+     },
+     {
+         id: 'telangana-1',
+         title: 'α░ñα▒åα░▓α░éα░ùα░╛α░ú α░╡α░╛α░░α▒ìα░ñα░▓α▒ü',
+         description: 'α░ñα▒åα░▓α░éα░ùα░╛α░ú α░░α░╛α░╖α▒ìα░ƒα▒ìα░░α░éα░▓α▒ï α░àα░«α░▓α▒ü α░àα░╡α▒üα░ñα▒üα░¿α▒ìα░¿ α░¬α▒ìα░░α░£α░╛ α░╕α░éα░òα▒ìα░╖α▒çα░« α░¬α░Ñα░òα░╛α░▓α▒ü α░«α░░α░┐α░»α▒ü α░╣α▒êα░ªα░░α░╛α░¼α░╛α░ªα▒ì α░¿α░ùα░░ α░àα░¡α░┐α░╡α▒âα░ªα▒ìα░ºα░┐ α░╡α░┐α░╢α▒çα░╖α░╛α░▓α▒ü.',
+-        image: require('../assets/images/Rectangle 5 (5).png'),
++        image: require('../assets/images/res_rectangle_5_5.png'),
+         tags: ['telangana']
+     },
+ 
+@@ -270,14 +270,14 @@ const DEFAULT_NEWS_DATA = [
+         id: 'cold-wave-1',
+         title: 'α░ëα░ñα▒ìα░ñα░░ α░¡α░╛α░░α░ñα░éα░▓α▒ï α░ùα░£α░ùα░£ α░╡α░úα░┐α░òα░┐α░╕α▒ìα░ñα▒üα░¿α▒ìα░¿ α░Üα░▓α░┐',
+         description: 'α░óα░┐α░▓α▒ìα░▓α▒Çα░ñα▒ï α░╕α░╣α░╛ α░ëα░ñα▒ìα░ñα░░ α░¡α░╛α░░α░ñ α░░α░╛α░╖α▒ìα░ƒα▒ìα░░α░╛α░▓α▒ìα░▓α▒ï α░ëα░╖α▒ìα░úα▒ïα░ùα▒ìα░░α░ñα░▓α▒ü α░òα░¿α░┐α░╖α▒ìα░ƒ α░╕α▒ìα░Ñα░╛α░»α░┐α░òα░┐ α░¬α░íα░┐α░¬α▒ïα░»α░╛α░»α░┐. α░¬α▒èα░ùα░«α░éα░Üα▒ü α░òα░╛α░░α░úα░éα░ùα░╛ α░£α░¿α░£α▒Çα░╡α░¿α░é α░╕α▒ìα░ñα░éα░¡α░┐α░éα░Üα░┐α░éα░ªα░┐. α░¬α▒ìα░░α░£α░▓α▒ü α░àα░¬α▒ìα░░α░«α░ñα▒ìα░ñα░éα░ùα░╛ α░ëα░éα░íα░╛α░▓α░¿α░┐ α░╡α░╛α░ñα░╛α░╡α░░α░ú α░╢α░╛α░û α░╣α▒åα░Üα▒ìα░Üα░░α░┐α░ò.',
+-        image: require('../assets/images/11delhi-cold.png'),
++        image: require('../assets/images/res_11delhi_cold.png'),
+         tags: ['national', 'trending']
+     },
+     {
+         id: 'loc-gun-1',
+         title: 'α░ùα▒üα░éα░ƒα▒éα░░α▒ü: α░àα░¡α░┐α░╡α▒âα░ªα▒ìα░ºα░┐ α░¬α░¿α▒üα░▓ α░╡α▒çα░ùα░╡α░éα░ñα░é',
+         description: 'α░¿α░ùα░░ α░àα░¡α░┐α░╡α▒âα░ªα▒ìα░ºα░┐ α░òα▒ïα░╕α░é α░«α░éα░£α▒éα░░α▒êα░¿ α░¿α░┐α░ºα▒üα░▓α░ñα▒ï α░òα▒èα░ñα▒ìα░ñ α░░α▒ïα░íα▒ìα░▓α▒ü α░«α░░α░┐α░»α▒ü α░íα▒ìα░░α▒êα░¿α▒çα░£α▒Ç α░¬α░¿α▒üα░▓α▒ü α░¬α▒ìα░░α░╛α░░α░éα░¡α░é.',
+-        image: require('../assets/images/news_hero.png'),
++        image: require('../assets/images/res_news_hero.png'),
+         tags: ['guntur', 'local', 'trending']
+     },
+ 
+@@ -286,7 +286,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'life-1',
+         title: 'α░åα░░α▒ïα░ùα▒ìα░»α░òα░░α░«α▒êα░¿ α░åα░╣α░╛α░░α░¬α▒ü α░àα░▓α░╡α░╛α░ƒα▒ìα░▓α▒ü: α░Üα░┐α░ƒα▒ìα░òα░╛α░▓α▒ü',
+         description: 'α░¬α▒ìα░░α░ñα░┐α░░α▒ïα░£α▒é α░ñα░╛α░£α░╛ α░òα▒éα░░α░ùα░╛α░»α░▓α▒ü α░«α░░α░┐α░»α▒ü α░¬α░éα░íα▒ìα░▓α░¿α▒ü α░«α▒Ç α░íα▒êα░ƒα▒ì α░▓α▒ï α░Üα▒çα░░α▒ìα░Üα▒üα░òα▒ïα░╡α░íα░é α░╡α░▓α▒ìα░▓ α░çα░«α▒ìα░»α▒éα░¿α░┐α░ƒα▒Ç α░¬α▒åα░░α▒üα░ùα▒üα░ñα▒üα░éα░ªα░┐.',
+-        image: require('../assets/images/8K News_Trending page-23.png'),
++        image: require('../assets/images/res_8k_news_trending_page_23.png'),
+         tags: ['lifestyle', 'trending'],
+         isFullCard: true
+     },
+@@ -294,7 +294,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'life-2',
+         title: 'α░«α▒ïα░íα▒ìα░░α░¿α▒ì α░╣α▒ïα░«α▒ì α░çα░éα░ƒα▒Çα░░α░┐α░»α░░α▒ì α░íα░┐α░£α▒êα░¿α▒ìα░╕α▒ì 2024',
+         description: 'α░ñα░òα▒ìα░òα▒üα░╡ α░ûα░░α▒ìα░Üα▒üα░ñα▒ï α░«α▒Ç α░çα░éα░ƒα░┐α░¿α░┐ α░àα░éα░ªα░éα░ùα░╛ α░«α░╛α░░α▒ìα░Üα▒üα░òα▒üα░¿α▒ç α░╕α░░α░┐α░òα▒èα░ñα▒ìα░ñ α░çα░éα░ƒα▒Çα░░α░┐α░»α░░α▒ì α░Éα░íα░┐α░»α░╛α░▓α▒ü.',
+-        image: require('../assets/images/71vzKYTFriS._AC_UF894,1000_QL80_.jpg'),
++        image: require('../assets/images/res_71vzkytfris_ac_uf894_1000_ql80.jpg'),
+         tags: ['lifestyle', 'trending'],
+         isFullCard: true
+     },
+@@ -302,7 +302,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'life-3',
+         title: 'α░«α▒ïα░íα▒ìα░░α░¿α▒ì α░╣α▒ïα░«α▒ì α░çα░éα░ƒα▒Çα░░α░┐α░»α░░α▒ì α░íα░┐α░£α▒êα░¿α▒ìα░╕α▒ì 2024',
+         description: 'α░ñα░òα▒ìα░òα▒üα░╡ α░ûα░░α▒ìα░Üα▒üα░ñα▒ï α░«α▒Ç α░çα░éα░ƒα░┐α░¿α░┐ α░àα░éα░ªα░éα░ùα░╛ α░«α░╛α░░α▒ìα░Üα▒üα░òα▒üα░¿α▒ç α░╕α░░α░┐α░òα▒èα░ñα▒ìα░ñ α░çα░éα░ƒα▒Çα░░α░┐α░»α░░α▒ì α░Éα░íα░┐α░»α░╛α░▓α▒ü.',
+-        image: require('../assets/images/71npLSn8+SL._AC_UF894,1000_QL80_.jpg'),
++        image: require('../assets/images/res_71nplsn8_sl_ac_uf894_1000_ql80.jpg'),
+         tags: ['lifestyle', 'trending'],
+         isFullCard: true
+     },
+@@ -312,7 +312,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'aff-1',
+         title: 'α░òα░░α▒åα░éα░ƒα▒ü α░àα░½α▒êα░░α▒ìα░╕α▒ì: α░░α░╛α░╖α▒ìα░ƒα▒ìα░░ α░¼α░íα▒ìα░£α▒åα░ƒα▒ì α░╡α░┐α░╢α▒ìα░▓α▒çα░╖α░ú',
+         description: 'α░¬α▒ìα░░α░¡α▒üα░ñα▒ìα░╡α░é α░¬α▒ìα░░α░òα░ƒα░┐α░éα░Üα░┐α░¿ α░░α░╛α░¼α▒ïα░»α▒ç α░åα░░α▒ìα░Ñα░┐α░ò α░╕α░éα░╡α░ñα▒ìα░╕α░░ α░¼α░íα▒ìα░£α▒åα░ƒα▒ì α░¬α▒ê α░¬α▒éα░░α▒ìα░ñα░┐ α░àα░╡α░ùα░╛α░╣α░¿ α░¬α▒èα░éα░ªα░éα░íα░┐.',
+-        image: require('../assets/images/1757262949538.jpg'),
++        image: require('../assets/images/res_1757262949538.jpg'),
+         tags: ['affairs', 'trending'],
+         isFullCard: true
+     },
+@@ -320,7 +320,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'aff-2',
+         title: 'α░«α▒åα░░α▒üα░ùα▒êα░¿ α░¬α░╛α░▓α░¿ α░òα▒ïα░╕α░é α░íα░┐α░£α░┐α░ƒα░▓α▒ì α░░α░┐α░½α░╛α░░α▒ìα░«α▒ìα░╕α▒ì',
+         description: 'α░¬α▒ìα░░α░¡α▒üα░ñα▒ìα░╡ α░╕α▒çα░╡α░▓α░¿α▒ü α░¬α▒ìα░░α░£α░▓α░òα▒ü α░«α░░α░┐α░éα░ñ α░╕α▒üα░▓α░¡α░éα░ùα░╛ α░Üα▒çα░░α░╡α▒çα░╕α▒çα░éα░ªα▒üα░òα▒ü α░ƒα▒åα░òα▒ìα░¿α░╛α░▓α░£α▒Ç α░╡α░┐α░¿α░┐α░»α▒ïα░ùα░é.',
+-        image: require('../assets/images/25-Category complete-5.png'),
++        image: require('../assets/images/res_25_category_complete_5.png'),
+         tags: ['affairs', 'main'],
+         isFullCard: true
+     },
+@@ -330,7 +330,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'photo-1',
+         title: 'α░¡α░╛α░░α░ñα░ªα▒çα░╢ α░àα░ªα▒ìα░¡α▒üα░ñ α░¬α▒ìα░░α░òα▒âα░ñα░┐ α░ªα▒âα░╢α▒ìα░»α░╛α░▓α▒ü',
+         description: 'α░╣α░┐α░«α░╛α░▓α░»α░╛α░▓ α░¿α▒üα░éα░íα░┐ α░òα░¿α▒ìα░»α░╛α░òα▒üα░«α░╛α░░α░┐ α░╡α░░α░òα▒ü α░«α░¿ α░ªα▒çα░╢ α░╕α▒îα░éα░ªα░░α▒ìα░»α░é α░½α▒èα░ƒα▒ïα░▓α░▓α▒ï.',
+-        image: require('../assets/images/pexels-jeswinthomas-1007431.png'),
++        image: require('../assets/images/res_pexels_jeswinthomas_1007431.png'),
+         tags: ['photos', 'trending'],
+         isFullCard: true
+     },
+@@ -339,7 +339,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'video-custom-hud',
+         title: 'Trending Viral Video',
+         description: 'Watch the latest viral sensation now.',
+-        image: require('../assets/images/200297-912370117_medium.mp4'),
++        image: require('../assets/images/res_200297_912370117_medium.mp4'),
+         tags: ['videos', 'trending'],
+         isVideo: true
+     },
+@@ -347,7 +347,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'video-1',
+         title: 'α░╕α░╛α░éα░òα▒çα░ñα░┐α░ò α░╡α░┐α░¬α▒ìα░▓α░╡α░é: α░╡α▒Çα░íα░┐α░»α▒ï α░░α░┐α░¬α▒ïα░░α▒ìα░ƒα▒ì',
+         description: 'α░░α░╛α░¼α▒ïα░»α▒ç α░òα░╛α░▓α░éα░▓α▒ï α░Åα░»α▒ç α░ùα▒ìα░»α░╛α░íα▒ìα░£α▒åα░ƒα▒ìα░╕α▒ì α░«α░¿ α░£α▒Çα░╡α░┐α░ñα░╛α░▓α░¿α▒ü α░╢α░╛α░╕α░┐α░éα░Üα░¼α▒ïα░ñα▒üα░¿α▒ìα░¿α░╛α░»α▒ï α░Üα▒éα░íα░éα░íα░┐.',
+-        image: require('../assets/images/8K News_Top Bar Video-1.png'),
++        image: require('../assets/images/res_8k_news_top_bar_video_1.png'),
+         tags: ['videos', 'trending'],
+         isVideo: true
+     },
+@@ -355,7 +355,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'video-new-2',
+         title: 'α░ñα░╛α░£α░╛ α░╡α▒Çα░íα░┐α░»α▒ï α░╡α░╛α░░α▒ìα░ñα░▓α▒ü',
+         description: 'α░░α░éα░íα░┐ α░Üα▒éα░íα░éα░íα░┐! α░ê α░░α▒ïα░£α▒ü α░╕α▒ïα░╖α░▓α▒ì α░«α▒Çα░íα░┐α░»α░╛α░▓α▒ï α░╡α▒êα░░α░▓α▒ì α░àα░╡α▒üα░ñα▒üα░¿α▒ìα░¿ α░åα░╕α░òα▒ìα░ñα░┐α░òα░░α░«α▒êα░¿ α░╡α▒Çα░íα░┐α░»α▒ï.',
+-        image: require('../assets/images/Picture11.png'),
++        image: require('../assets/images/res_picture11.png'),
+         tags: ['videos', 'trending'],
+         isVideo: true
+     },
+@@ -364,7 +364,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'full-card-1',
+         title: 'Full Card 1',
+         description: 'Displaying full card image 1',
+-        image: require('../assets/images/20-Photos-1.png'),
++        image: require('../assets/images/res_20_photos_1.png'),
+         tags: ['wishes'],
+         isFullCard: true
+     },
+@@ -372,7 +372,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'full-card-2',
+         title: 'Full Card 2',
+         description: 'Displaying full card image 2',
+-        image: require('../assets/images/22-Photos-3.png'),
++        image: require('../assets/images/res_22_photos_3.png'),
+         tags: ['wishes'],
+         isFullCard: true
+     },
+@@ -380,7 +380,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'full-card-3',
+         title: 'Full Card 3',
+         description: 'Displaying full card image 3',
+-        image: require('../assets/images/23-Photos-4.png'),
++        image: require('../assets/images/res_23_photos_4.png'),
+         tags: ['wishes'],
+         isFullCard: true
+     },
+@@ -388,7 +388,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'full-card-4',
+         title: 'Full Card 4',
+         description: 'Displaying full card image 4',
+-        image: require('../assets/images/23- Ad Page.png'),
++        image: require('../assets/images/res_23_ad_page.png'),
+         tags: ['wishes'],
+         isFullCard: true
+     },
+@@ -396,7 +396,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'full-card-5',
+         title: 'Full Card 5',
+         description: 'Displaying full card image 5',
+-        image: require('../assets/images/24-Photos-5.png'),
++        image: require('../assets/images/res_24_photos_5.png'),
+         tags: ['wishes'],
+         isFullCard: true
+     },
+@@ -404,7 +404,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'full-card-6',
+         title: 'Full Card 6',
+         description: 'Displaying full card image 6',
+-        image: require('../assets/images/25-Category complete-2.png'),
++        image: require('../assets/images/res_25_category_complete_2.png'),
+         tags: ['wishes'],
+         isFullCard: true
+     },
+@@ -413,7 +413,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'full-card-8',
+         title: 'Full Card 8',
+         description: 'Displaying full card image 8',
+-        image: require('../assets/images/25-Category complete-4.png'),
++        image: require('../assets/images/res_25_category_complete_4.png'),
+         tags: ['wishes'],
+         isFullCard: true
+     },
+@@ -421,7 +421,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'full-card-9',
+         title: 'Full Card 9',
+         description: 'Displaying full card image 9',
+-        image: require('../assets/images/25-Category complete-5.png'),
++        image: require('../assets/images/res_25_category_complete_5.png'),
+         tags: ['wishes'],
+         isFullCard: true
+     },
+@@ -429,7 +429,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'full-card-10',
+         title: 'Full Card 10',
+         description: 'Displaying full card image 10',
+-        image: require('../assets/images/25-Category complete-6.png'),
++        image: require('../assets/images/res_25_category_complete_6.png'),
+         tags: ['wishes'],
+         isFullCard: true
+     },
+@@ -437,7 +437,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'full-card-11',
+         title: 'Full Card 11',
+         description: 'Displaying full card image 11',
+-        image: require('../assets/images/25-Category complete-7.png'),
++        image: require('../assets/images/res_25_category_complete_7.png'),
+         tags: ['wishes'],
+         isFullCard: true
+     },
+@@ -445,7 +445,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'full-card-12',
+         title: 'Full Card 12',
+         description: 'Displaying full card image 12',
+-        image: require('../assets/images/25-Category complete-8.png'),
++        image: require('../assets/images/res_25_category_complete_8.png'),
+         tags: ['wishes'],
+         isFullCard: true
+     },
+@@ -455,14 +455,14 @@ const DEFAULT_NEWS_DATA = [
+         id: 'local-1',
+         title: 'α░¬α▒ìα░░α░╛α░éα░ñα▒Çα░» α░╡α░╛α░░α▒ìα░ñα░▓α▒ü: α░«α▒Ç α░£α░┐α░▓α▒ìα░▓α░╛ α░╡α░┐α░╢α▒çα░╖α░╛α░▓α▒ü',
+         description: 'α░«α▒Ç α░Üα▒üα░ƒα▒ìα░ƒα▒é α░£α░░α▒üα░ùα▒üα░ñα▒üα░¿α▒ìα░¿ α░ñα░╛α░£α░╛ α░╕α░éα░ÿα░ƒα░¿α░▓α▒ü α░«α░░α░┐α░»α▒ü α░àα░¡α░┐α░╡α▒âα░ªα▒ìα░ºα░┐ α░¬α░¿α▒üα░▓ α░╕α░«α░╛α░Üα░╛α░░α░é.',
+-        image: require('../assets/images/news_hero.png'),
++        image: require('../assets/images/res_news_hero.png'),
+         tags: ['local', 'guntur']
+     },
+     {
+         id: 'whatsapp-1',
+         title: 'α░╡α░╛α░ƒα▒ìα░╕α░╛α░¬α▒ì α░╕α▒ìα░ƒα▒çα░ƒα░╕α▒ì α░╡α▒Çα░íα░┐α░»α▒ïα░▓α▒ü',
+         description: 'α░«α▒Çα░òα▒ü α░¿α░Üα▒ìα░Üα░┐α░¿ α░╡α▒Çα░íα░┐α░»α▒ïα░▓α░¿α▒ü α░íα▒îα░¿α▒ìα░▓α▒ïα░íα▒ì α░Üα▒çα░╕α▒üα░òα▒ïα░éα░íα░┐ α░«α░░α░┐α░»α▒ü α░╕α▒ìα░ƒα▒çα░ƒα░╕α▒ì α░ùα░╛ α░¬α▒åα░ƒα▒ìα░ƒα▒üα░òα▒ïα░éα░íα░┐.',
+-        image: require('../assets/images/whatsapp.png'), // Fixed missing image
++        image: require('../assets/images/res_whatsapp.png'), // Fixed missing image
+         tags: ['whatsapp'],
+         isVideo: true,
+         video: 'https://www.w3schools.com/html/mov_bbb.mp4'
+@@ -472,7 +472,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'wish-new-1',
+         title: 'α░ªα▒Çα░¬α░╛α░╡α░│α░┐ α░╢α▒üα░¡α░╛α░òα░╛α░éα░òα▒ìα░╖α░▓α▒ü',
+         description: 'α░ê α░ªα▒Çα░¬α░╛α░╡α░│α░┐ α░«α▒Ç α░çα░éα░ƒ α░╡α▒åα░▓α▒üα░ùα▒üα░▓α▒ü α░¿α░┐α░éα░¬α░╛α░▓α░¿α░┐, α░╕α▒üα░ûα░╕α░éα░ñα▒ïα░╖α░╛α░▓α░ñα▒ï α░╡α░░α▒ìα░ºα░┐α░▓α▒ìα░▓α░╛α░▓α░¿α░┐ α░òα▒ïα░░α▒üα░òα▒üα░éα░ƒα▒üα░¿α▒ìα░¿α░╛α░«α▒ü.',
+-        image: require('../assets/images/wishes1.png'),
++        image: require('../assets/images/res_wishes1.png'),
+         tags: ['wishes', 'trending'],
+         isFullCard: true
+     },
+@@ -480,7 +480,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'tech-new-1',
+         title: 'α░òα▒èα░ñα▒ìα░ñ α░╕α▒ìα░«α░╛α░░α▒ìα░ƒα▒ìΓÇîα░½α▒ïα░¿α▒ì α░░α░┐α░╡α▒ìα░»α▒é 2024',
+         description: 'α░«α░╛α░░α▒ìα░òα▒åα░ƒα▒ìα░▓α▒ïα░òα░┐ α░╡α░Üα▒ìα░Üα░┐α░¿ α░▓α▒çα░ƒα▒åα░╕α▒ìα░ƒα▒ì α░½α▒Çα░Üα░░α▒ìα░╕α▒ì α░ñα▒ï α░òα▒éα░íα░┐α░¿ α░╕α▒ìα░«α░╛α░░α▒ìα░ƒα▒ìΓÇîα░½α▒ïα░¿α▒ì α░¬α░¿α░┐α░ñα▒Çα░░α▒ü α░Äα░▓α░╛ α░ëα░éα░ªα▒ï α░Üα▒éα░íα░éα░íα░┐.',
+-        image: require('../assets/images/8K News_Top Bar Video-2.png'),
++        image: require('../assets/images/res_8k_news_top_bar_video_2.png'),
+         tags: ['videos', 'trending'],
+         isVideo: true
+     },
+@@ -488,7 +488,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'photo-new-1',
+         title: 'α░¬α▒ìα░░α░òα▒âα░ñα░┐ α░àα░éα░ªα░╛α░▓α▒ü: α░àα░░α░òα▒ü α░▓α▒ïα░»',
+         description: 'α░╡α░┐α░╢α░╛α░û α░«α░¿α▒ìα░»α░éα░▓α▒ï α░¬α░░α▒ìα░»α░╛α░ƒα░òα▒üα░▓α░¿α▒ü α░òα░ƒα▒ìα░ƒα░┐α░¬α░íα▒çα░╕α▒ìα░ñα▒üα░¿α▒ìα░¿ α░¬α▒ìα░░α░òα▒âα░ñα░┐ α░░α░«α░úα▒Çα░» α░ªα▒âα░╢α▒ìα░»α░╛α░▓α▒ü. α░ñα░¬α▒ìα░¬α░ò α░Üα▒éα░íα░╛α░▓α▒ìα░╕α░┐α░¿ α░¬α▒ìα░░α░ªα▒çα░╢α░é.',
+-        image: require('../assets/images/Picture3.png'),
++        image: require('../assets/images/res_picture3.png'),
+         tags: ['photos', 'trending', 'lifestyle'],
+         isFullCard: true
+     },
+@@ -496,7 +496,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'local-new-1',
+         title: 'α░¿α░ùα░░α░éα░▓α▒ï α░ƒα▒ìα░░α░╛α░½α░┐α░òα▒ì α░¿α░┐α░¼α░éα░ºα░¿α░▓α▒ü α░òα░áα░┐α░¿α░ñα░░α░é',
+         description: 'α░╣α▒åα░▓α▒ìα░«α▒åα░ƒα▒ì α░ºα░░α░┐α░éα░Üα░¿α░┐ α░╡α░╛α░╣α░¿α░ªα░╛α░░α▒üα░▓α░òα▒ü α░¡α░╛α░░α▒Ç α░£α░░α░┐α░«α░╛α░¿α░╛α░▓α▒ü α░╡α░┐α░ºα░┐α░éα░Üα░¿α▒üα░¿α▒ìα░¿ α░ƒα▒ìα░░α░╛α░½α░┐α░òα▒ì α░¬α▒ïα░▓α▒Çα░╕α▒üα░▓α▒ü.',
+-        image: require('../assets/images/Picture4.png'),
++        image: require('../assets/images/res_picture4.png'),
+         tags: ['local', 'hyderabad'],
+         isFullCard: true
+     },
+@@ -504,14 +504,14 @@ const DEFAULT_NEWS_DATA = [
+         id: 'cine-new-1',
+         title: 'α░ôα░ƒα▒Çα░ƒα▒Çα░▓α▒ï α░ê α░╡α░╛α░░α░é α░╡α░┐α░íα▒üα░ªα░▓α░»α▒ìα░»α▒ç α░Üα░┐α░ñα▒ìα░░α░╛α░▓α▒ü',
+         description: 'α░çα░éα░ƒα▒ìα░▓α▒ïα░¿α▒ç α░òα▒éα░░α▒ìα░Üα▒üα░¿α░┐ α░╡α░┐α░¿α▒ïα░ªα░╛α░¿α▒ìα░¿α░┐ α░åα░╕α▒ìα░╡α░╛α░ªα░┐α░éα░Üα░íα░╛α░¿α░┐α░òα░┐ α░╕α░┐α░ªα▒ìα░ºα░éα░ùα░╛ α░ëα░éα░íα░éα░íα░┐. α░ê α░╡α░╛α░░α░é α░«α▒üα░Üα▒ìα░Üα░ƒα░ùα▒èα░▓α░┐α░¬α▒ç α░Üα░┐α░ñα▒ìα░░α░╛α░▓ α░£α░╛α░¼α░┐α░ñα░╛.',
+-        image: require('../assets/images/Picture5.png'),
++        image: require('../assets/images/res_picture5.png'),
+         tags: ['cinema', 'trending']
+     },
+     {
+         id: 'full-ad-1',
+         title: 'Special Promotion',
+         description: 'Exclusive Ad Page',
+-        image: require('../assets/images/23- Ad Page.png'),
++        image: require('../assets/images/res_23_ad_page.png'),
+         tags: ['main', 'trending'],
+         isFullCard: true
+     },
+@@ -519,7 +519,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'full-comp-6',
+         title: 'Category Complete',
+         description: 'You have caught up with all stories.',
+-        image: require('../assets/images/25-Category complete-6.png'),
++        image: require('../assets/images/res_25_category_complete_6.png'),
+         tags: ['main', 'trending'],
+         isFullCard: true
+     },
+@@ -527,7 +527,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'full-comp-7',
+         title: 'Category Complete',
+         description: 'Stay tuned for more updates.',
+-        image: require('../assets/images/25-Category complete-7.png'),
++        image: require('../assets/images/res_25_category_complete_7.png'),
+         tags: ['main', 'trending'],
+         isFullCard: true
+     },
+@@ -535,7 +535,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'full-comp-8',
+         title: 'Category Complete',
+         description: 'Fresh news coming soon.',
+-        image: require('../assets/images/25-Category complete-8.png'),
++        image: require('../assets/images/res_25_category_complete_8.png'),
+         tags: ['main', 'trending'],
+         isFullCard: true
+     },
+@@ -543,7 +543,7 @@ const DEFAULT_NEWS_DATA = [
+         id: 'full-wish-2',
+         title: 'Greetings',
+         description: 'Best wishes for you.',
+-        image: require('../assets/images/wishes2.png'),
++        image: require('../assets/images/res_wishes2.png'),
+         tags: ['wishes', 'whatsapp', 'trending'],
+         isFullCard: true
+     }
+@@ -555,14 +555,14 @@ const DEFAULT_NEWS_DATA = [
+ 
+ 
+ const MAGAZINE_DATA = [
+-    { id: 'mag1', title: 'α░╡α▒ìα░»α░╡α░╕α░╛α░»α░é', badge: 'α░¬α▒üα░╕α▒ìα░ñα░òα░é', date: '01 January', image: require('../assets/images/mag_agri.png') },
+-    { id: 'mag2', title: 'α░£α▒Çα░╡α░¿α░╢α▒êα░▓α░┐', badge: 'α░¬α▒üα░╕α▒ìα░ñα░òα░é', date: '01 January', image: require('../assets/images/mag_life.png') },
+-    { id: 'mag3', title: 'α░¬α░░α░┐α░╢α▒ìα░░α░«α░▓α▒ü', badge: 'α░¬α▒üα░╕α▒ìα░ñα░òα░é', date: '01 January', image: require('../assets/images/mag_ind.png') },
+-    { id: 'mag4', title: 'α░åα░ƒα▒ïα░«α▒èα░¼α▒êα░▓α▒ìα░╕α▒ì', badge: 'α░¬α▒üα░╕α▒ìα░ñα░òα░é', date: '01 January', image: require('../assets/images/mag_auto.png') },
+-    { id: 'mag5', title: 'α░╢α░╛α░╕α▒ìα░ñα▒ìα░░α░╡α▒çα░ñα▒ìα░ñα░▓α▒ü', badge: 'α░¬α▒üα░╕α▒ìα░ñα░òα░é', date: '01 January', image: require('../assets/images/mag_sci.png') },
+-    { id: 'mag6', title: 'α░░α░┐α░»α░▓α▒ì α░Äα░╕α▒ìα░ƒα▒çα░ƒα▒ì', badge: 'α░¬α▒üα░╕α▒ìα░ñα░òα░é', date: '01 January', image: require('../assets/images/mag_real.png') },
+-    { id: 'mag7', title: 'α░òα▒ìα░░α░┐α░òα▒åα░ƒα▒ì', badge: 'α░¬α▒üα░╕α▒ìα░ñα░òα░é', date: '01 January', image: require('../assets/images/match winning.jpg') },
+-    { id: 'mag8', title: 'α░╣α▒êα░ªα░░α░╛α░¼α░╛α░ªα▒ì', badge: 'α░¬α▒üα░╕α▒ìα░ñα░òα░é', date: '01 January', image: require('../assets/images/vijayawada.jpg') },
++    { id: 'mag1', title: 'α░╡α▒ìα░»α░╡α░╕α░╛α░»α░é', badge: 'α░¬α▒üα░╕α▒ìα░ñα░òα░é', date: '01 January', image: require('../assets/images/res_mag_agri.png') },
++    { id: 'mag2', title: 'α░£α▒Çα░╡α░¿α░╢α▒êα░▓α░┐', badge: 'α░¬α▒üα░╕α▒ìα░ñα░òα░é', date: '01 January', image: require('../assets/images/res_mag_life.png') },
++    { id: 'mag3', title: 'α░¬α░░α░┐α░╢α▒ìα░░α░«α░▓α▒ü', badge: 'α░¬α▒üα░╕α▒ìα░ñα░òα░é', date: '01 January', image: require('../assets/images/res_mag_ind.png') },
++    { id: 'mag4', title: 'α░åα░ƒα▒ïα░«α▒èα░¼α▒êα░▓α▒ìα░╕α▒ì', badge: 'α░¬α▒üα░╕α▒ìα░ñα░òα░é', date: '01 January', image: require('../assets/images/res_mag_auto.png') },
++    { id: 'mag5', title: 'α░╢α░╛α░╕α▒ìα░ñα▒ìα░░α░╡α▒çα░ñα▒ìα░ñα░▓α▒ü', badge: 'α░¬α▒üα░╕α▒ìα░ñα░òα░é', date: '01 January', image: require('../assets/images/res_mag_sci.png') },
++    { id: 'mag6', title: 'α░░α░┐α░»α░▓α▒ì α░Äα░╕α▒ìα░ƒα▒çα░ƒα▒ì', badge: 'α░¬α▒üα░╕α▒ìα░ñα░òα░é', date: '01 January', image: require('../assets/images/res_mag_real.png') },
++    { id: 'mag7', title: 'α░òα▒ìα░░α░┐α░òα▒åα░ƒα▒ì', badge: 'α░¬α▒üα░╕α▒ìα░ñα░òα░é', date: '01 January', image: require('../assets/images/res_match_winning.jpg') },
++    { id: 'mag8', title: 'α░╣α▒êα░ªα░░α░╛α░¼α░╛α░ªα▒ì', badge: 'α░¬α▒üα░╕α▒ìα░ñα░òα░é', date: '01 January', image: require('../assets/images/res_vijayawada.jpg') },
+ ];
+ 
+ export default function NewsFeedScreen() {
+@@ -804,17 +804,17 @@ export default function NewsFeedScreen() {
+     const [isCategoriesVisible, setIsCategoriesVisible] = useState(false);
+ 
+     const CATEGORY_TABS = [
+-        { id: 'main', title: 'α░«α▒åα░»α░┐α░¿α▒ì α░¿α▒ìα░»α▒éα░╕α▒ì', bg: require('../assets/images/20-Main News.png'), accent: '#0083B0', titleColor: '#d93025' },
+-        { id: 'local', title: 'α░▓α▒ïα░òα░▓α▒ì α░¿α▒ìα░»α▒éα░╕α▒ì', bg: require('../assets/images/21-Local News.png'), accent: '#2C3E50', titleColor: '#000' },
+-        { id: 'wishes', title: 'α░╡α░┐α░╖α▒åα░╕α▒ì', bg: require('../assets/images/21-Local News.png'), accent: '#D32F2F', titleColor: '#E91E63' },
+-        { id: 'trending', title: 'α░ƒα▒ìα░░α▒åα░éα░íα░┐α░éα░ùα▒ì α░¿α▒ìα░»α▒éα░╕α▒ì', bg: require('../assets/images/20-Main News.png'), accent: '#FF8F00', titleColor: '#fff' },
+-        { id: 'whatsapp', title: 'α░╡α░╛α░ƒα▒ìα░╕α░╛α░¬α▒ì α░╕α▒ìα░ƒα▒çα░ƒα░╕α▒ì', bg: require('../assets/images/25 Telangana News.png'), accent: '#2E7D32', titleColor: '#2E7D32' },
+-        { id: 'bhakti', title: 'α░¡α░òα▒ìα░ñα░┐', bg: require('../assets/images/20-Main News.png'), accent: '#FBC02D', titleColor: '#6A1B9A' },
+-        { id: 'affairs', title: 'α░òα░░α▒åα░éα░ƒα▒ü α░àα░½α▒êα░░α▒ìα░╕α▒ì', bg: require('../assets/images/26-India News-1.png'), accent: '#1976D2', titleColor: '#1565C0' },
+-        { id: 'lifestyle', title: 'α░▓α▒êα░½α▒ì          α░╕α▒ìα░ƒα▒êα░▓α▒ì', bg: require('../assets/images/20-Main News.png'), accent: '#C2185B', titleColor: '#C62828' },
+-        { id: 'agriculture', title: 'α░╡α▒ìα░»α░╡α░╕α░╛α░»α░é', bg: require('../assets/images/24-Andhrapradesh News.png'), accent: '#388E3C', titleColor: '#fff' },
+-        { id: 'cinema', title: 'α░╕α░┐α░¿α░┐α░«α░╛', bg: require('../assets/images/20-Main News.png'), accent: '#0097A7', titleColor: '#FFf' },
+-        { id: 'sports', title: 'α░òα▒ìα░░α▒Çα░íα░▓α▒ü', bg: require('../assets/images/26-India News.png'), accent: '#E64A19', titleColor: '#fff' },
++        { id: 'main', title: 'α░«α▒åα░»α░┐α░¿α▒ì α░¿α▒ìα░»α▒éα░╕α▒ì', bg: require('../assets/images/res_20_main_news.png'), accent: '#0083B0', titleColor: '#d93025' },
++        { id: 'local', title: 'α░▓α▒ïα░òα░▓α▒ì α░¿α▒ìα░»α▒éα░╕α▒ì', bg: require('../assets/images/res_21_local_news.png'), accent: '#2C3E50', titleColor: '#000' },
++        { id: 'wishes', title: 'α░╡α░┐α░╖α▒åα░╕α▒ì', bg: require('../assets/images/res_21_local_news.png'), accent: '#D32F2F', titleColor: '#E91E63' },
++        { id: 'trending', title: 'α░ƒα▒ìα░░α▒åα░éα░íα░┐α░éα░ùα▒ì α░¿α▒ìα░»α▒éα░╕α▒ì', bg: require('../assets/images/res_20_main_news.png'), accent: '#FF8F00', titleColor: '#fff' },
++        { id: 'whatsapp', title: 'α░╡α░╛α░ƒα▒ìα░╕α░╛α░¬α▒ì α░╕α▒ìα░ƒα▒çα░ƒα░╕α▒ì', bg: require('../assets/images/res_25_telangana_news.png'), accent: '#2E7D32', titleColor: '#2E7D32' },
++        { id: 'bhakti', title: 'α░¡α░òα▒ìα░ñα░┐', bg: require('../assets/images/res_20_main_news.png'), accent: '#FBC02D', titleColor: '#6A1B9A' },
++        { id: 'affairs', title: 'α░òα░░α▒åα░éα░ƒα▒ü α░àα░½α▒êα░░α▒ìα░╕α▒ì', bg: require('../assets/images/res_26_india_news_1.png'), accent: '#1976D2', titleColor: '#1565C0' },
++        { id: 'lifestyle', title: 'α░▓α▒êα░½α▒ì          α░╕α▒ìα░ƒα▒êα░▓α▒ì', bg: require('../assets/images/res_20_main_news.png'), accent: '#C2185B', titleColor: '#C62828' },
++        { id: 'agriculture', title: 'α░╡α▒ìα░»α░╡α░╕α░╛α░»α░é', bg: require('../assets/images/res_24_andhrapradesh_news.png'), accent: '#388E3C', titleColor: '#fff' },
++        { id: 'cinema', title: 'α░╕α░┐α░¿α░┐α░«α░╛', bg: require('../assets/images/res_20_main_news.png'), accent: '#0097A7', titleColor: '#FFf' },
++        { id: 'sports', title: 'α░òα▒ìα░░α▒Çα░íα░▓α▒ü', bg: require('../assets/images/res_26_india_news.png'), accent: '#E64A19', titleColor: '#fff' },
+     ];
+ 
+     // ≡ƒôì LOCATION & CATEGORY LOGIC
+@@ -1598,7 +1598,7 @@ export default function NewsFeedScreen() {
+                                     // Thank You View
+                                     <View style={styles.thankYouContainer}>
+                                         <Image
+-                                            source={require('../assets/images/praying-hands.png')}
++                                            source={require('../assets/images/res_praying_hands.png')}
+                                             style={styles.prayingHandsIcon}
+                                             contentFit="contain"
+                                         />
+@@ -1620,7 +1620,7 @@ export default function NewsFeedScreen() {
+                                     // Rating View
+                                     <View style={styles.ratingContainer}>
+                                         <Image
+-                                            source={require('../assets/images/8K-Logo 1.png')}
++                                            source={require('../assets/images/res_8k_logo_1.png')}
+                                             style={styles.ratingLogo}
+                                             contentFit="contain"
+                                         />
+@@ -2003,7 +2003,7 @@ export default function NewsFeedScreen() {
+                                                 {cat.id === 'main' ? (
+                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                         <Image
+-                                                            source={require('../assets/images/Vector 1.png')}
++                                                            source={require('../assets/images/res_vector_1.png')}
+                                                             style={{ width: '100%', height: '100%' }}
+                                                             contentFit="cover"
+                                                         />
+@@ -2011,7 +2011,7 @@ export default function NewsFeedScreen() {
+                                                 ) : cat.id === 'local' ? (
+                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                         <Image
+-                                                            source={require('../assets/images/Vector 2.png')}
++                                                            source={require('../assets/images/res_vector_2.png')}
+                                                             style={{ width: '100%', height: '100%' }}
+                                                             contentFit="cover"
+                                                         />
+@@ -2019,7 +2019,7 @@ export default function NewsFeedScreen() {
+                                                 ) : cat.id === 'wishes' ? (
+                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                         <Image
+-                                                            source={require('../assets/images/Vector 3.png')}
++                                                            source={require('../assets/images/res_vector_3.png')}
+                                                             style={{ width: '100%', height: '100%' }}
+                                                             contentFit="cover"
+                                                         />
+@@ -2027,7 +2027,7 @@ export default function NewsFeedScreen() {
+                                                 ) : cat.id === 'trending' ? (
+                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                         <Image
+-                                                            source={require('../assets/images/Vector 4.png')}
++                                                            source={require('../assets/images/res_vector_4.png')}
+                                                             style={{
+                                                                 width: '140%',
+                                                                 height: '140%',
+@@ -2040,7 +2040,7 @@ export default function NewsFeedScreen() {
+                                                 ) : cat.id === 'whatsapp' ? (
+                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                         <Image
+-                                                            source={require('../assets/images/Vector 5.png')}
++                                                            source={require('../assets/images/res_vector_5.png')}
+                                                             style={{ width: '100%', height: '100%' }}
+                                                             contentFit="cover"
+                                                         />
+@@ -2048,7 +2048,7 @@ export default function NewsFeedScreen() {
+                                                 ) : cat.id === 'bhakti' ? (
+                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                         <Image
+-                                                            source={require('../assets/images/Vector 6.png')}
++                                                            source={require('../assets/images/res_vector_6.png')}
+                                                             style={{ width: '100%', height: '100%' }}
+                                                             contentFit="cover"
+                                                         />
+@@ -2056,7 +2056,7 @@ export default function NewsFeedScreen() {
+                                                 ) : cat.id === 'affairs' ? (
+                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                         <Image
+-                                                            source={require('../assets/images/Vector 7.png')}
++                                                            source={require('../assets/images/res_vector_7.png')}
+                                                             style={{ width: '100%', height: '100%' }}
+                                                             contentFit="cover"
+                                                         />
+@@ -2064,7 +2064,7 @@ export default function NewsFeedScreen() {
+                                                 ) : cat.id === 'lifestyle' ? (
+                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                         <Image
+-                                                            source={require('../assets/images/Vector 8.png')}
++                                                            source={require('../assets/images/res_vector_8.png')}
+                                                             style={{
+                                                                 width: '100%',
+                                                                 height: '110%',
+@@ -2076,7 +2076,7 @@ export default function NewsFeedScreen() {
+                                                 ) : cat.id === 'agriculture' ? (
+                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                         <Image
+-                                                            source={require('../assets/images/Vector 9.png')}
++                                                            source={require('../assets/images/res_vector_9.png')}
+                                                             style={{
+                                                                 width: '100%',
+                                                                 height: '110%',
+@@ -2088,7 +2088,7 @@ export default function NewsFeedScreen() {
+                                                 ) : cat.id === 'cinema' ? (
+                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                         <Image
+-                                                            source={require('../assets/images/Vector 10.png')}
++                                                            source={require('../assets/images/res_vector_10.png')}
+                                                             style={{
+                                                                 width: '100%',
+                                                                 height: '110%',
+@@ -2100,7 +2100,7 @@ export default function NewsFeedScreen() {
+                                                 ) : cat.id === 'sports' ? (
+                                                     <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                         <Image
+-                                                            source={require('../assets/images/Vector 11.png')}
++                                                            source={require('../assets/images/res_vector_11.png')}
+                                                             style={{
+                                                                 width: '100%',
+                                                                 height: '110%',
+@@ -2136,7 +2136,7 @@ export default function NewsFeedScreen() {
+                                                 }}>
+                                                     {(cat.id === 'whatsapp') && (
+                                                         <Image
+-                                                            source={require('../assets/images/Rectangle.png')}
++                                                            source={require('../assets/images/res_rectangle.png')}
+                                                             style={{ width: 80, height: 80, marginLeft: -10 }}
+                                                             contentFit="contain"
+                                                         />
+@@ -2184,7 +2184,7 @@ export default function NewsFeedScreen() {
+                                                     )}
+                                                     {cat.id === 'main' && (
+                                                         <Image
+-                                                            source={require('../assets/images/Rectangle.png')}
++                                                            source={require('../assets/images/res_rectangle.png')}
+                                                             style={{ width: 70, height: 70, marginRight: -5 }}
+                                                             contentFit="contain"
+                                                         />
+@@ -2209,7 +2209,7 @@ export default function NewsFeedScreen() {
+                                     <Text style={styles.locHeaderLeftText}>Change location</Text>
+                                     <View style={styles.locHeaderCenter}>
+                                         <Image
+-                                            source={require('../assets/images/8K-Logo 1.png')}
++                                            source={require('../assets/images/res_8k_logo_1.png')}
+                                             style={styles.locHeaderLogo}
+                                             contentFit="contain"
+                                         />
+@@ -2927,7 +2927,7 @@ export default function NewsFeedScreen() {
+                             <Ionicons name="settings-outline" size={24} color="#666" />
+                         </TouchableOpacity>
+                         <Image
+-                            source={require('../assets/images/Screenshot 2026-01-06 170338.png')}
++                            source={require('../assets/images/res_screenshot_2026_01_06_170338.png')}
+                             style={styles.menuLogo}
+                             contentFit="contain"
+                         />
+@@ -2958,7 +2958,7 @@ export default function NewsFeedScreen() {
+                         {/* 3. States Grid (Row 1) */}
+                         <View style={styles.gridRow}>
+                             <TouchableOpacity style={styles.gridItemState} onPress={() => { setActiveCategory('andhra'); toggleMenu(); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}>
+-                                <Image source={require('../assets/images/ap_map_outline.png')} style={styles.stateMapIcon} contentFit="contain" />
++                                <Image source={require('../assets/images/res_ap_map_outline.png')} style={styles.stateMapIcon} contentFit="contain" />
+                                 <View style={{ flex: 1 }}>
+                                     <Text style={styles.stateTitle}>α░åα░éα░ºα▒ìα░░α░¬α▒ìα░░α░ªα▒çα░╢α▒ì</Text>
+                                     <Text style={styles.stateSubText}>Only Andhra Pradesh News</Text>
+@@ -2966,7 +2966,7 @@ export default function NewsFeedScreen() {
+                             </TouchableOpacity>
+                             <View style={{ width: 10 }} />
+                             <TouchableOpacity style={styles.gridItemState} onPress={() => { setActiveCategory('telangana'); toggleMenu(); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}>
+-                                <Image source={require('../assets/images/telangana_map_outline.png')} style={styles.stateMapIcon} contentFit="contain" />
++                                <Image source={require('../assets/images/res_telangana_map_outline.png')} style={styles.stateMapIcon} contentFit="contain" />
+                                 <View style={{ flex: 1 }}>
+                                     <Text style={styles.stateTitle}>α░ñα▒åα░▓α░éα░ùα░╛α░ú</Text>
+                                     <Text style={styles.stateSubText}>Only Telangana News</Text>
+@@ -3086,7 +3086,7 @@ export default function NewsFeedScreen() {
+                                 <Text style={styles.locHeaderLeftText}>Change location</Text>
+                                 <View style={styles.locHeaderCenter}>
+                                     <Image
+-                                        source={require('../assets/images/8K-Logo 1.png')}
++                                        source={require('../assets/images/res_8k_logo_1.png')}
+                                         style={styles.locHeaderLogo}
+                                         contentFit="contain"
+                                     />

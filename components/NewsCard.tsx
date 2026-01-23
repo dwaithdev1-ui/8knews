@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ResizeMode, Video } from 'expo-av';
 import { Image } from 'expo-image';
 import React, { useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, {
     Extrapolation,
     interpolate,
@@ -34,6 +34,7 @@ interface Props {
     video?: string;
     isMuted?: boolean;
     onToggleMute?: () => void;
+    cardHeight?: number;
 }
 
 /**
@@ -43,8 +44,9 @@ interface Props {
 export default function NewsCard({
     id, image, title, description, index, scrollY, totalItems,
     onComment, isSaved, onToggleSave, onOptions, onShare, onTap, isFullCard, showSwipeHint,
-    isVideo, video, isMuted, onToggleMute
+    isVideo, video, isMuted, onToggleMute, cardHeight
 }: Props) {
+    const CARD_HEIGHT_VAL = cardHeight || LAYOUT.windowHeight;
     const [liked, setLiked] = useState(false);
     const [disliked, setDisliked] = useState(false);
 
@@ -60,11 +62,12 @@ export default function NewsCard({
 
     const animatedStyle = useAnimatedStyle(() => {
         const inputRange = [
-            (index - 1) * CARD_HEIGHT,
-            index * CARD_HEIGHT,
-            (index + 1) * CARD_HEIGHT
+            (index - 1) * CARD_HEIGHT_VAL,
+            index * CARD_HEIGHT_VAL,
+            (index + 1) * CARD_HEIGHT_VAL
         ];
 
+        // 📈 Simpler scale/transY to avoid "underneath" ghosting
         const scale = interpolate(
             scrollY.value,
             inputRange,
@@ -75,7 +78,7 @@ export default function NewsCard({
         const translateY = interpolate(
             scrollY.value,
             inputRange,
-            [-CARD_HEIGHT, 0, 0],
+            [-CARD_HEIGHT_VAL, 0, 0],
             Extrapolation.CLAMP
         );
 
@@ -100,7 +103,7 @@ export default function NewsCard({
     // If it's a full card (special image) OR a video, render fit-to-screen layout
     if (isFullCard || isVideo) {
         return (
-            <Animated.View style={[styles.container, animatedStyle]}>
+            <Animated.View style={[styles.container, { height: CARD_HEIGHT_VAL }, animatedStyle]}>
                 <Pressable style={{ flex: 1 }} onPress={onTap}>
                     {isVideo ? (
                         <View style={{ flex: 1, backgroundColor: '#000' }}>
@@ -198,7 +201,7 @@ export default function NewsCard({
     }
 
     return (
-        <Animated.View style={[styles.container, animatedStyle]}>
+        <Animated.View style={[styles.container, { height: CARD_HEIGHT_VAL }, animatedStyle]}>
             <Pressable style={{ flex: 1 }} onPress={onTap}>
                 {/* 1. Top Image Section */}
                 <View style={styles.imageContainer}>
@@ -239,16 +242,12 @@ export default function NewsCard({
                     </View>
 
                     {/* 3. Main Text Content */}
-                    <ScrollView
-                        style={styles.textContainer}
-                        showsVerticalScrollIndicator={false}
-                        contentContainerStyle={styles.textScrollContent}
-                    >
-                        <Text style={styles.titleText}>{title}</Text>
-                        <Text style={styles.descriptionText}>{description}</Text>
+                    <View style={styles.textContainer}>
+                        <Text style={styles.titleText} numberOfLines={2} ellipsizeMode="tail">{title}</Text>
+                        <Text style={styles.descriptionText} numberOfLines={10} ellipsizeMode="tail">{description}</Text>
 
                         <Text style={styles.readMoreText}>ఇంకా చదవండి ......</Text>
-                    </ScrollView>
+                    </View>
 
                     {/* 4. Metadata & Action Bar Footer */}
                     <View style={styles.footer}>
@@ -307,14 +306,14 @@ export default function NewsCard({
 
 const styles = StyleSheet.create({
     container: {
-        height: CARD_HEIGHT,
+        height: CARD_HEIGHT, // 📏 Match synchronized window height exactly
         width: '100%',
-        backgroundColor: '#fff',
+        backgroundColor: '#fff', // 🥥 Solid background to prevent ghosting
         overflow: 'hidden',
     },
     imageContainer: {
         width: '100%',
-        height: CARD_HEIGHT * 0.40,
+        height: CARD_HEIGHT * 0.475, // 📈 Final precision to fill 820px perfectly
         backgroundColor: '#eee',
         position: 'relative',
     },
@@ -402,39 +401,36 @@ const styles = StyleSheet.create({
     textContainer: {
         flex: 1,
     },
-    textScrollContent: {
-        paddingBottom: 10,
-    },
     titleText: {
-        fontSize: 22,
+        fontSize: 22, // 📉 Balanced size
         fontWeight: '900',
         color: '#000',
-        marginBottom: 10, // Reduced margin
-        lineHeight: 28, // Tighter line height
+        marginBottom: 5,
+        lineHeight: 28,
     },
     descriptionText: {
-        fontSize: 19,
+        fontSize: 16, // 📉 Reduced from 20 to fit more text
         fontWeight: '500',
         color: '#000',
-        lineHeight: 28, // Slightly more breathing room for justified text
-        marginBottom: 10,
-        textAlign: 'justify', // Justified neat look
+        lineHeight: 20,
+        marginBottom: 5,
+        textAlign: 'justify',
     },
     readMoreText: {
-        fontSize: 17,
+        fontSize: 15,
         fontWeight: 'bold',
         color: '#000',
-        textAlign: 'center', // Center the text
-        marginTop: 10,       // Push it down a bit
+        textAlign: 'center',
+        marginTop: 5,
     },
     footer: {
-        paddingVertical: 10,
-        paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+        paddingVertical: 0,
+        paddingBottom: 0, // ⚓ Absolute zero bottom edge
     },
     metadataRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 10,
+        marginBottom: 5, // 📉 Reduced from 10
     },
     metaText: {
         fontSize: 13,
@@ -445,7 +441,7 @@ const styles = StyleSheet.create({
     separator: {
         height: 1,
         backgroundColor: '#eee',
-        marginBottom: 12,
+        marginBottom: 5,
     },
     actionRow: {
         flexDirection: 'row',
