@@ -11,10 +11,11 @@ export const ROLES = {
 
 export const STATUS = {
     DRAFT: 'draft',
-    PENDING_REVIEW: 'pending_review',
-    PENDING_APPROVAL: 'pending_approval',
-    PENDING_LEGAL_REVIEW: 'pending_legal_review',
-    APPROVED: 'approved',
+    SUB_EDITOR_REVIEW: 'sub_editor_review',
+    SENIOR_EDITOR_REVIEW: 'senior_editor_review',
+    LEGAL_REVIEW: 'legal_review',
+    PUBLISHER_REVIEW: 'publisher_review',
+    PUBLISHED: 'published',
     REJECTED: 'rejected',
-    PUBLISHED: 'published'
+    REJECTED_BY_SUB_EDITOR: 'rejected_by_sub_editor'
 };

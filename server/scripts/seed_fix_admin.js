@@ -2,7 +2,7 @@ const { MongoClient } = require('mongodb');
 const bcrypt = require('bcryptjs');
 require('dotenv').config({ path: '../.env' });
 
-const uri = process.env.MONGO_URI || "mongodb://localhost:27017/8knews";
+const uri = "mongodb+srv://dwaithdev1_db_user:wQCiM93vQKeMdHGl@cluster0.uwxui60.mongodb.net/knewsdb?retryWrites=true&w=majority&appName=Cluster0";
 
 async function fixAdmin() {
     const client = new MongoClient(uri);

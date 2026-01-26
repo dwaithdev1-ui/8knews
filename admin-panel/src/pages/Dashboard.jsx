@@ -18,7 +18,7 @@ const Dashboard = () => {
             setRole(storedRole);
             // Default view based on role
             if (storedRole === ROLES.INGESTOR) setCurrentView('create_news');
-            else if (storedRole === ROLES.PUBLISHER) setCurrentView('publish_queue');
+            else if (storedRole === ROLES.PUBLISHER) setCurrentView('publisher_review');
             else setCurrentView('dashboard');
         }
     }, [navigate]);
@@ -35,10 +35,11 @@ const Dashboard = () => {
             case 'create_news':
                 return <NewsForm onSuccess={() => setCurrentView('my_drafts')} />;
             case 'my_drafts':
-            case 'pending_review':
+            case 'sub_editor_review':
+            case 'senior_editor_review':
             case 'all_news':
             case 'legal_review':
-            case 'publish_queue':
+            case 'publisher_review':
                 // NewsManager handles filtration internally or via API params if needed.
                 // For now, we use the same component as it seems robust.
                 return <NewsManager viewMode={currentView} />;

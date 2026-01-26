@@ -5,6 +5,7 @@ import { ROLES, STATUS } from '../constants';
 const NewsManager = ({ viewMode }) => {
     const [news, setNews] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedItem, setSelectedItem] = useState(null); // For Review Modal
     const role = localStorage.getItem('adminRole');
     const email = localStorage.getItem('adminEmail');
     const token = localStorage.getItem('adminToken');
@@ -30,8 +31,9 @@ const NewsManager = ({ viewMode }) => {
     };
 
     const handleStatusChange = async (id, newStatus) => {
-        const remarks = prompt("Enter remarks for this action:");
+        const remarks = prompt(`Enter remarks for ${newStatus.replace(/_/g, ' ')}:`);
         if (remarks === null) return; // Cancelled
+        if (!remarks.trim()) return alert("Remarks are mandatory for this action.");
 
         try {
             await axios.patch(`http://localhost:3000/api/news/${id}/status`, {
@@ -40,6 +42,7 @@ const NewsManager = ({ viewMode }) => {
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+            setSelectedItem(null); // Close modal if open
             fetchNews();
         } catch (err) {
             alert(err.response?.data?.error || 'Action failed');
@@ -48,28 +51,29 @@ const NewsManager = ({ viewMode }) => {
 
     const getActions = (item) => {
         const actions = [];
-        // Helper to check if user can review
-        const isOwner = item.created_by === email; // backend needs to return created_by email or id
 
-        if (role === ROLES.INGESTOR && item.status === STATUS.DRAFT) {
-            actions.push({ label: 'Submit for Review', status: STATUS.PENDING_REVIEW, color: '#007bff' });
+        // Add "View / Review" for everyone
+        actions.push({ label: 'View / Review', onClick: () => setSelectedItem(item), color: '#17a2b8' });
+
+        if (role === ROLES.INGESTOR && (item.status === STATUS.DRAFT || item.status === STATUS.REJECTED_BY_SUB_EDITOR)) {
+            actions.push({ label: 'Submit for Review', status: STATUS.SUB_EDITOR_REVIEW, color: '#007bff' });
         }
-        if (role === ROLES.SUB_EDITOR && item.status === STATUS.PENDING_REVIEW) {
-            actions.push({ label: 'Approve', status: STATUS.PENDING_APPROVAL, color: '#28a745' });
+        if (role === ROLES.SUB_EDITOR && item.status === STATUS.SUB_EDITOR_REVIEW) {
+            actions.push({ label: 'Approve', status: STATUS.SENIOR_EDITOR_REVIEW, color: '#28a745' });
+            actions.push({ label: 'Reject', status: STATUS.REJECTED_BY_SUB_EDITOR, color: '#dc3545' });
+        }
+        if (role === ROLES.SENIOR_EDITOR && item.status === STATUS.SENIOR_EDITOR_REVIEW) {
+            actions.push({ label: 'Send to Legal', status: STATUS.LEGAL_REVIEW, color: '#17a2b8' });
+            actions.push({ label: 'Direct to Publisher', status: STATUS.PUBLISHER_REVIEW, color: '#ff9800' });
             actions.push({ label: 'Reject', status: STATUS.REJECTED, color: '#dc3545' });
         }
-        // Senior Editor approves to Ready for Legal/Publish
-        if (role === ROLES.SENIOR_EDITOR && item.status === STATUS.PENDING_APPROVAL) {
-            actions.push({ label: 'Approve (Legal Check)', status: STATUS.PENDING_LEGAL_REVIEW, color: '#17a2b8' });
-            actions.push({ label: 'Direct Approve', status: STATUS.APPROVED, color: '#28a745' });
+        if (role === ROLES.LEGAL && item.status === STATUS.LEGAL_REVIEW) {
+            actions.push({ label: 'Legally Clear', status: STATUS.PUBLISHER_REVIEW, color: '#28a745' });
+            actions.push({ label: 'Block/Reject', status: STATUS.REJECTED, color: '#dc3545' });
+        }
+        if (role === ROLES.PUBLISHER && item.status === STATUS.PUBLISHER_REVIEW) {
+            actions.push({ label: 'Approve & Publish', status: STATUS.PUBLISHED, color: '#6f42c1' });
             actions.push({ label: 'Reject', status: STATUS.REJECTED, color: '#dc3545' });
-        }
-        if (role === ROLES.LEGAL && item.status === STATUS.PENDING_LEGAL_REVIEW) {
-            actions.push({ label: 'Legally Clear', status: STATUS.APPROVED, color: '#28a745' });
-            actions.push({ label: 'Block', status: STATUS.REJECTED, color: '#dc3545' });
-        }
-        if (role === ROLES.PUBLISHER && item.status === STATUS.APPROVED) {
-            actions.push({ label: 'Publish Live', status: STATUS.PUBLISHED, color: '#6f42c1' });
         }
         if (role === ROLES.ADMIN) {
             Object.keys(STATUS).forEach(s => {
@@ -85,18 +89,16 @@ const NewsManager = ({ viewMode }) => {
         if (!items) return [];
         switch (viewMode) {
             case 'my_drafts':
-                // Filter by creator email and draft status
-                return items.filter(i => i.status === STATUS.DRAFT && (i.created_by === email || role === ROLES.ADMIN));
-            case 'pending_review':
-                return items.filter(i => i.status === STATUS.PENDING_REVIEW);
-            case 'pending_approval': // For Senior Editors checking Sub Editor work
-                return items.filter(i => i.status === STATUS.PENDING_APPROVAL);
+                return items.filter(i => (i.status === STATUS.DRAFT || i.status === STATUS.REJECTED_BY_SUB_EDITOR) && (i.created_by === email || role === ROLES.ADMIN));
+            case 'sub_editor_review':
+                return items.filter(i => i.status === STATUS.SUB_EDITOR_REVIEW);
+            case 'senior_editor_review':
+                return items.filter(i => i.status === STATUS.SENIOR_EDITOR_REVIEW);
             case 'legal_review':
-                return items.filter(i => i.status === STATUS.PENDING_LEGAL_REVIEW);
-            case 'publish_queue':
-                return items.filter(i => i.status === STATUS.APPROVED);
+                return items.filter(i => i.status === STATUS.LEGAL_REVIEW);
+            case 'publisher_review':
+                return items.filter(i => i.status === STATUS.PUBLISHER_REVIEW);
             case 'all_news':
-                // Exclude drafts mostly, or show everything? Let's show everything except maybe deleted
                 return items;
             default:
                 return items;
@@ -106,18 +108,19 @@ const NewsManager = ({ viewMode }) => {
     const showHistory = (history) => {
         if (!history || history.length === 0) return alert("No history available.");
         const text = history.map(h =>
-            `${new Date(h.date).toLocaleString()} - ${h.status.toUpperCase()} by ${h.updated_by}\nRemarks: ${h.remarks || 'None'}`
+            `${new Date(h.date).toLocaleString()} - ${h.status.replace(/_/g, ' ').toUpperCase()} by ${h.updated_by} (${h.role || 'Staff'})\nRemarks: ${h.remarks || 'None'}`
         ).join('\n---\n');
         alert(text);
     };
 
     const filteredNews = filterNews(news);
     const viewTitles = {
-        'my_drafts': 'My Drafts',
-        'pending_review': 'Pending Sub-Editor Review',
-        'legal_review': 'Pending Legal Clearance',
-        'publish_queue': 'Ready to Publish',
-        'all_news': 'All News Archives'
+        'my_drafts': 'My Content / Returned',
+        'sub_editor_review': 'Sub-Editor Review',
+        'senior_editor_review': 'Senior Editor Review',
+        'legal_review': 'Legal Clearance',
+        'publisher_review': 'Publisher Queue',
+        'all_news': 'Archives'
     };
 
     if (loading) return <div>Loading content...</div>;
@@ -157,7 +160,7 @@ const NewsManager = ({ viewMode }) => {
                                 </td>
                                 <td style={styles.td}>
                                     <span style={{ ...styles.badge, ...getStatusStyle(item.status) }}>
-                                        {item.status.replace('_', ' ').toUpperCase()}
+                                        {item.status.replace(/_/g, ' ').toUpperCase()}
                                     </span>
                                 </td>
                                 <td style={styles.td}>
@@ -166,20 +169,78 @@ const NewsManager = ({ viewMode }) => {
                                     </button>
                                 </td>
                                 <td style={styles.td}>
-                                    {getActions(item).map(action => (
-                                        <button
-                                            key={action.status}
-                                            onClick={() => handleStatusChange(item._id, action.status)}
-                                            style={{ ...styles.actionBtn, backgroundColor: action.color }}
-                                        >
-                                            {action.label}
-                                        </button>
-                                    ))}
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                                        {getActions(item).map((action, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={action.onClick || (() => handleStatusChange(item._id, action.status))}
+                                                style={{ ...styles.actionBtn, backgroundColor: action.color }}
+                                            >
+                                                {action.label}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
+            )}
+
+            {/* Review Modal */}
+            {selectedItem && (
+                <div style={styles.modalOverlay}>
+                    <div style={styles.modalContent}>
+                        <div style={styles.modalHeader}>
+                            <h2>News Review</h2>
+                            <button onClick={() => setSelectedItem(null)} style={styles.closeBtn}>×</button>
+                        </div>
+                        <div style={styles.modalBody}>
+                            {selectedItem.image && (
+                                <img
+                                    src={`http://localhost:3000${selectedItem.image}`}
+                                    alt="News"
+                                    style={styles.reviewImage}
+                                />
+                            )}
+                            <div style={styles.reviewSection}>
+                                <label style={styles.reviewLabel}>Title</label>
+                                <p style={styles.reviewText}>{selectedItem.title}</p>
+                            </div>
+                            <div style={styles.reviewSection}>
+                                <label style={styles.reviewLabel}>Content / Description</label>
+                                <p style={{ ...styles.reviewText, whiteSpace: 'pre-wrap' }}>{selectedItem.description}</p>
+                            </div>
+                            <div style={styles.reviewRow}>
+                                <div style={styles.reviewSection}>
+                                    <label style={styles.reviewLabel}>Category</label>
+                                    <p style={styles.reviewText}>{selectedItem.category?.name || 'N/A'}</p>
+                                </div>
+                                <div style={styles.reviewSection}>
+                                    <label style={styles.reviewLabel}>Language</label>
+                                    <p style={styles.reviewText}>{selectedItem.language?.toUpperCase() || 'TE'}</p>
+                                </div>
+                                <div style={styles.reviewSection}>
+                                    <label style={styles.reviewLabel}>Creator</label>
+                                    <p style={styles.reviewText}>{selectedItem.created_by}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div style={styles.modalFooter}>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                {getActions(selectedItem).filter(a => a.status).map((action, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => handleStatusChange(selectedItem._id, action.status)}
+                                        style={{ ...styles.actionBtn, fontSize: '1rem', padding: '0.6rem 1.2rem', backgroundColor: action.color }}
+                                    >
+                                        {action.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
@@ -199,9 +260,11 @@ const getStatusStyle = (status) => {
         case STATUS.PUBLISHED: return { background: '#d4edda', color: '#155724' };
         case STATUS.DRAFT: return { background: '#fff3cd', color: '#856404' };
         case STATUS.REJECTED: return { background: '#f8d7da', color: '#721c24' };
-        case STATUS.PENDING_REVIEW: return { background: '#cce5ff', color: '#004085' };
-        case STATUS.PENDING_APPROVAL: return { background: '#e2e3e5', color: '#383d41' };
-        case STATUS.PENDING_LEGAL_REVIEW: return { background: '#e0f7fa', color: '#006064' };
+        case STATUS.REJECTED_BY_SUB_EDITOR: return { background: '#ffebee', color: '#b71c1c' };
+        case STATUS.SUB_EDITOR_REVIEW: return { background: '#cce5ff', color: '#004085' };
+        case STATUS.SENIOR_EDITOR_REVIEW: return { background: '#e2e3e5', color: '#383d41' };
+        case STATUS.LEGAL_REVIEW: return { background: '#e0f7fa', color: '#006064' };
+        case STATUS.PUBLISHER_REVIEW: return { background: '#fce4ec', color: '#880e4f' };
         default: return { background: '#eee', color: '#333' };
     }
 };
@@ -222,8 +285,88 @@ const styles = {
         border: 'none',
         borderRadius: '4px',
         fontSize: '0.7rem',
-        marginRight: '0.4rem',
         cursor: 'pointer'
+    },
+    modalOverlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000
+    },
+    modalContent: {
+        background: 'white',
+        width: '90%',
+        maxWidth: '800px',
+        borderRadius: '8px',
+        maxHeight: '90vh',
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
+    },
+    modalHeader: {
+        padding: '1rem 1.5rem',
+        borderBottom: '1px solid #eee',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    },
+    closeBtn: {
+        background: 'none',
+        border: 'none',
+        fontSize: '1.5rem',
+        cursor: 'pointer'
+    },
+    modalBody: {
+        padding: '1.5rem',
+        overflowY: 'auto',
+        flex: 1
+    },
+    modalFooter: {
+        padding: '1rem 1.5rem',
+        borderTop: '1px solid #eee',
+        display: 'flex',
+        justifyContent: 'flex-end'
+    },
+    reviewImage: {
+        width: '100%',
+        maxHeight: '300px',
+        objectFit: 'cover',
+        borderRadius: '4px',
+        marginBottom: '1rem'
+    },
+    reviewSection: {
+        marginBottom: '1rem'
+    },
+    reviewLabel: {
+        fontSize: '0.8rem',
+        color: '#666',
+        fontWeight: 'bold',
+        display: 'block',
+        marginBottom: '0.3rem'
+    },
+    reviewText: {
+        fontSize: '1rem',
+        color: '#333',
+        margin: 0
+    },
+    reviewRow: {
+        display: 'flex',
+        gap: '2rem',
+        marginTop: '1rem',
+        flexWrap: 'wrap'
+    },
+    historyBtn: {
+        background: 'none',
+        border: 'none',
+        color: '#007bff',
+        cursor: 'pointer',
+        fontSize: '0.85rem'
     }
 };
 

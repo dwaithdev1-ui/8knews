@@ -68,7 +68,24 @@ startServer();
 
 app.get('/api/news', async (req, res) => {
     try {
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        let filter = { status: 'published' };
+
+        if (token) {
+            try {
+                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret8knews');
+                // If it's a valid admin/staff token, show everything
+                if (decoded.role) {
+                    filter = {};
+                }
+            } catch (authErr) {
+                // Invalid token, stick to published filter
+            }
+        }
+
         const news = await db.collection("news").aggregate([
+            { $match: filter },
             {
                 $lookup: {
                     from: "categories",
@@ -127,27 +144,38 @@ app.get('/api/news', async (req, res) => {
 
 app.post('/api/news', authenticateToken, upload.single('image'), async (req, res) => {
     try {
-        const { title, description, category_id, location_id, is_full_card, is_video, language } = req.body;
+        const { title, description, category_id, sub_category, location_id, is_full_card, is_video, language, status, remarks } = req.body;
         const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
         const creatorEmail = req.user.email;
+        const creatorRole = req.user.role;
 
         // Basic validation
         if (!title || !category_id) return res.status(400).json({ error: "Title and Category are required" });
+
+        const initialStatus = status || 'draft';
+        const initialRemarks = remarks || (initialStatus === 'draft' ? 'Initial creation' : 'Submitted for review');
 
         const newItem = {
             title,
             description,
             category_id: new ObjectId(category_id),
+            sub_category: sub_category || null,
             location_id: location_id ? new ObjectId(location_id) : null,
             image: imageUrl,
             is_full_card: is_full_card === 'true',
             is_video: is_video === 'true',
             language: language || 'te',
-            status: 'draft', // Default status
+            status: initialStatus,
             created_by: creatorEmail,
             created_at: new Date(),
             updated_at: new Date(),
-            history: [{ status: 'draft', date: new Date(), updated_by: creatorEmail, remarks: 'Initial creation' }]
+            history: [{
+                status: initialStatus,
+                date: new Date(),
+                updated_by: creatorEmail,
+                role: creatorRole,
+                remarks: initialRemarks
+            }]
         };
 
         const result = await db.collection("news").insertOne(newItem);
@@ -168,14 +196,25 @@ app.post('/api/news', authenticateToken, upload.single('image'), async (req, res
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.patch('/api/news/:id/status', async (req, res) => {
+app.patch('/api/news/:id/status', authenticateToken, async (req, res) => {
     const { status, remarks } = req.body;
+    const userRole = req.user.role;
+    const userEmail = req.user.email;
+
     try {
         await db.collection("news").updateOne(
             { _id: new ObjectId(req.params.id) },
             {
                 $set: { status, updated_at: new Date() },
-                $push: { history: { status, date: new Date(), updated_by: 'admin', remarks } }
+                $push: {
+                    history: {
+                        status,
+                        date: new Date(),
+                        updated_by: userEmail,
+                        role: userRole,
+                        remarks: remarks || 'No remarks'
+                    }
+                }
             }
         );
         res.json({ success: true });

@@ -4,7 +4,6 @@ import { Image } from 'expo-image';
 import React, { useEffect, useState } from 'react';
 import {
     BackHandler,
-    Dimensions,
     KeyboardAvoidingView,
     Linking,
     Platform,
@@ -43,11 +42,11 @@ import NewsCard from '../components/NewsCard';
 import { LAYOUT } from '../constants/Layout';
 import { useAuth } from '../contexts/AuthContext';
 
-const { width: WINDOW_WIDTH, height: WINDOW_HEIGHT } = Dimensions.get('window');
+const { windowWidth: WINDOW_WIDTH, windowHeight: WINDOW_HEIGHT } = LAYOUT;
 const HEADER_HEIGHT = 0;
 // const CARD_HEIGHT = LAYOUT.windowHeight; // Will define inside component for safe area
 
-const API_URL = 'http://192.168.29.70:3000/api';
+const API_URL = 'http://10.87.249.252:3000/api';
 
 const DEFAULT_NEWS_DATA = [
     // 🏠 MAIN NEWS & TRENDING - MODI VISIBILITY
@@ -589,7 +588,7 @@ export default function NewsFeedScreen() {
 
                         // Fix localhost URLs for Emulator/Device
                         if (mediaUrl && mediaUrl.includes('localhost')) {
-                            mediaUrl = mediaUrl.replace('localhost', '192.168.29.70');
+                            mediaUrl = mediaUrl.replace('localhost', '10.87.249.252');
                         }
 
                         // Map Layout Properties (DB snake_case -> App camelCase)
@@ -657,6 +656,7 @@ export default function NewsFeedScreen() {
     const [isDigitalMagazineVisible, setIsDigitalMagazineVisible] = useState(false);
     const [localNewsSearchQuery, setLocalNewsSearchQuery] = useState('');
     const [selectedLocalLocation, setSelectedLocalLocation] = useState('');
+
 
     // 💡 SWIPE HINT STATE
     const [showSwipeHint, setShowSwipeHint] = useState(false);

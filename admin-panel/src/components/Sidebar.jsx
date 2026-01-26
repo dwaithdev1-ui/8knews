@@ -21,14 +21,20 @@ const Sidebar = ({ role, currentView, onViewChange }) => {
             roles: [ROLES.INGESTOR, ROLES.ADMIN]
         },
         {
-            id: 'pending_review',
-            label: 'Pending Review',
+            id: 'sub_editor_review',
+            label: 'Sub-Editor Review',
             icon: '👀',
-            roles: [ROLES.SUB_EDITOR, ROLES.SENIOR_EDITOR, ROLES.ADMIN]
+            roles: [ROLES.SUB_EDITOR, ROLES.ADMIN]
+        },
+        {
+            id: 'senior_editor_review',
+            label: 'Senior-Editor Review',
+            icon: '⭐',
+            roles: [ROLES.SENIOR_EDITOR, ROLES.ADMIN]
         },
         {
             id: 'all_news',
-            label: 'All News',
+            label: 'Archives',
             icon: '📰',
             roles: [ROLES.SUB_EDITOR, ROLES.SENIOR_EDITOR, ROLES.PUBLISHER, ROLES.ADMIN]
         },
@@ -39,7 +45,7 @@ const Sidebar = ({ role, currentView, onViewChange }) => {
             roles: [ROLES.LEGAL, ROLES.ADMIN]
         },
         {
-            id: 'publish_queue',
+            id: 'publisher_review',
             label: 'Publish Queue',
             icon: '🚀',
             roles: [ROLES.PUBLISHER, ROLES.ADMIN]

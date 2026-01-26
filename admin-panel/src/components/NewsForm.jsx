@@ -8,6 +8,7 @@ const NewsForm = ({ onSuccess }) => {
         title: '',
         description: '',
         category_id: '',
+        sub_category: '', // Added sub_category
         location_id: '',
         is_full_card: false,
         is_video: false,
@@ -71,18 +72,29 @@ const NewsForm = ({ onSuccess }) => {
         }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (e, submitStatus = 'draft') => {
+        if (e) e.preventDefault();
+
+        let remarks = 'Initial creation';
+        if (submitStatus === 'pending_review') {
+            submitStatus = 'sub_editor_review'; // Standardized
+            remarks = prompt("Enter remarks for submission:");
+            if (remarks === null) return; // User cancelled
+        }
+
         setLoading(true);
 
         const data = new FormData();
         data.append('title', formData.title);
         data.append('description', formData.description);
         data.append('category_id', formData.category_id);
+        if (formData.sub_category) data.append('sub_category', formData.sub_category); // Append sub_category
         if (formData.location_id) data.append('location_id', formData.location_id);
         data.append('is_full_card', formData.is_full_card);
         data.append('is_video', formData.is_video);
         data.append('language', formData.language);
+        data.append('status', submitStatus);
+        data.append('remarks', remarks);
         if (formData.image) {
             data.append('image', formData.image);
         }
@@ -98,13 +110,16 @@ const NewsForm = ({ onSuccess }) => {
                 title: '',
                 description: '',
                 category_id: '',
+                sub_category: '',
                 location_id: '',
                 is_full_card: false,
                 is_video: false,
                 language: 'te',
                 image: null
             });
-            document.getElementById('imageInput').value = '';
+            if (document.getElementById('imageInput')) {
+                document.getElementById('imageInput').value = '';
+            }
             onSuccess();
         } catch (err) {
             alert(err.response?.data?.error || 'Failed to create news');
@@ -125,7 +140,7 @@ const NewsForm = ({ onSuccess }) => {
                     /> Phonetic Typing (Eng → Tel)
                 </label>
             </div>
-            <form onSubmit={handleSubmit} style={styles.form}>
+            <form onSubmit={(e) => handleSubmit(e, 'draft')} style={styles.form}>
                 <div style={styles.row}>
                     <select
                         value={formData.language}
@@ -224,13 +239,42 @@ const NewsForm = ({ onSuccess }) => {
                 <div style={styles.row}>
                     <select
                         value={formData.category_id}
-                        onChange={e => setFormData({ ...formData, category_id: e.target.value })}
+                        onChange={e => {
+                            const selectedCat = categories.find(c => c._id === e.target.value);
+                            // Reset sub_category if switching away from Digital Magazines
+                            const isDigitalMag = selectedCat?.slug === 'digital_magazines';
+                            setFormData({
+                                ...formData,
+                                category_id: e.target.value,
+                                sub_category: isDigitalMag ? formData.sub_category : ''
+                            });
+                        }}
                         style={styles.input}
                         required
                     >
                         <option value="">Select Category</option>
                         {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                     </select>
+
+                    {/* Sub Category Dropdown for Digital Magazines */}
+                    {categories.find(c => c._id === formData.category_id)?.slug === 'digital_magazines' && (
+                        <select
+                            value={formData.sub_category}
+                            onChange={e => setFormData({ ...formData, sub_category: e.target.value })}
+                            style={styles.input}
+                            required
+                        >
+                            <option value="">Select Sub Category</option>
+                            <option value="agriculture">Agriculture</option>
+                            <option value="lifestyle">Jeevanashaili (Lifestyle)</option>
+                            <option value="industries">Paarishramalu (Industries)</option>
+                            <option value="automobiles">Automobiles</option>
+                            <option value="science">Shasravethalu (Science/Tech)</option>
+                            <option value="real_estate">Real Estate</option>
+                            <option value="cricket">Cricket</option>
+                            <option value="hyderabad">Hyderabad</option>
+                        </select>
+                    )}
                     <select
                         value={formData.location_id}
                         onChange={e => setFormData({ ...formData, location_id: e.target.value })}
@@ -256,9 +300,24 @@ const NewsForm = ({ onSuccess }) => {
                         /> Video Item
                     </label>
                 </div>
-                <button type="submit" disabled={loading} style={styles.submitBtn}>
-                    {loading ? 'Submitting...' : 'Create Draft'}
-                </button>
+                <div style={styles.buttonGroup}>
+                    <button
+                        type="button"
+                        onClick={(e) => handleSubmit(e, 'draft')}
+                        disabled={loading}
+                        style={{ ...styles.submitBtn, background: '#6c757d' }}
+                    >
+                        {loading ? '...' : 'Save Draft'}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={(e) => handleSubmit(e, 'pending_review')}
+                        disabled={loading}
+                        style={styles.submitBtn}
+                    >
+                        {loading ? 'Submitting...' : 'Submit for Review'}
+                    </button>
+                </div>
             </form>
         </div>
     );
@@ -273,7 +332,8 @@ const styles = {
     input: { padding: '0.6rem', borderRadius: '4px', border: '1px solid #ddd', width: '100%', boxSizing: 'border-box' },
     row: { display: 'flex', gap: '1rem' },
     checkboxRow: { display: 'flex', gap: '2rem', fontSize: '0.9rem' },
-    submitBtn: { padding: '0.75rem', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' },
+    buttonGroup: { display: 'flex', gap: '1rem' },
+    submitBtn: { flex: 1, padding: '0.75rem', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' },
     translateBtn: {
         position: 'absolute',
         right: '10px',

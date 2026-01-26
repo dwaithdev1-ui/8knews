@@ -17,7 +17,7 @@ export const LAYOUT = {
     },
 
     get windowWidth() {
-        return SCREEN_WIDTH;
+        return Math.min(SCREEN_WIDTH, 420);
     }
 };
 
