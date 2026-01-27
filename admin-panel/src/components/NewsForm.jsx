@@ -241,12 +241,12 @@ const NewsForm = ({ onSuccess }) => {
                         value={formData.category_id}
                         onChange={e => {
                             const selectedCat = categories.find(c => c._id === e.target.value);
-                            // Reset sub_category if switching away from Digital Magazines
-                            const isDigitalMag = selectedCat?.slug === 'digital_magazines';
+                            // Reset sub_category if switching away from Digital Magazines or Digital Marketing
+                            const isSubCatEnabled = ['digital_magazines', 'digital_marketing'].includes(selectedCat?.slug);
                             setFormData({
                                 ...formData,
                                 category_id: e.target.value,
-                                sub_category: isDigitalMag ? formData.sub_category : ''
+                                sub_category: isSubCatEnabled ? formData.sub_category : ''
                             });
                         }}
                         style={styles.input}
@@ -256,8 +256,8 @@ const NewsForm = ({ onSuccess }) => {
                         {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                     </select>
 
-                    {/* Sub Category Dropdown for Digital Magazines */}
-                    {categories.find(c => c._id === formData.category_id)?.slug === 'digital_magazines' && (
+                    {/* Sub Category Dropdown for Digital Magazines & Digital Marketing */}
+                    {['digital_magazines', 'digital_marketing'].includes(categories.find(c => c._id === formData.category_id)?.slug) && (
                         <select
                             value={formData.sub_category}
                             onChange={e => setFormData({ ...formData, sub_category: e.target.value })}

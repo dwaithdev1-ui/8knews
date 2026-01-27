@@ -1,13 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import { ResizeMode, Video } from 'expo-av';
 import { Image } from 'expo-image';
-import React, { useState } from 'react';
+import React from 'react';
 import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, {
+    Easing,
     Extrapolation,
     interpolate,
     SharedValue,
-    useAnimatedStyle
+    useAnimatedStyle,
+    useSharedValue,
+    withRepeat,
+    withTiming
 } from 'react-native-reanimated';
 
 import { LAYOUT } from '../constants/Layout';
@@ -25,7 +29,7 @@ interface Props {
     onComment?: (id: string) => void;
     isSaved?: boolean;
     onToggleSave?: (id: string) => void;
-    onOptions?: () => void;
+    onOptions?: (id: string) => void;
     onShare?: (id: string) => void;
     onTap?: () => void;
     isFullCard?: boolean;
@@ -35,6 +39,17 @@ interface Props {
     isMuted?: boolean;
     onToggleMute?: () => void;
     cardHeight?: number;
+    showCommentHint?: boolean;
+    showOptionsHint?: boolean;
+    showShareHint?: boolean;
+    commentCount?: number;
+    likeCount?: number;
+    dislikeCount?: number;
+    liked?: boolean;
+    disliked?: boolean;
+    onLike?: () => void;
+    onDislike?: () => void;
+    darkMode?: boolean;
 }
 
 /**
@@ -44,20 +59,48 @@ interface Props {
 export default function NewsCard({
     id, image, title, description, index, scrollY, totalItems,
     onComment, isSaved, onToggleSave, onOptions, onShare, onTap, isFullCard, showSwipeHint,
-    isVideo, video, isMuted, onToggleMute, cardHeight
+    isVideo, video, isMuted, onToggleMute, cardHeight, showCommentHint, showOptionsHint, showShareHint, commentCount = 0,
+    likeCount = 0, dislikeCount = 0, liked = false, disliked = false, onLike, onDislike, darkMode = false
 }: Props) {
     const CARD_HEIGHT_VAL = cardHeight || LAYOUT.windowHeight;
-    const [liked, setLiked] = useState(false);
-    const [disliked, setDisliked] = useState(false);
 
-    const handleLike = () => {
-        setLiked(!liked);
-        if (disliked) setDisliked(false);
+    // 🎨 DYNAMIC COLORS
+    const bgColor = darkMode ? '#121212' : '#fff';
+    const textColor = darkMode ? '#eee' : '#000';
+    const subTextColor = darkMode ? '#bbb' : '#333';
+    const cardBgColor = darkMode ? '#1e1e1e' : '#fff';
+
+    // Blinking animation for comment hint
+    const hintBlinkAnim = useSharedValue(1);
+
+    React.useEffect(() => {
+        if (showCommentHint || showOptionsHint || showShareHint) {
+            hintBlinkAnim.value = withRepeat(
+                withTiming(0.2, { duration: 600, easing: Easing.inOut(Easing.ease) }),
+                -1,
+                true
+            );
+        }
+    }, [showCommentHint, showOptionsHint, showShareHint]);
+
+    const hintBlinkStyle = useAnimatedStyle(() => ({
+        opacity: hintBlinkAnim.value,
+    }));
+
+    const formatCount = (count: number) => {
+        if (!count) return '0';
+        if (count >= 1000) return (count / 1000).toFixed(1) + 'K';
+        return count.toString();
     };
 
-    const handleDislike = () => {
-        setDisliked(!disliked);
-        if (liked) setLiked(false);
+    const handleLike = (e: any) => {
+        e.stopPropagation();
+        onLike?.();
+    };
+
+    const handleDislike = (e: any) => {
+        e.stopPropagation();
+        onDislike?.();
     };
 
     const animatedStyle = useAnimatedStyle(() => {
@@ -103,7 +146,7 @@ export default function NewsCard({
     // If it's a full card (special image) OR a video, render fit-to-screen layout
     if (isFullCard || isVideo) {
         return (
-            <Animated.View style={[styles.container, { height: CARD_HEIGHT_VAL }, animatedStyle]}>
+            <Animated.View style={[styles.container, { height: CARD_HEIGHT_VAL, backgroundColor: bgColor }, animatedStyle]}>
                 <Pressable style={{ flex: 1 }} onPress={onTap}>
                     {isVideo ? (
                         <View style={{ flex: 1, backgroundColor: '#000' }}>
@@ -152,7 +195,7 @@ export default function NewsCard({
                                         size={28}
                                         color={liked ? "#1a73e8" : "#fff"}
                                     />
-                                    <Text style={styles.videoActionText}>2.0K</Text>
+                                    <Text style={styles.videoActionText}>{formatCount(likeCount)}</Text>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity style={styles.videoActionButton} onPress={handleDislike}>
@@ -161,15 +204,20 @@ export default function NewsCard({
                                         size={28}
                                         color={disliked ? "#d93025" : "#fff"}
                                     />
-                                    <Text style={styles.videoActionText}>46</Text>
+                                    <Text style={styles.videoActionText}>{formatCount(dislikeCount)}</Text>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
                                     style={styles.videoActionButton}
                                     onPress={() => onComment?.(id)}
                                 >
-                                    <Ionicons name="chatbubble-outline" size={26} color="#fff" />
-                                    <Text style={styles.videoActionText}>46</Text>
+                                    <View style={{ position: 'relative' }}>
+                                        <Ionicons name="chatbubble-outline" size={26} color="#fff" />
+                                        {showCommentHint && (
+                                            <Animated.View style={[styles.commentHintDot, hintBlinkStyle]} />
+                                        )}
+                                    </View>
+                                    <Text style={styles.videoActionText}>{commentCount}</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -201,7 +249,7 @@ export default function NewsCard({
     }
 
     return (
-        <Animated.View style={[styles.container, { height: CARD_HEIGHT_VAL }, animatedStyle]}>
+        <Animated.View style={[styles.container, { height: CARD_HEIGHT_VAL, backgroundColor: bgColor }, animatedStyle]}>
             <Pressable style={{ flex: 1 }} onPress={onTap}>
                 {/* 1. Top Image Section */}
                 <View style={styles.imageContainer}>
@@ -220,9 +268,9 @@ export default function NewsCard({
                 </View>
 
                 {/* 2. Content Card (Sloped Overlap) */}
-                <View style={styles.contentCard}>
+                <View style={[styles.contentCard, { backgroundColor: cardBgColor }]}>
                     {/* Slope Effect View */}
-                    <View style={styles.slopeEdge} />
+                    <View style={[styles.slopeEdge, { backgroundColor: cardBgColor }]} />
 
                     {/* Content Header (Inside White Card) */}
                     <View style={styles.contentHeader}>
@@ -232,31 +280,31 @@ export default function NewsCard({
                                 style={styles.logo}
                                 contentFit="contain"
                             />
-                            <Text style={styles.networkName}>8Knetwork:12-1-2026</Text>
+                            <Text style={[styles.networkName, { color: subTextColor }]}>8Knetwork:12-1-2026</Text>
                         </View>
                         <View style={styles.headerRight}>
-                            <View style={styles.appLinkBadge}>
-                                <Text style={styles.appLinkText}>8K news/Gfe1wx</Text>
+                            <View style={[styles.appLinkBadge, { backgroundColor: darkMode ? '#333' : '#F0F2F5' }]}>
+                                <Text style={[styles.appLinkText, { color: darkMode ? '#ccc' : '#555' }]}>8K news/Gfe1wx</Text>
                             </View>
                         </View>
                     </View>
 
                     {/* 3. Main Text Content */}
                     <View style={styles.textContainer}>
-                        <Text style={styles.titleText} numberOfLines={2} ellipsizeMode="tail">{title}</Text>
-                        <Text style={styles.descriptionText} numberOfLines={10} ellipsizeMode="tail">{description}</Text>
+                        <Text style={[styles.titleText, { color: textColor }]} numberOfLines={2} ellipsizeMode="tail">{title}</Text>
+                        <Text style={[styles.descriptionText, { color: textColor }]} numberOfLines={10} ellipsizeMode="tail">{description}</Text>
 
-                        <Text style={styles.readMoreText}>ఇంకా చదవండి ......</Text>
+                        <Text style={[styles.readMoreText, { color: textColor }]}>ఇంకా చదవండి ......</Text>
                     </View>
 
                     {/* 4. Metadata & Action Bar Footer */}
                     <View style={styles.footer}>
                         <Pressable style={styles.metadataRow}>
-                            <Ionicons name="time-outline" size={16} color="#333" />
-                            <Text style={styles.metaText}>14 m ago / {index + 1} of {totalItems} Pages</Text>
+                            <Ionicons name="time-outline" size={16} color={darkMode ? '#ccc' : '#333'} />
+                            <Text style={[styles.metaText, { color: darkMode ? '#ccc' : '#666' }]}>14 m ago / {index + 1} of {totalItems} Pages</Text>
                         </Pressable>
 
-                        <View style={styles.separator} />
+                        <View style={[styles.separator, { backgroundColor: darkMode ? '#333' : '#eee' }]} />
 
                         <View style={styles.actionRow} onStartShouldSetResponder={() => true}>
                             <View style={styles.leftActions}>
@@ -264,36 +312,51 @@ export default function NewsCard({
                                     <Ionicons
                                         name={liked ? "thumbs-up" : "thumbs-up-outline"}
                                         size={24}
-                                        color={liked ? "#1a73e8" : "#333"}
+                                        color={liked ? "#1a73e8" : (darkMode ? '#ddd' : '#333')}
                                     />
-                                    <Text style={styles.actionText}>2.0K</Text>
+                                    <Text style={[styles.actionText, { color: darkMode ? '#ddd' : '#666' }]}>{formatCount(likeCount)}</Text>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity style={styles.actionItem} onPress={handleDislike}>
                                     <Ionicons
                                         name={disliked ? "thumbs-down" : "thumbs-down-outline"}
                                         size={24}
-                                        color={disliked ? "#d93025" : "#333"}
+                                        color={disliked ? "#d93025" : (darkMode ? '#ddd' : '#333')}
                                     />
-                                    <Text style={styles.actionText}>46</Text>
+                                    <Text style={[styles.actionText, { color: darkMode ? '#ddd' : '#666' }]}>{formatCount(dislikeCount)}</Text>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
                                     style={styles.actionItem}
                                     onPress={() => onComment?.(id)}
                                 >
-                                    <Ionicons name="chatbubble-outline" size={24} color="#333" />
-                                    <Text style={styles.actionText}>46</Text>
+                                    <View style={{ position: 'relative' }}>
+                                        <Ionicons name="chatbubble-outline" size={24} color={darkMode ? '#ddd' : '#333'} />
+                                        {showCommentHint && (
+                                            <Animated.View style={[styles.commentHintDot, hintBlinkStyle]} />
+                                        )}
+                                    </View>
+                                    <Text style={[styles.actionText, { color: darkMode ? '#ddd' : '#666' }]}>{commentCount}</Text>
                                 </TouchableOpacity>
                             </View>
 
                             <View style={styles.rightActions}>
-                                <TouchableOpacity style={styles.iconButton} onPress={onOptions}>
-                                    <Ionicons name="ellipsis-vertical" size={24} color="#000" />
+                                <TouchableOpacity style={styles.iconButton} onPress={() => onOptions?.(id)}>
+                                    <View style={{ position: 'relative' }}>
+                                        <Ionicons name="ellipsis-vertical" size={24} color={darkMode ? '#fff' : '#000'} />
+                                        {showOptionsHint && (
+                                            <Animated.View style={[styles.commentHintDot, hintBlinkStyle]} />
+                                        )}
+                                    </View>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity style={styles.iconButton} onPress={() => onShare?.(id)}>
-                                    <Ionicons name="arrow-redo" size={28} color="#00C800" />
+                                    <View style={{ position: 'relative' }}>
+                                        <Ionicons name="arrow-redo" size={28} color="#00C800" />
+                                        {showShareHint && (
+                                            <Animated.View style={[styles.commentHintDot, hintBlinkStyle]} />
+                                        )}
+                                    </View>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -510,5 +573,17 @@ const styles = StyleSheet.create({
         textShadowColor: 'rgba(0, 0, 0, 0.75)',
         textShadowOffset: { width: -1, height: 1 },
         textShadowRadius: 10
+    },
+    commentHintDot: {
+        position: 'absolute',
+        top: -2,
+        right: -2,
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: '#FF0000',
+        borderWidth: 2,
+        borderColor: '#fff',
+        zIndex: 100,
     }
 });

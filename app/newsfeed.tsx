@@ -44,7 +44,19 @@ import { useAuth } from '../contexts/AuthContext';
 
 const { windowWidth: WINDOW_WIDTH, windowHeight: WINDOW_HEIGHT } = LAYOUT;
 const HEADER_HEIGHT = 0;
-// const CARD_HEIGHT = LAYOUT.windowHeight; // Will define inside component for safe area
+
+// 🌍 LANGUAGE CONFIGURATION
+const LANGUAGES = [
+    { id: 'english', name: 'English', localName: 'Hyderabad', letter: 'Aa', color: '#8E44AD' }, // Purple
+    { id: 'tamil', name: 'Tamil', localName: 'தமிழ்', letter: 'த', color: '#2ECC71' }, // Green
+    { id: 'telugu', name: 'Telugu', localName: 'తెలుగు', letter: 'తె', color: '#E74C3C' }, // Red
+    { id: 'kannada', name: 'Kannada', localName: 'ಕన్నడ', letter: 'ಕ', color: '#3498DB' }, // Blue
+    { id: 'hindi', name: 'Hindi', localName: 'Hindi', letter: 'हि', color: '#F39C12' }, // Orange
+    { id: 'marathi', name: 'Marathi', localName: 'मराठी', letter: 'म', color: '#E91E63' }, // Pink
+    { id: 'malayalam', name: 'Malayalam', localName: 'മലയാളം', letter: 'മ', color: '#1ABC9C' }, // Teal
+    { id: 'gujarati', name: 'Gujarati', localName: 'ગુજરાતી', letter: 'ગ', color: '#F1C40F' }, // Yellow
+    { id: 'bangla', name: 'Bangla', localName: 'বাংলা', letter: 'বা', color: '#16A085' }, // Teal
+];
 
 const API_URL = 'http://10.87.249.252:3000/api';
 
@@ -565,6 +577,61 @@ const MAGAZINE_DATA = [
     { id: 'mag8', title: 'హైదరాబాద్', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/res_vijayawada.jpg') },
 ];
 
+const ALL_LOCATIONS_DATA = [
+    // TELANGANA
+    { id: 'hyd', name: 'Hyderabad', telugu: 'హైదరాబాద్', state: 'TS' },
+    { id: 'sec', name: 'Secunderabad', telugu: 'సికింద్రాబాద్', state: 'TS' },
+    { id: 'kuk', name: 'Kukatpally', telugu: 'కూకట్‌పల్లి', state: 'TS' },
+    { id: 'war', name: 'Warangal', telugu: 'వరంగల్', state: 'TS' },
+    { id: 'kham', name: 'Khammam', telugu: 'ఖమ్మం', state: 'TS' },
+    { id: 'kar', name: 'Karimnagar', telugu: 'కరీంనగర్', state: 'TS' },
+    { id: 'niz', name: 'Nizamabad', telugu: 'నిజామాబాద్', state: 'TS' },
+    { id: 'mah', name: 'Mahabubnagar', telugu: 'మహబూబ్‌నగర్', state: 'TS' },
+    { id: 'nal', name: 'Nalgonda', telugu: 'నల్గొండ', state: 'TS' },
+    { id: 'adl', name: 'Adilabad', telugu: 'ఆదిలాబాద్', state: 'TS' },
+    { id: 'sur', name: 'Suryapet', telugu: 'సూర్యాపేట', state: 'TS' },
+    { id: 'sidd', name: 'Siddipet', telugu: 'సిద్దిపేట', state: 'TS' },
+    { id: 'mir', name: 'Miryalaguda', telugu: 'మిర్యాలగూడ', state: 'TS' },
+    { id: 'jag', name: 'Jagtial', telugu: 'జగిత్యాల', state: 'TS' },
+    { id: 'man', name: 'Mancherial', telugu: 'మంచిర్యాల', state: 'TS' },
+    { id: 'koth', name: 'Kothagudem', telugu: 'కోతగూడెం', state: 'TS' },
+    { id: 'bhad', name: 'Bhadrachalam', telugu: 'భద్రాచలం', state: 'TS' },
+    { id: 'han', name: 'Hanamkonda', telugu: 'హనుమకొండ', state: 'TS' },
+    { id: 'med', name: 'Medak', telugu: 'మేడక్', state: 'TS' },
+    { id: 'san', name: 'Sangareddy', telugu: 'సంగారెడ్డి', state: 'TS' },
+    { id: 'vik', name: 'Vikarabad', telugu: 'వికారాబాద్', state: 'TS' },
+
+    // ANDHRA PRADESH
+    { id: 'vij', name: 'Vijayawada', telugu: 'విజయవాడ', state: 'AP' },
+    { id: 'viz', name: 'Visakhapatnam', telugu: 'విశాఖపట్నం', state: 'AP' },
+    { id: 'gun', name: 'Guntur', telugu: 'గుంటూరు', state: 'AP' },
+    { id: 'nel', name: 'Nellore', telugu: 'నెల్లూరు', state: 'AP' },
+    { id: 'kur', name: 'Kurnool', telugu: 'కర్నూలు', state: 'AP' },
+    { id: 'raj', name: 'Rajahmundry', telugu: 'రాజమండ్రి', state: 'AP' },
+    { id: 'tir', name: 'Tirupati', telugu: 'తిరుపతి', state: 'AP' },
+    { id: 'kad', name: 'Kadapa', telugu: 'కడప', state: 'AP' },
+    { id: 'kak', name: 'Kakinada', telugu: 'కాకినాడ', state: 'AP' },
+    { id: 'ana', name: 'Anantapur', telugu: 'అనంతపురం', state: 'AP' },
+    { id: 'vizian', name: 'Vizianagaram', telugu: 'విజయనగరం', state: 'AP' },
+    { id: 'elk', name: 'Eluru', telugu: 'ఏలూరు', state: 'AP' },
+    { id: 'ong', name: 'Ongole', telugu: 'ఒంగోలు', state: 'AP' },
+    { id: 'sri', name: 'Srikakulam', telugu: 'శ్రీకాకుళం', state: 'AP' },
+    { id: 'mac', name: 'Machilipatnam', telugu: 'మచిలీపట్నం', state: 'AP' },
+    { id: 'chi', name: 'Chittoor', telugu: 'చిత్తూరు', state: 'AP' },
+    { id: 'bhi', name: 'Bhimavaram', telugu: 'భీమవరం', state: 'AP' },
+    { id: 'pro', name: 'Proddatur', telugu: 'ప్రొద్దుటూరు', state: 'AP' },
+    { id: 'nan', name: 'Nandyal', telugu: 'నంద్యాల', state: 'AP' },
+    { id: 'hind', name: 'Hindupur', telugu: 'హిందూపురం', state: 'AP' },
+    { id: 'ten', name: 'Tenali', telugu: 'తెనాలి', state: 'AP' },
+    { id: 'ama', name: 'Amaravati', telugu: 'అమరావతి', state: 'AP' },
+];
+
+// Helper function to get English name from Telugu location
+const getEnglishLocationName = (teluguName: string): string => {
+    const location = ALL_LOCATIONS_DATA.find(loc => loc.telugu === teluguName);
+    return location ? location.name.toLowerCase() : teluguName.toLowerCase();
+};
+
 export default function NewsFeedScreen() {
     const insets = useSafeAreaInsets();
     // 📐 Precise height calculation - matching physical screen for one-page fit
@@ -653,14 +720,24 @@ export default function NewsFeedScreen() {
     const [seenTutIndices, setSeenTutIndices] = useState<number[]>([]);
     const [showMenuBadge, setShowMenuBadge] = useState(false);
     const [isLocalNewsLocationVisible, setIsLocalNewsLocationVisible] = useState(false);
+    const [isMenuLocationVisible, setIsMenuLocationVisible] = useState(false);
     const [isDigitalMagazineVisible, setIsDigitalMagazineVisible] = useState(false);
     const [localNewsSearchQuery, setLocalNewsSearchQuery] = useState('');
-    const [selectedLocalLocation, setSelectedLocalLocation] = useState('');
+    const [isSearching, setIsSearching] = useState(false);
+
 
 
     // 💡 SWIPE HINT STATE
     const [showSwipeHint, setShowSwipeHint] = useState(false);
     const [hasTriggeredSwipeHint, setHasTriggeredSwipeHint] = useState(false);
+
+    // 💬 COMMENT HINT STATE
+    const [isCommentHintVisible, setIsCommentHintVisible] = useState(false);
+    const [hasSeenCommentHint, setHasSeenCommentHint] = useState(false);
+    const [isOptionsHintVisible, setIsOptionsHintVisible] = useState(false);
+    const [hasSeenOptionsHint, setHasSeenOptionsHint] = useState(false);
+    const [isShareHintVisible, setIsShareHintVisible] = useState(false);
+    const [hasSeenShareHint, setHasSeenShareHint] = useState(false);
 
     const dismissHint = (index: number) => {
         setShowHint(false);
@@ -684,6 +761,11 @@ export default function NewsFeedScreen() {
         const timer3 = setTimeout(() => {
             setIsTutorialMode(false); // End after 9s
             AsyncStorage.setItem('HAS_SEEN_TUTORIAL_V17', 'true').catch(() => { });
+
+            // Show comment hint after tutorial if not seen before
+            if (!hasSeenCommentHint) {
+                setIsCommentHintVisible(true);
+            }
         }, 9000);
 
         return () => {
@@ -711,6 +793,17 @@ export default function NewsFeedScreen() {
                 const ratedStatus = await AsyncStorage.getItem('HAS_RATED_APP');
                 if (ratedStatus === 'true') {
                     setHasRated(true);
+                }
+
+                const savedLocation = await AsyncStorage.getItem('USER_LOCATION');
+                if (savedLocation) {
+                    setUserLocation(savedLocation);
+                }
+
+                // 💬 CHECK IF USER HAS SEEN COMMENT HINT
+                const hasSeenComment = await AsyncStorage.getItem('HAS_SEEN_COMMENT_HINT');
+                if (hasSeenComment === 'true') {
+                    setHasSeenCommentHint(true);
                 }
             } catch (error) {
                 console.error('Error checking status:', error);
@@ -741,6 +834,7 @@ export default function NewsFeedScreen() {
     // 💬 COMMENT MODAL STATE
     const [commentModalVisible, setCommentModalVisible] = useState(false);
     const commentRevealVal = useSharedValue(0);
+    const [currentNewsId, setCurrentNewsId] = useState<string | null>(null);
     const [currentNewsTitle, setCurrentNewsTitle] = useState('');
     const [isViewingVideoComments, setIsViewingVideoComments] = useState(false);
 
@@ -748,17 +842,20 @@ export default function NewsFeedScreen() {
         id: string;
         text: string;
         user: string;
+        userId?: string;
         timestamp: number;
         isMe: boolean;
         likedByMe: boolean;
         likeCount: number;
         parentCommentId: string;
+        isSensitive?: boolean;
     };
 
     type Comment = {
         id: string;
         text: string;
         user: string;
+        userId?: string;
         location?: string;
         timestamp: number;
         isMe: boolean;
@@ -766,13 +863,169 @@ export default function NewsFeedScreen() {
         likeCount: number;
         replies: Reply[];
         isSensitive?: boolean;
+        isBlocked?: boolean;
         showReplies?: boolean;
     };
 
-    const [comments, setComments] = useState<Comment[]>([]);
+    const [allComments, setAllComments] = useState<Record<string, Comment[]>>({});
+    const comments = (currentNewsId && allComments[currentNewsId]) || [];
+    const [notificationPreferences, setNotificationPreferences] = useState<Record<string, boolean>>({});
     const [newComment, setNewComment] = useState('');
     const [deleteTarget, setDeleteTarget] = useState<{ commentId: string, replyId?: string } | null>(null);
     const [replyTarget, setReplyTarget] = useState<{ commentId: string, userName: string } | null>(null);
+
+    // Moderation States
+    const [blockedUserIds, setBlockedUserIds] = useState<string[]>([]);
+    const [blockedCommentIds, setBlockedCommentIds] = useState<string[]>([]);
+    const [reportModalVisible, setReportModalVisible] = useState(false);
+    const [reportingItem, setReportingItem] = useState<{ commentId: string, replyId?: string, userId: string } | null>(null);
+    const [revealedSensitiveIds, setRevealedSensitiveIds] = useState<string[]>([]);
+    const [newsInteractions, setNewsInteractions] = useState<Record<string, {
+        liked: boolean;
+        disliked: boolean;
+        likeCount: number;
+        dislikeCount: number;
+    }>>({});
+
+    // 🎓 AUTO-TRIGGER NEXT HINT IN SEQUENCE
+    useEffect(() => {
+        // If they've seen comments but NOT options hint yet -> Show options hint
+        if (hasSeenCommentHint && !hasSeenOptionsHint && !isOptionsHintVisible) {
+            setIsOptionsHintVisible(true);
+        }
+        // If they've seen options but NOT share hint yet -> Show share hint
+        if (hasSeenOptionsHint && !hasSeenShareHint && !isShareHintVisible) {
+            setIsShareHintVisible(true);
+        }
+    }, [hasSeenCommentHint, hasSeenOptionsHint, hasSeenShareHint]);
+
+    // 💾 LOAD PERSISTED DATA ON MOUNT
+    useEffect(() => {
+        const loadPersistedData = async () => {
+            try {
+                const [savedComments, savedBlockedUsers, savedBlockedComments, savedInteractions, savedOptionsHint, savedCommentHint, savedShareHint, savedNotifications, savedNightMode] = await Promise.all([
+                    AsyncStorage.getItem('ALL_COMMENTS_V1'),
+                    AsyncStorage.getItem('BLOCKED_USER_IDS_V1'),
+                    AsyncStorage.getItem('BLOCKED_COMMENT_IDS_V1'),
+                    AsyncStorage.getItem('NEWS_INTERACTIONS_V1'),
+                    AsyncStorage.getItem('HAS_SEEN_OPTIONS_HINT'),
+                    AsyncStorage.getItem('HAS_SEEN_COMMENT_HINT'),
+                    AsyncStorage.getItem('HAS_SEEN_SHARE_HINT'),
+                    AsyncStorage.getItem('NOTIFICATIONS_ENABLED'),
+                    AsyncStorage.getItem('NIGHT_MODE_ENABLED')
+                ]);
+
+                if (savedComments) setAllComments(JSON.parse(savedComments));
+                if (savedBlockedUsers) setBlockedUserIds(JSON.parse(savedBlockedUsers));
+                if (savedBlockedComments) setBlockedCommentIds(JSON.parse(savedBlockedComments));
+                if (savedInteractions) setNewsInteractions(JSON.parse(savedInteractions));
+                if (savedOptionsHint) setHasSeenOptionsHint(true);
+                if (savedShareHint) setHasSeenShareHint(true);
+                if (savedNotifications !== null) setIsNotificationEnabled(JSON.parse(savedNotifications));
+                if (savedNightMode !== null) setIsNightModeEnabled(JSON.parse(savedNightMode));
+
+                // 🔖 LOAD SAVED STORIES
+                const savedBookmarks = await AsyncStorage.getItem('SAVED_NEWS_IDS_V1');
+                if (savedBookmarks) {
+                    setSavedIds(JSON.parse(savedBookmarks));
+                }
+                setIsBookmarksLoaded(true);
+
+                // 💬 INITIALIZE COMMENT HINT VISIBILITY
+                if (!savedCommentHint) {
+                    setIsCommentHintVisible(true);
+                } else {
+                    setHasSeenCommentHint(true);
+                }
+            } catch (err) {
+                console.error('Error loading persisted moderation data:', err);
+            }
+        };
+        loadPersistedData();
+    }, []);
+
+    // 💾 SAVE COMMENTS ON UPDATE
+    useEffect(() => {
+        if (Object.keys(allComments).length > 0) {
+            AsyncStorage.setItem('ALL_COMMENTS_V1', JSON.stringify(allComments)).catch(err =>
+                console.error('Error saving comments:', err)
+            );
+        }
+    }, [allComments]);
+
+    // 💾 SAVE MODERATION ON UPDATE
+    useEffect(() => {
+        AsyncStorage.setItem('BLOCKED_USER_IDS_V1', JSON.stringify(blockedUserIds)).catch(err =>
+            console.error('Error saving blocked users:', err)
+        );
+    }, [blockedUserIds]);
+
+    useEffect(() => {
+        AsyncStorage.setItem('BLOCKED_COMMENT_IDS_V1', JSON.stringify(blockedCommentIds)).catch(err =>
+            console.error('Error saving blocked comments:', err)
+        );
+    }, [blockedCommentIds]);
+
+    // 💾 SAVE INTERACTIONS ON UPDATE
+    useEffect(() => {
+        if (Object.keys(newsInteractions).length > 0) {
+            AsyncStorage.setItem('NEWS_INTERACTIONS_V1', JSON.stringify(newsInteractions)).catch(err =>
+                console.error('Error saving interactions:', err)
+            );
+        }
+    }, [newsInteractions]);
+
+    const handleLikeNews = (newsId: string) => {
+        setNewsInteractions(prev => {
+            const current = prev[newsId] || { liked: false, disliked: false, likeCount: 0, dislikeCount: 0 };
+            const isLiked = !current.liked;
+            let newLikeCount = isLiked ? current.likeCount + 1 : Math.max(0, current.likeCount - 1);
+            let newDislikeCount = current.dislikeCount;
+            let isDisliked = current.disliked;
+
+            if (isLiked && isDisliked) {
+                isDisliked = false;
+                newDislikeCount = Math.max(0, newDislikeCount - 1);
+            }
+
+            return {
+                ...prev,
+                [newsId]: {
+                    ...current,
+                    liked: isLiked,
+                    disliked: isDisliked,
+                    likeCount: newLikeCount,
+                    dislikeCount: newDislikeCount
+                }
+            };
+        });
+    };
+
+    const handleDislikeNews = (newsId: string) => {
+        setNewsInteractions(prev => {
+            const current = prev[newsId] || { liked: false, disliked: false, likeCount: 0, dislikeCount: 0 };
+            const isDisliked = !current.disliked;
+            let newDislikeCount = isDisliked ? current.dislikeCount + 1 : Math.max(0, current.dislikeCount - 1);
+            let newLikeCount = current.likeCount;
+            let isLiked = current.liked;
+
+            if (isDisliked && isLiked) {
+                isLiked = false;
+                newLikeCount = Math.max(0, newLikeCount - 1);
+            }
+
+            return {
+                ...prev,
+                [newsId]: {
+                    ...current,
+                    liked: isLiked,
+                    disliked: isDisliked,
+                    likeCount: newLikeCount,
+                    dislikeCount: newDislikeCount
+                }
+            };
+        });
+    };
 
     const commentAnimationStyle = useAnimatedStyle(() => {
         const val = commentRevealVal.value;
@@ -807,8 +1060,29 @@ export default function NewsFeedScreen() {
         return `${Math.floor(hours / 24)}d ago`;
     };
 
+    const containsSensitiveContent = (text: string) => {
+        const sensitiveKeywords = [
+            // English
+            'violence', 'abuse', 'sexual', 'assault', 'pedophilia', 'incest',
+            'animal cruelty', 'animal death', 'self-harm', 'suicide',
+            'eating disorder', 'fat phobia', 'porn', 'pornography', 'nude',
+            'rape', 'kill', 'murder', 'blood', 'gore', 'sex', 'fuck', 'shit',
+            'bitch', 'asshole', 'bastard', 'dick', 'pussy',
+            // Telugu (Script)
+            'లైంగిక', 'దాడి', 'హింస', 'చిత్రహింసలు', 'అశ్లీల', 'బూతు', 'తప్పు',
+            // Telugu (Transliterated)
+            'lucha', 'na kodaka', 'lanja', 'dengu', 'munda', 'kodaka', 'nee amma',
+            'lanja kodaka', 'nee ayya', 'gey', 'gay', 'lesbian',
+            // GIF Detection
+            '[GIF]', 'gif', '.gif'
+        ];
+        const lowerText = text.toLowerCase();
+        return sensitiveKeywords.some(keyword => lowerText.includes(keyword));
+    };
+
     // 🔖 SAVED STORIES STATE
     const [savedIds, setSavedIds] = useState<string[]>([]);
+    const [isBookmarksLoaded, setIsBookmarksLoaded] = useState(false);
 
     // 🛠️ MENU FUNCTIONALITY STATE
     const [activeMenuModal, setActiveMenuModal] = useState<'profile' | 'saved' | 'lang' | 'feedback' | 'report' | 'settings' | null>(null);
@@ -870,6 +1144,7 @@ export default function NewsFeedScreen() {
     const [filteredNews, setFilteredNews] = useState<any[]>([]);
     const [readNewsIds, setReadNewsIds] = useState<string[]>([]);
     const [filterMode, setFilterMode] = useState<'all' | 'unread' | 'location'>('all');
+    const [pendingScrollToId, setPendingScrollToId] = useState<string | null>(null);
 
     // 🚪 EXIT MODAL STATE
     const [isExitModalVisible, setIsExitModalVisible] = useState(false);
@@ -895,6 +1170,7 @@ export default function NewsFeedScreen() {
     const [hasRated, setHasRated] = useState(false);
 
     const blinkOpacity = useSharedValue(1);
+    const hudAnimValue = useSharedValue(0); // 0 = hidden, 1 = visible
 
     useEffect(() => {
         // Check if Reload Hint has been seen
@@ -927,6 +1203,8 @@ export default function NewsFeedScreen() {
             if (category === 'true') setHasSeenCategoryHint(true);
         });
 
+
+
         // Blinking effect for the dots
         blinkOpacity.value = withRepeat(
             withSequence(
@@ -940,6 +1218,59 @@ export default function NewsFeedScreen() {
         return () => { };
     }, []);
 
+    // Auto-hide HUD after 5 seconds
+    useEffect(() => {
+        if (isHUDVisible) {
+            const timer = setTimeout(() => {
+                setIsHUDVisible(false);
+            }, 5000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [isHUDVisible]);
+
+    // 🔍 1. COMPREHENSIVE MODAL/OVERLAY CHECK
+    // This includes all possible full-screen screens that hide the newsfeed HUD.
+    const anyModalVisible = isCategoriesVisible ||
+        isMenuOpen ||
+        isLocationSelectorVisible ||
+        isLocalNewsLocationVisible ||
+        activeMenuModal !== null ||
+        commentModalVisible ||
+        isShareModalVisible ||
+        isOptionsVisible ||
+        isLoginModalVisible ||
+        isExitModalVisible ||
+        isDigitalMagazineVisible ||
+        isMenuLocationVisible;
+
+    // 🔄 2. SNAP VS SLIDE LOGIC
+    // We use a ref to detect when we've JUST come out of a modal.
+    // If a modal is open, or was just true in the previous cycle, we snap the HUD instantly.
+    // This satisfies the requirement: HUD animation ONLY in newsfeed, NOT categories/menu screens.
+    const prevAnyModalVisibleRef = React.useRef(false);
+
+    useEffect(() => {
+        // Clear value of anyModalVisible for clarity (optional but good for future-proofing)
+        const inNewsfeedMode = !anyModalVisible;
+        const targetValue = (isHUDVisible && inNewsfeedMode) ? 1 : 0;
+
+        if (anyModalVisible || prevAnyModalVisibleRef.current) {
+            // SNAP: Instant presence change during modal transitions
+            hudAnimValue.value = targetValue;
+        } else {
+            // SLIDE: Smooth animation for NewsFeed browsing (swipe/tap)
+            if (isHUDVisible) {
+                hudAnimValue.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.ease) });
+            } else {
+                hudAnimValue.value = withTiming(0, { duration: 250, easing: Easing.in(Easing.ease) });
+            }
+        }
+
+        // Update ref for next cycle
+        prevAnyModalVisibleRef.current = anyModalVisible;
+    }, [isHUDVisible, anyModalVisible]);
+
     // Update unread count dynamically
     useEffect(() => {
         const totalNews = newsData.length;
@@ -952,6 +1283,51 @@ export default function NewsFeedScreen() {
     // Back Button Handler
     useEffect(() => {
         const backAction = () => {
+            // Priority 1: Close Comments
+            if (commentModalVisible) {
+                closeComments();
+                return true;
+            }
+
+            // Priority 2: Close other overlays/modals
+            if (isCategoriesVisible) {
+                setIsCategoriesVisible(false);
+                return true;
+            }
+            if (isMenuOpen) {
+                toggleMenu();
+                return true;
+            }
+            if (isLocationSelectorVisible) {
+                setIsLocationSelectorVisible(false);
+                return true;
+            }
+            if (isLocalNewsLocationVisible) {
+                setIsLocalNewsLocationVisible(false);
+                return true;
+            }
+            if (activeMenuModal) {
+                setActiveMenuModal(null);
+                return true;
+            }
+            if (isShareModalVisible) {
+                setShareModalVisible(false);
+                return true;
+            }
+            if (isOptionsVisible) {
+                handleOptionsClose();
+                return true;
+            }
+            if (isLoginModalVisible) {
+                setIsLoginModalVisible(false);
+                return true;
+            }
+            if (isDigitalMagazineVisible) {
+                setIsDigitalMagazineVisible(false);
+                return true;
+            }
+
+            // Priority 3: Show Exit Modal if no modals are open
             setIsExitModalVisible(true);
             return true;
         };
@@ -962,14 +1338,24 @@ export default function NewsFeedScreen() {
         );
 
         return () => backHandler.remove();
-    }, []);
+    }, [
+        commentModalVisible, isCategoriesVisible, isMenuOpen,
+        isLocationSelectorVisible, isLocalNewsLocationVisible,
+        activeMenuModal, isShareModalVisible, isOptionsVisible,
+        isLoginModalVisible, isDigitalMagazineVisible
+    ]);
 
     // 🛠️ STABILITY FIX: Memoize the base structure (Stories + Random Fillers)
     // This ensures scrolling (which updates readNewsIds) does NOT re-shuffle the list, causing shaking.
     const stableMixedNews = React.useMemo(() => {
         let baseList = [];
         if (activeCategory === 'local') {
-            baseList = newsData.filter(item => item.tags?.includes(userLocation));
+            // Convert Telugu location name to English for tag matching
+            const englishLocation = getEnglishLocationName(userLocation);
+            baseList = newsData.filter(item =>
+                item.tags?.some((tag: string) => tag.toLowerCase().includes(englishLocation)) ||
+                item.location?.toLowerCase().includes(englishLocation)
+            );
         } else {
             baseList = newsData.filter(item => item.tags?.includes(activeCategory));
         }
@@ -1011,8 +1397,18 @@ export default function NewsFeedScreen() {
             else merged.push({ id: 'end-card', type: 'end' });
         }
 
-        // Fallback for empty
-        if (merged.length === 0) {
+        // Fallback for empty - show general local news if specific location matches fail
+        if (merged.length === 0 && activeCategory === 'local') {
+            const generalLocalNews = newsData.filter(item =>
+                item.tags?.includes('local') ||
+                item.category?.slug === 'local'
+            );
+            if (generalLocalNews.length > 0) {
+                merged = generalLocalNews;
+            } else {
+                merged = newsData.filter(item => item.tags?.includes('trending'));
+            }
+        } else if (merged.length === 0) {
             merged = newsData.filter(item => item.tags?.includes('trending'));
         }
 
@@ -1065,6 +1461,22 @@ export default function NewsFeedScreen() {
         setFilteredNews(final);
     }, [stableMixedNews, filterMode, effectiveReadIds, hasRated, showThankYouPage]);
 
+    // 📜 AUTO-SCROLL TO PENDING ITEM
+    useEffect(() => {
+        if (pendingScrollToId && filteredNews.length > 0) {
+            const index = filteredNews.findIndex(item => item.id === pendingScrollToId);
+            if (index !== -1) {
+                // Determine if we need to switch categories if not found? 
+                // No, we assume handleOpenSavedStory successfully switched context or it's here.
+                // Wait a brief moment for layout
+                setTimeout(() => {
+                    flatListRef.current?.scrollToIndex({ index, animated: true });
+                    setPendingScrollToId(null);
+                }, 300);
+            }
+        }
+    }, [filteredNews, pendingScrollToId]);
+
     // Check for Swipe Hint on 'main-2'
     useEffect(() => {
         if (!hasTriggeredSwipeHint && filteredNews.length > activeTutIndex) {
@@ -1114,12 +1526,12 @@ export default function NewsFeedScreen() {
                 setIsCategoryHintVisible(true);
             }
         }
-        // Toggle location filter
-        if (filterMode === 'location') {
-            setFilterMode('all');
-        } else {
-            setFilterMode('location');
-        }
+        // Switch to local news for current location
+        setActiveCategory('local');
+        setFilterMode('all');
+        setIsTutorialMode(false);
+        setIsHUDVisible(true); // Ensure HUD is visible when switching
+        flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
     };
 
     const handleUnreadClick = () => {
@@ -1147,10 +1559,113 @@ export default function NewsFeedScreen() {
         opacity: blinkOpacity.value,
     }));
 
+    // Animated styles for HUD slide in/out
+    const topHudAnimStyle = useAnimatedStyle(() => {
+        return {
+            transform: [
+                { translateY: interpolate(hudAnimValue.value, [0, 1], [-120, 0]) }
+            ],
+            opacity: hudAnimValue.value,
+        };
+    });
 
-    const handleOptionsOpen = () => {
+    const bottomHudAnimStyle = useAnimatedStyle(() => {
+        return {
+            transform: [
+                { translateY: interpolate(hudAnimValue.value, [0, 1], [120, 0]) }
+            ],
+            opacity: hudAnimValue.value,
+        };
+    });
+
+
+    const handleOptionsOpen = (id: string) => {
+        // 💬 DISMISS OPTIONS HINT ON FIRST OPEN
+        if (isOptionsHintVisible && !hasSeenOptionsHint) {
+            setIsOptionsHintVisible(false);
+            setHasSeenOptionsHint(true);
+            AsyncStorage.setItem('HAS_SEEN_OPTIONS_HINT', 'true').catch(() => { });
+        }
+        setCurrentNewsId(id); // Store ID for report/download actions
         setReportStep('menu');
         setIsOptionsVisible(true);
+    };
+
+    const handleDownloadImage = async () => {
+        if (!currentNewsId) return;
+        // Use filteredNews which contains the data including images
+        const item = filteredNews.find(i => i.id === currentNewsId);
+        if (!item) return;
+
+        try {
+            let imgUri = '';
+            if (typeof item.image === 'number') {
+                // Local asset (require)
+                const asset = RNImage.resolveAssetSource(item.image);
+                imgUri = asset.uri;
+            } else if (typeof item.image === 'string') {
+                imgUri = item.image;
+            } else if (item.image && item.image.uri) {
+                imgUri = item.image.uri;
+            }
+
+            if (!imgUri) {
+                alert('Could not identify image source.');
+                return;
+            }
+
+            // 🌐 WEB IMPLEMENTATION
+            if (Platform.OS === 'web') {
+                // Standard web download
+                const link = document.createElement('a');
+                link.href = imgUri;
+                link.download = `8knews_${item.id}.jpg`;
+                link.target = '_blank'; // Fail-safe for some browsers
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                handleOptionsClose();
+                return;
+            }
+
+            // 📱 NATIVE IMPLEMENTATION (Android/iOS)
+            // 1. Request Media Library Permissions
+            const { status } = await MediaLibrary.requestPermissionsAsync();
+            if (status !== 'granted') {
+                alert('Gallery permission is required to save images.');
+                return;
+            }
+
+            // 2. Prepare Cache Path
+            const ext = imgUri.split('.').pop()?.split('?')[0] || 'jpg';
+            const fileName = `8knews_${item.id}_${Date.now()}.${ext}`;
+            const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+
+            // 3. Download/Copy to Cache
+            let localUri = '';
+            if (imgUri.startsWith('http')) {
+                const downloadResult = await FileSystem.downloadAsync(imgUri, fileUri);
+                localUri = downloadResult.uri;
+            } else {
+                await FileSystem.copyAsync({ from: imgUri, to: fileUri });
+                localUri = fileUri;
+            }
+
+            // 4. Save to Media Library
+            await MediaLibrary.createAssetAsync(localUri);
+
+            if (Platform.OS === 'android') {
+                ToastAndroid.show('Image saved to gallery!', ToastAndroid.SHORT);
+            } else {
+                alert('Image saved to gallery!');
+            }
+
+            handleOptionsClose();
+        } catch (err) {
+            console.error('Download error:', err);
+            alert('Download failed. Please try again.');
+        }
     };
 
     const handleOptionsClose = () => {
@@ -1158,6 +1673,79 @@ export default function NewsFeedScreen() {
         setReportStep('menu');
         setSelectedReason('');
         setReportReasonText('');
+
+        // 🚩 STEP 3: SHOW SHARE HINT AFTER DISMISSING OPTIONS
+        if (hasSeenOptionsHint && !hasSeenShareHint) {
+            setIsShareHintVisible(true);
+        }
+    };
+
+    // 🔖 TOGGLE SAVE FUNCTION
+    const handleToggleSave = (newsId: string) => {
+        setSavedIds(prev => {
+            const isSaved = prev.includes(newsId);
+            let newSavedIds;
+            if (isSaved) {
+                newSavedIds = prev.filter(id => id !== newsId);
+                // ToastAndroid.show('Removed from Saved Stories', ToastAndroid.SHORT);
+            } else {
+                newSavedIds = [...prev, newsId];
+                // ToastAndroid.show('Added to Saved Stories', ToastAndroid.SHORT);
+            }
+            return newSavedIds;
+        });
+
+        // If triggered from options menu
+        if (isOptionsVisible) {
+            handleOptionsClose();
+            const isNowSaved = !savedIds.includes(newsId);
+            if (Platform.OS === 'android') {
+                ToastAndroid.show(isNowSaved ? 'Story Saved' : 'Story Removed', ToastAndroid.SHORT);
+            } else {
+                alert(isNowSaved ? 'Story Saved' : 'Story Removed');
+            }
+        }
+    };
+
+    // 💾 SAVE BOOKMARKS ON UPDATE
+    useEffect(() => {
+        if (isBookmarksLoaded) {
+            AsyncStorage.setItem('SAVED_NEWS_IDS_V1', JSON.stringify(savedIds)).catch(err =>
+                console.error('Error saving bookmarks:', err)
+            );
+        }
+    }, [savedIds, isBookmarksLoaded]);
+
+
+
+    // 📂 OPEN SAVED STORY
+    const handleOpenSavedStory = (newsId: string) => {
+        setActiveMenuModal(null);
+
+        // 1. Check if visible in current list
+        const index = filteredNews.findIndex(item => item.id === newsId);
+        if (index !== -1) {
+            setTimeout(() => flatListRef.current?.scrollToIndex({ index, animated: true }), 100);
+            return;
+        }
+
+        // 2. If not, try to switch to its category
+        const article = newsData.find(item => item.id === newsId);
+        if (article) {
+            setPendingScrollToId(newsId);
+            setFilterMode('all');
+            setIsTutorialMode(false);
+
+            // Heuristic to switch category
+            if (article.tags?.includes('trending')) {
+                setActiveCategory('trending');
+            } else {
+                // Find matching category tab
+                const cat = CATEGORY_TABS.find(tab => article.tags?.includes(tab.id));
+                if (cat) setActiveCategory(cat.id);
+                else setActiveCategory('trending'); // Fallback
+            }
+        }
     };
 
     const handleReportSubmit = () => {
@@ -1165,6 +1753,12 @@ export default function NewsFeedScreen() {
     };
 
     const handleOpenShare = (id: string) => {
+        // 💬 DISMISS SHARE HINT ON FIRST OPEN
+        if (isShareHintVisible && !hasSeenShareHint) {
+            setIsShareHintVisible(false);
+            setHasSeenShareHint(true);
+            AsyncStorage.setItem('HAS_SEEN_SHARE_HINT', 'true').catch(() => { });
+        }
         setSelectedShareId(id);
         setShareModalVisible(true);
     };
@@ -1328,60 +1922,36 @@ export default function NewsFeedScreen() {
     const handleOpenComments = (id: string) => {
         const newsItem = newsData.find(item => item.id === id);
         if (newsItem) {
+            // 💬 DISMISS COMMENT HINT ON FIRST COMMENT CLICK
+            if (isCommentHintVisible && !hasSeenCommentHint) {
+                setIsCommentHintVisible(false);
+                setHasSeenCommentHint(true);
+                AsyncStorage.setItem('HAS_SEEN_COMMENT_HINT', 'true').catch(() => { });
+            }
+
+            setCurrentNewsId(id);
             setCurrentNewsTitle(newsItem.title);
             setIsViewingVideoComments(!!newsItem.isVideo);
 
-            // Updated Sample Data to match the requested Video/Facebook style
-            setComments([
-                {
-                    id: 'c1',
-                    user: 'C Y Subramanyam Reddy',
-                    text: 'Movie name enti',
-                    timestamp: Date.now() - 4 * 7 * 24 * 60 * 60 * 1000, // 4w ago
-                    isMe: false,
-                    likedByMe: true,
-                    likeCount: 4,
-                    replies: [
-                        {
-                            id: 'r1',
-                            user: 'B Govardhan',
-                            text: 'Tiger 3',
-                            timestamp: Date.now() - 2 * 24 * 60 * 60 * 1000,
-                            isMe: false,
-                            likedByMe: false,
-                            likeCount: 2,
-                            parentCommentId: 'c1'
-                        }
-                    ],
-                    showReplies: false
-                },
-                {
-                    id: 'c2',
-                    user: 'Devendar Yerri',
-                    text: '..',
-                    timestamp: Date.now() - 5 * 7 * 24 * 60 * 60 * 1000, // 5w ago
-                    isMe: false,
-                    likedByMe: false,
-                    likeCount: 4,
-                    replies: []
-                },
-                {
-                    id: 'c3',
-                    user: 'Kolanti Anilkumar Anilkumar',
-                    text: 'Movie name enti',
-                    timestamp: Date.now() - 1 * 7 * 24 * 60 * 60 * 1000, // 1w ago
-                    isMe: false,
-                    likedByMe: false,
-                    likeCount: 1,
-                    replies: []
-                }
-            ]);
+            // Initialize comments if none exist for this ID
+            if (!allComments[id]) {
+                setAllComments(prev => ({ ...prev, [id]: [] }));
+            }
 
             setCommentModalVisible(true);
             commentRevealVal.value = withTiming(1, {
                 duration: 600,
                 easing: Easing.inOut(Easing.ease)
             });
+        }
+    };
+
+    const toggleNotifications = (enabled: boolean) => {
+        if (currentNewsId) {
+            setNotificationPreferences(prev => ({
+                ...prev,
+                [currentNewsId]: enabled
+            }));
         }
     };
 
@@ -1392,80 +1962,109 @@ export default function NewsFeedScreen() {
         }, (finished) => {
             if (finished) {
                 runOnJS(setCommentModalVisible)(false);
+                // 🚩 STEP 2: SHOW OPTIONS HINT AFTER DISMISSING COMMENTS
+                // Mark comment hint as seen right here as well to double check
+                setHasSeenCommentHint(true);
+                if (!hasSeenOptionsHint) {
+                    runOnJS(setIsOptionsHintVisible)(true);
+                }
             }
         });
     };
 
     const handleAddComment = () => {
-        if (newComment.trim()) {
+        if (newComment.trim() && currentNewsId) {
             const isMe = true;
             const finalUser = (userName !== 'Guest User') ? userName : 'You';
 
-            if (replyTarget) {
-                // Add as reply
-                setComments(prev => prev.map(c => {
-                    if (c.id === replyTarget.commentId) {
-                        const newReply: Reply = {
-                            id: Date.now().toString(),
-                            text: newComment,
-                            user: finalUser,
-                            timestamp: Date.now(),
-                            isMe: true,
-                            likedByMe: false,
-                            likeCount: 0,
-                            parentCommentId: c.id
-                        };
-                        return { ...c, replies: [...c.replies, newReply], showReplies: true };
-                    }
-                    return c;
-                }));
-                setReplyTarget(null);
-            } else {
-                // Add as main comment
-                const comment: Comment = {
-                    id: Date.now().toString(),
-                    text: newComment,
-                    user: finalUser,
-                    location: 'Ranga Reddy (D)',
-                    timestamp: Date.now(),
-                    isMe: true,
-                    likedByMe: false,
-                    likeCount: 0,
-                    replies: [],
-                };
-                setComments([comment, ...comments]);
-            }
+            setAllComments(prev => {
+                const currentList = prev[currentNewsId] || [];
+                if (replyTarget) {
+                    // Add as reply
+                    return {
+                        ...prev,
+                        [currentNewsId]: currentList.map(c => {
+                            if (c.id === replyTarget.commentId) {
+                                const isSensitive = containsSensitiveContent(newComment);
+                                const newReply: Reply = {
+                                    id: Date.now().toString(),
+                                    text: newComment,
+                                    user: finalUser,
+                                    userId: finalUser, // ID for demo
+                                    timestamp: Date.now(),
+                                    isMe: true,
+                                    likedByMe: false,
+                                    likeCount: 0,
+                                    parentCommentId: c.id,
+                                    isSensitive: isSensitive
+                                };
+                                return { ...c, replies: [...c.replies, newReply], showReplies: true };
+                            }
+                            return c;
+                        })
+                    };
+                } else {
+                    // Add as main comment
+                    const isSensitive = containsSensitiveContent(newComment);
+                    const comment: Comment = {
+                        id: Date.now().toString(),
+                        text: newComment,
+                        user: finalUser,
+                        userId: finalUser, // ID for demo
+                        location: 'Ranga Reddy (D)',
+                        timestamp: Date.now(),
+                        isMe: true,
+                        likedByMe: false,
+                        likeCount: 0,
+                        replies: [],
+                        isSensitive: isSensitive
+                    };
+                    return {
+                        ...prev,
+                        [currentNewsId]: [comment, ...currentList]
+                    };
+                }
+            });
+
+            if (replyTarget) setReplyTarget(null);
             setNewComment('');
         }
     };
 
     const handleLikeComment = (commentId: string, replyId?: string) => {
-        setComments(prev => prev.map(c => {
-            if (c.id === commentId) {
-                if (replyId) {
-                    return {
-                        ...c,
-                        replies: c.replies.map(r => {
-                            if (r.id === replyId) {
-                                return {
-                                    ...r,
-                                    likedByMe: !r.likedByMe,
-                                    likeCount: r.likedByMe ? Math.max(0, r.likeCount - 1) : r.likeCount + 1
-                                };
-                            }
-                            return r;
-                        })
-                    };
-                } else {
-                    return {
-                        ...c,
-                        likedByMe: !c.likedByMe,
-                        likeCount: c.likedByMe ? Math.max(0, c.likeCount - 1) : c.likeCount + 1
-                    };
-                }
-            }
-            return c;
-        }));
+        if (!currentNewsId) return;
+        setAllComments(prev => {
+            const currentList = prev[currentNewsId] || [];
+            return {
+                ...prev,
+                [currentNewsId]: currentList.map(c => {
+                    if (c.id === commentId) {
+                        if (replyId) {
+                            return {
+                                ...c,
+                                replies: c.replies.map(r => {
+                                    if (r.id === replyId) {
+                                        return {
+                                            ...r,
+                                            likedByMe: !r.likedByMe,
+                                            likeCount: r.likedByMe ? Math.max(0, r.likeCount - 1) : r.likeCount + 1
+                                        };
+                                    }
+                                    return r;
+                                })
+                            };
+                        } else {
+                            return {
+                                ...c,
+                                likedByMe: !c.likedByMe,
+                                likeCount: c.likedByMe ? Math.max(0, c.likeCount - 1) : c.likeCount + 1
+                            };
+                        }
+                    }
+                    return c;
+                })
+            };
+        });
     };
 
     const handleDeleteAction = (commentId: string, replyId?: string) => {
@@ -1473,18 +2072,27 @@ export default function NewsFeedScreen() {
     };
 
     const confirmDelete = () => {
-        if (!deleteTarget) return;
+        if (!deleteTarget || !currentNewsId) return;
         const { commentId, replyId } = deleteTarget;
-        if (replyId) {
-            setComments(prev => prev.map(c => {
-                if (c.id === commentId) {
-                    return { ...c, replies: c.replies.filter(r => r.id !== replyId) };
-                }
-                return c;
-            }));
-        } else {
-            setComments(prev => prev.filter(c => c.id !== commentId));
-        }
+        setAllComments(prev => {
+            const currentList = prev[currentNewsId] || [];
+            if (replyId) {
+                return {
+                    ...prev,
+                    [currentNewsId]: currentList.map(c => {
+                        if (c.id === commentId) {
+                            return { ...c, replies: c.replies.filter(r => r.id !== replyId) };
+                        }
+                        return c;
+                    })
+                };
+            } else {
+                return {
+                    ...prev,
+                    [currentNewsId]: currentList.filter(c => c.id !== commentId)
+                };
+            }
+        });
         setDeleteTarget(null);
     };
 
@@ -1493,7 +2101,47 @@ export default function NewsFeedScreen() {
     };
 
     const handleReportComment = (commentId: string, replyId?: string) => {
-        alert('రిపోర్ట్ సమర్పించబడింది');
+        if (!currentNewsId) return;
+        const commentList = allComments[currentNewsId] || [];
+        const comment = commentList.find(c => c.id === commentId);
+        if (!comment) return;
+
+        let userId = comment.userId || comment.user;
+        if (replyId) {
+            const reply = comment.replies.find(r => r.id === replyId);
+            if (reply) userId = reply.userId || reply.user;
+        }
+
+        setReportingItem({ commentId, replyId, userId });
+        setReportModalVisible(true);
+    };
+
+    const handleBlockUser = () => {
+        if (reportingItem) {
+            setBlockedUserIds(prev => [...prev, reportingItem.userId]);
+            setReportModalVisible(false);
+            setReportingItem(null);
+            alert('User blocked successfully.');
+        }
+    };
+
+    const handleBlockComment = () => {
+        if (reportingItem) {
+            setBlockedCommentIds(prev => [...prev, reportingItem.commentId]);
+            setReportModalVisible(false);
+            setReportingItem(null);
+            alert('Comment blocked successfully.');
+        }
+    };
+
+    const handleSubmitModerationReport = () => {
+        setReportModalVisible(false);
+        setReportingItem(null);
+        alert('Report submitted. Our team will review it.');
+    };
+
+    const revealSensitive = (id: string) => {
+        setRevealedSensitiveIds(prev => [...prev, id]);
     };
 
     const handleMenuAction = (id: string) => {
@@ -1535,11 +2183,7 @@ export default function NewsFeedScreen() {
         }
     };
 
-    const handleToggleSave = (id: string) => {
-        setSavedIds(prev =>
-            prev.includes(id) ? prev.filter(sid => sid !== id) : [...prev, id]
-        );
-    };
+
 
     const menuStyle = useAnimatedStyle(() => {
         return {
@@ -1573,7 +2217,14 @@ export default function NewsFeedScreen() {
             <Animated.FlatList
                 ref={flatListRef}
                 data={filteredNews}
-                extraData={showSwipeHint} // ✅ Force re-render when hint toggles
+                extraData={[
+                    isCommentHintVisible,
+                    isOptionsHintVisible,
+                    isShareHintVisible,
+                    newsInteractions,
+                    allComments,
+                    showSwipeHint
+                ]}
                 keyExtractor={(item) => item.id}
                 pagingEnabled={true} // ✅ Strict One-Card Paging
                 snapToInterval={CARD_HEIGHT}
@@ -1608,9 +2259,40 @@ export default function NewsFeedScreen() {
                     index,
                 })}
                 ListEmptyComponent={() => (
-                    <View style={{ flex: 1, height: LAYOUT.windowHeight, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
-                        <Text style={{ color: '#fff' }}>వార్తలు లోడ్ అవుతున్నాయి...</Text>
-                    </View>
+                    <Pressable
+                        style={{
+                            flex: 1,
+                            height: LAYOUT.windowHeight * 0.8,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            paddingHorizontal: 40
+                        }}
+                        onPress={() => setIsHUDVisible(!isHUDVisible)}
+                    >
+                        <Text style={{ color: '#fff', fontSize: 18, textAlign: 'center', lineHeight: 28, marginBottom: 30 }}>
+                            {activeCategory === 'local'
+                                ? `${userLocation} కు సంబంధించిన వార్తలు ఇంకా అందుబాటులో లేవు. లొకేషన్ మార్చుకోండి లేదా ట్రెండింగ్ వార్తలు చూడండి.`
+                                : 'వార్తలు లోడ్ అవుతున్నాయి...'}
+                        </Text>
+
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: '#FFD700',
+                                paddingHorizontal: 25,
+                                paddingVertical: 12,
+                                borderRadius: 25
+                            }}
+                            onPress={() => {
+                                setActiveCategory('trending');
+                                setFilterMode('all');
+                                setIsTutorialMode(false);
+                                setIsHUDVisible(true);
+                                flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+                            }}
+                        >
+                            <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>Go Back to Trending</Text>
+                        </TouchableOpacity>
+                    </Pressable>
                 )}
                 onMomentumScrollEnd={(e) => {
                     const idx = Math.round(e.nativeEvent.contentOffset.y / CARD_HEIGHT);
@@ -1729,6 +2411,18 @@ export default function NewsFeedScreen() {
                             isMuted={isMuted}
                             onToggleMute={toggleMute}
                             cardHeight={CARD_HEIGHT}
+                            showCommentHint={isCommentHintVisible && index === 0}
+                            commentCount={allComments[item.id]?.length || 0}
+                            liked={newsInteractions[item.id]?.liked || false}
+                            disliked={newsInteractions[item.id]?.disliked || false}
+                            likeCount={newsInteractions[item.id]?.likeCount ?? item.likeCount}
+                            dislikeCount={newsInteractions[item.id]?.dislikeCount || 0}
+                            onLike={() => handleLikeNews(item.id)}
+                            onDislike={() => handleDislikeNews(item.id)}
+                            showOptionsHint={isOptionsHintVisible && index === 0}
+                            showShareHint={isShareHintVisible && index === 0}
+                            isSaved={savedIds.includes(item.id)}
+                            onToggleSave={() => handleToggleSave(item.id)}
                             onTap={() => {
                                 const nextHUDState = !isHUDVisible;
                                 setIsHUDVisible(nextHUDState);
@@ -1780,8 +2474,11 @@ export default function NewsFeedScreen() {
             {/* HUD BARS */}
             <>
                 {/* 🔝 TOP HUD BAR */}
-                {isHUDVisible && !isCategoriesVisible && !isMenuOpen && !isLocationSelectorVisible && !isLocalNewsLocationVisible && !activeMenuModal && !commentModalVisible && !isShareModalVisible && !isOptionsVisible && !isLoginModalVisible && !isExitModalVisible && (
-                    <View style={styles.topHud}>
+                <Animated.View
+                    style={[styles.topHud, topHudAnimStyle]}
+                    pointerEvents={isHUDVisible ? 'auto' : 'none'}
+                >
+                    {!anyModalVisible && (
                         <View style={styles.topHudContent}>
                             <TouchableOpacity style={styles.hudMenuBtn} onPress={toggleMenu}>
                                 <Ionicons name="menu" size={28} color="#fff" />
@@ -1878,12 +2575,15 @@ export default function NewsFeedScreen() {
                                 </TouchableOpacity>
                             </ScrollView>
                         </View>
-                    </View>
-                )}
+                    )}
+                </Animated.View>
 
                 {/* ⏬ BOTTOM HUD BAR */}
-                {isHUDVisible && !isCategoriesVisible && !isMenuOpen && !isLocationSelectorVisible && !isLocalNewsLocationVisible && !activeMenuModal && !commentModalVisible && !isShareModalVisible && !isOptionsVisible && !isLoginModalVisible && !isExitModalVisible && (
-                    <View style={styles.bottomHud}>
+                <Animated.View
+                    style={[styles.bottomHud, bottomHudAnimStyle]}
+                    pointerEvents={isHUDVisible ? 'auto' : 'none'}
+                >
+                    {!anyModalVisible && (
                         <View style={styles.bottomHudContent}>
                             <TouchableOpacity
                                 style={styles.hudActionItem}
@@ -1989,784 +2689,1008 @@ export default function NewsFeedScreen() {
                                     </View>
                                 )}
                             </TouchableOpacity>
+
+                            {/* Temporary Count Popup for 1s */}
+                            {showCountPopup && (
+                                <View style={styles.countPopupOverlay}>
+                                    <View style={styles.countPopupContainer}>
+                                        <Text style={styles.countPopupText}>దీని మీద క్లిక్ చేస్తే కొత్త వార్తలను చూడవచ్చును</Text>
+                                    </View>
+                                </View>
+                            )}
                         </View>
+                    )}
+                </Animated.View>
+            </>
 
-                        {/* Temporary Count Popup for 1s */}
-                        {showCountPopup && (
-                            <View style={styles.countPopupOverlay}>
-                                <View style={styles.countPopupContainer}>
-                                    <Text style={styles.countPopupText}>దీని మీద క్లిక్ చేస్తే కొత్త వార్తలను చూడవచ్చును</Text>
-                                </View>
+            {/* 📂 CATEGORIES MODAL (Grid Layout) */}
+            {
+                isCategoriesVisible && (
+                    <View style={[styles.modalOverlay, { backgroundColor: '#fff', justifyContent: 'flex-start' }]}>
+                        <SafeAreaView style={styles.fullSpace}>
+                            <View style={styles.categoriesHeader}>
+                                <TouchableOpacity style={{ padding: 10 }} onPress={() => {
+                                    setIsCategoriesVisible(false);
+                                    setIsHUDVisible(true); // Force HUD open to show Reload hint
+                                }}>
+                                    <Ionicons name="close" size={28} color="#000" />
+                                </TouchableOpacity>
+                                <Text style={styles.categoriesHeaderTitle}>కేటగిరీలు</Text>
+                                <View style={{ width: 48 }} />
                             </View>
-                        )}
-                    </View>
-                )
-                }
 
-                {/* 📂 CATEGORIES MODAL (Grid Layout) */}
-                {
-                    isCategoriesVisible && (
-                        <View style={[styles.modalOverlay, { backgroundColor: '#fff', justifyContent: 'flex-start' }]}>
-                            <SafeAreaView style={styles.fullSpace}>
-                                <View style={styles.categoriesHeader}>
-                                    <TouchableOpacity style={{ padding: 10 }} onPress={() => {
-                                        setIsCategoriesVisible(false);
-                                        setIsHUDVisible(true); // Force HUD open to show Reload hint
-                                    }}>
-                                        <Ionicons name="close" size={28} color="#000" />
-                                    </TouchableOpacity>
-                                    <Text style={styles.categoriesHeaderTitle}>కేటగిరీలు</Text>
-                                    <View style={{ width: 48 }} />
-                                </View>
-
-                                <ScrollView contentContainerStyle={styles.categoryLeafList} showsVerticalScrollIndicator={false}>
-                                    {CATEGORY_TABS.map((cat) => (
-                                        <TouchableOpacity
-                                            key={cat.id}
-                                            style={[styles.categoryLeafItem, { borderColor: cat.accent || '#fff' }]}
-                                            onPress={() => {
-                                                // Special handling for Local News - show location selector
-                                                if (cat.id === 'local') {
-                                                    setIsCategoriesVisible(false);
-                                                    setIsHUDVisible(false);
-                                                    setIsLocalNewsLocationVisible(true);
-                                                } else {
-                                                    setActiveCategory(cat.id);
-                                                    setFilterMode('all'); // Reset other filters
-                                                    setIsTutorialMode(false);
-                                                    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
-                                                    setIsCategoriesVisible(false);
-                                                    setIsHUDVisible(true); // Force HUD open to show Reload hint
+                            <ScrollView contentContainerStyle={styles.categoryLeafList} showsVerticalScrollIndicator={false}>
+                                {CATEGORY_TABS.map((cat) => (
+                                    <TouchableOpacity
+                                        key={cat.id}
+                                        style={[styles.categoryLeafItem, { borderColor: cat.accent || '#fff' }]}
+                                        onPress={() => {
+                                            // Special handling for Local News - show location selector
+                                            if (cat.id === 'local') {
+                                                setIsCategoriesVisible(false);
+                                                setIsHUDVisible(false);
+                                                setIsLocalNewsLocationVisible(true);
+                                            } else {
+                                                setActiveCategory(cat.id);
+                                                setFilterMode('all'); // Reset other filters
+                                                setIsTutorialMode(false);
+                                                if (!hasSeenCommentHint) {
+                                                    setIsCommentHintVisible(true);
                                                 }
-                                            }}
-                                        >
-                                            <View style={styles.categoryLeafBg}>
-                                                {cat.id === 'main' ? (
-                                                    <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
-                                                        <Image
-                                                            source={require('../assets/images/res_vector_1.png')}
-                                                            style={{ width: '100%', height: '100%' }}
-                                                            contentFit="cover"
-                                                        />
-                                                    </View>
-                                                ) : cat.id === 'local' ? (
-                                                    <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
-                                                        <Image
-                                                            source={require('../assets/images/res_vector_2.png')}
-                                                            style={{ width: '100%', height: '100%' }}
-                                                            contentFit="cover"
-                                                        />
-                                                    </View>
-                                                ) : cat.id === 'wishes' ? (
-                                                    <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
-                                                        <Image
-                                                            source={require('../assets/images/res_vector_3.png')}
-                                                            style={{ width: '100%', height: '100%' }}
-                                                            contentFit="cover"
-                                                        />
-                                                    </View>
-                                                ) : cat.id === 'trending' ? (
-                                                    <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
-                                                        <Image
-                                                            source={require('../assets/images/res_vector_4.png')}
-                                                            style={{
-                                                                width: '140%',
-                                                                height: '140%',
-                                                                marginLeft: 0, // Shift right to bring the left logo fully into view
-                                                                marginTop: -15, // Lift the image up
-                                                            }}
-                                                            contentFit="cover"
-                                                        />
-                                                    </View>
-                                                ) : cat.id === 'whatsapp' ? (
-                                                    <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
-                                                        <Image
-                                                            source={require('../assets/images/res_vector_5.png')}
-                                                            style={{ width: '100%', height: '100%' }}
-                                                            contentFit="cover"
-                                                        />
-                                                    </View>
-                                                ) : cat.id === 'bhakti' ? (
-                                                    <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
-                                                        <Image
-                                                            source={require('../assets/images/res_vector_6.png')}
-                                                            style={{ width: '100%', height: '100%' }}
-                                                            contentFit="cover"
-                                                        />
-                                                    </View>
-                                                ) : cat.id === 'affairs' ? (
-                                                    <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
-                                                        <Image
-                                                            source={require('../assets/images/res_vector_7.png')}
-                                                            style={{ width: '100%', height: '100%' }}
-                                                            contentFit="cover"
-                                                        />
-                                                    </View>
-                                                ) : cat.id === 'lifestyle' ? (
-                                                    <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
-                                                        <Image
-                                                            source={require('../assets/images/res_vector_8.png')}
-                                                            style={{
-                                                                width: '100%',
-                                                                height: '110%',
-                                                                // marginTop: -10
-                                                            }}
-                                                            contentFit="cover"
-                                                        />
-                                                    </View>
-                                                ) : cat.id === 'agriculture' ? (
-                                                    <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
-                                                        <Image
-                                                            source={require('../assets/images/res_vector_9.png')}
-                                                            style={{
-                                                                width: '100%',
-                                                                height: '110%',
-                                                                // marginTop: -10
-                                                            }}
-                                                            contentFit="cover"
-                                                        />
-                                                    </View>
-                                                ) : cat.id === 'cinema' ? (
-                                                    <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
-                                                        <Image
-                                                            source={require('../assets/images/res_vector_10.png')}
-                                                            style={{
-                                                                width: '100%',
-                                                                height: '110%',
-                                                                // marginTop: -10
-                                                            }}
-                                                            contentFit="cover"
-                                                        />
-                                                    </View>
-                                                ) : cat.id === 'sports' ? (
-                                                    <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
-                                                        <Image
-                                                            source={require('../assets/images/res_vector_11.png')}
-                                                            style={{
-                                                                width: '100%',
-                                                                height: '110%',
-                                                                // marginTop: -10
-                                                            }}
-                                                            contentFit="cover"
-                                                        />
-                                                    </View>
-                                                ) : (
-                                                    <>
-                                                        <Image
-                                                            source={cat.bg}
-                                                            style={styles.categoryLeafImage}
-                                                            contentFit="cover"
-                                                        />
-                                                        <View style={styles.categoryLeafOverlay} />
-                                                    </>
-                                                )}
-                                            </View>
+                                                flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+                                                setIsCategoriesVisible(false);
+                                                setIsHUDVisible(true); // Force HUD open to show Reload hint
+                                            }
+                                        }}
+                                    >
+                                        <View style={styles.categoryLeafBg}>
+                                            {cat.id === 'main' ? (
+                                                <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                    <Image
+                                                        source={require('../assets/images/res_vector_1.png')}
+                                                        style={{ width: '100%', height: '100%' }}
+                                                        contentFit="cover"
+                                                    />
+                                                </View>
+                                            ) : cat.id === 'local' ? (
+                                                <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                    <Image
+                                                        source={require('../assets/images/res_vector_2.png')}
+                                                        style={{ width: '100%', height: '100%' }}
+                                                        contentFit="cover"
+                                                    />
+                                                </View>
+                                            ) : cat.id === 'wishes' ? (
+                                                <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                    <Image
+                                                        source={require('../assets/images/res_vector_3.png')}
+                                                        style={{ width: '100%', height: '100%' }}
+                                                        contentFit="cover"
+                                                    />
+                                                </View>
+                                            ) : cat.id === 'trending' ? (
+                                                <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                    <Image
+                                                        source={require('../assets/images/res_vector_4.png')}
+                                                        style={{
+                                                            width: '140%',
+                                                            height: '140%',
+                                                            marginLeft: 0, // Shift right to bring the left logo fully into view
+                                                            marginTop: -15, // Lift the image up
+                                                        }}
+                                                        contentFit="cover"
+                                                    />
+                                                </View>
+                                            ) : cat.id === 'whatsapp' ? (
+                                                <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                    <Image
+                                                        source={require('../assets/images/res_vector_5.png')}
+                                                        style={{ width: '100%', height: '100%' }}
+                                                        contentFit="cover"
+                                                    />
+                                                </View>
+                                            ) : cat.id === 'bhakti' ? (
+                                                <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                    <Image
+                                                        source={require('../assets/images/res_vector_6.png')}
+                                                        style={{ width: '100%', height: '100%' }}
+                                                        contentFit="cover"
+                                                    />
+                                                </View>
+                                            ) : cat.id === 'affairs' ? (
+                                                <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                    <Image
+                                                        source={require('../assets/images/res_vector_7.png')}
+                                                        style={{ width: '100%', height: '100%' }}
+                                                        contentFit="cover"
+                                                    />
+                                                </View>
+                                            ) : cat.id === 'lifestyle' ? (
+                                                <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                    <Image
+                                                        source={require('../assets/images/res_vector_8.png')}
+                                                        style={{
+                                                            width: '100%',
+                                                            height: '110%',
+                                                            // marginTop: -10
+                                                        }}
+                                                        contentFit="cover"
+                                                    />
+                                                </View>
+                                            ) : cat.id === 'agriculture' ? (
+                                                <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                    <Image
+                                                        source={require('../assets/images/res_vector_9.png')}
+                                                        style={{
+                                                            width: '100%',
+                                                            height: '110%',
+                                                            // marginTop: -10
+                                                        }}
+                                                        contentFit="cover"
+                                                    />
+                                                </View>
+                                            ) : cat.id === 'cinema' ? (
+                                                <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                    <Image
+                                                        source={require('../assets/images/res_vector_10.png')}
+                                                        style={{
+                                                            width: '100%',
+                                                            height: '110%',
+                                                            // marginTop: -10
+                                                        }}
+                                                        contentFit="cover"
+                                                    />
+                                                </View>
+                                            ) : cat.id === 'sports' ? (
+                                                <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                    <Image
+                                                        source={require('../assets/images/res_vector_11.png')}
+                                                        style={{
+                                                            width: '100%',
+                                                            height: '110%',
+                                                            // marginTop: -10
+                                                        }}
+                                                        contentFit="cover"
+                                                    />
+                                                </View>
+                                            ) : (
+                                                <>
+                                                    <Image
+                                                        source={cat.bg}
+                                                        style={styles.categoryLeafImage}
+                                                        contentFit="cover"
+                                                    />
+                                                    <View style={styles.categoryLeafOverlay} />
+                                                </>
+                                            )}
+                                        </View>
 
-                                            <View style={styles.categoryLeafContent}>
-                                                {cat.isHot && (
-                                                    <View style={styles.hotBadge}>
-                                                        <Text style={styles.hotText}>HOT !</Text>
-                                                    </View>
+                                        <View style={styles.categoryLeafContent}>
+                                            {cat.isHot && (
+                                                <View style={styles.hotBadge}>
+                                                    <Text style={styles.hotText}>HOT !</Text>
+                                                </View>
+                                            )}
+                                            <View style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                justifyContent: (cat.id === 'wishes' || cat.id === 'bhakti' || cat.id === 'lifestyle') ? 'center' : ((cat.id === 'cinema' || cat.id === 'sports') ? 'flex-end' : (cat.id === 'main' || cat.id === 'whatsapp' ? 'space-between' : 'flex-start')),
+                                                width: '100%',
+                                                paddingHorizontal: (cat.id === 'main' || cat.id === 'whatsapp') ? 5 : 0
+                                            }}>
+                                                {(cat.id === 'whatsapp') && (
+                                                    <Image
+                                                        source={require('../assets/images/res_rectangle.png')}
+                                                        style={{ width: 80, height: 80, marginLeft: -10 }}
+                                                        contentFit="contain"
+                                                    />
                                                 )}
-                                                <View style={{
-                                                    flexDirection: 'row',
-                                                    alignItems: 'center',
-                                                    justifyContent: (cat.id === 'wishes' || cat.id === 'bhakti' || cat.id === 'lifestyle') ? 'center' : ((cat.id === 'cinema' || cat.id === 'sports') ? 'flex-end' : (cat.id === 'main' || cat.id === 'whatsapp' ? 'space-between' : 'flex-start')),
-                                                    width: '100%',
-                                                    paddingHorizontal: (cat.id === 'main' || cat.id === 'whatsapp') ? 5 : 0
-                                                }}>
-                                                    {(cat.id === 'whatsapp') && (
-                                                        <Image
-                                                            source={require('../assets/images/res_rectangle.png')}
-                                                            style={{ width: 80, height: 80, marginLeft: -10 }}
-                                                            contentFit="contain"
-                                                        />
-                                                    )}
 
-                                                    {cat.id === 'lifestyle' ? (
-                                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', paddingHorizontal: 5 }}>
-                                                            <Text
-                                                                numberOfLines={1}
-                                                                adjustsFontSizeToFit
-                                                                minimumFontScale={0.5}
-                                                                style={[styles.categoryLeafText, styles.categoryLifestyleText, { color: cat.titleColor }]}
-                                                            >
-                                                                లైఫ్
-                                                            </Text>
-                                                            <Text
-                                                                numberOfLines={1}
-                                                                adjustsFontSizeToFit
-                                                                minimumFontScale={0.5}
-                                                                style={[styles.categoryLeafText, styles.categoryLifestyleText, { color: cat.titleColor }]}
-                                                            >
-                                                                స్టైల్
-                                                            </Text>
-                                                        </View>
-                                                    ) : (
+                                                {cat.id === 'lifestyle' ? (
+                                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', paddingHorizontal: 5 }}>
                                                         <Text
                                                             numberOfLines={1}
                                                             adjustsFontSizeToFit
                                                             minimumFontScale={0.5}
-                                                            style={[
-                                                                styles.categoryLeafText,
-                                                                { color: cat.titleColor, flex: (cat.id === 'main') ? 1 : undefined },
-                                                                cat.id === 'main' && styles.categoryMainText,
-                                                                cat.id === 'local' && styles.categoryLocalText,
-                                                                cat.id === 'wishes' && styles.categoryWishesText,
-                                                                cat.id === 'trending' && styles.categoryTrendingText,
-                                                                cat.id === 'whatsapp' && styles.categoryWhatsappText,
-                                                                cat.id === 'bhakti' && styles.categoryBhaktiText,
-                                                                cat.id === 'cinema' && styles.categoryCinemaText,
-                                                                cat.id === 'sports' && styles.categorySportsText
-                                                            ]}
+                                                            style={[styles.categoryLeafText, styles.categoryLifestyleText, { color: cat.titleColor }]}
                                                         >
-                                                            {cat.title}
+                                                            లైఫ్
                                                         </Text>
-                                                    )}
-                                                    {cat.id === 'main' && (
-                                                        <Image
-                                                            source={require('../assets/images/res_rectangle.png')}
-                                                            style={{ width: 70, height: 70, marginRight: -5 }}
-                                                            contentFit="contain"
-                                                        />
-                                                    )}
-                                                </View>
+                                                        <Text
+                                                            numberOfLines={1}
+                                                            adjustsFontSizeToFit
+                                                            minimumFontScale={0.5}
+                                                            style={[styles.categoryLeafText, styles.categoryLifestyleText, { color: cat.titleColor }]}
+                                                        >
+                                                            స్టైల్
+                                                        </Text>
+                                                    </View>
+                                                ) : (
+                                                    <Text
+                                                        numberOfLines={1}
+                                                        adjustsFontSizeToFit
+                                                        minimumFontScale={0.5}
+                                                        style={[
+                                                            styles.categoryLeafText,
+                                                            { color: cat.titleColor, flex: (cat.id === 'main') ? 1 : undefined },
+                                                            cat.id === 'main' && styles.categoryMainText,
+                                                            cat.id === 'local' && styles.categoryLocalText,
+                                                            cat.id === 'wishes' && styles.categoryWishesText,
+                                                            cat.id === 'trending' && styles.categoryTrendingText,
+                                                            cat.id === 'whatsapp' && styles.categoryWhatsappText,
+                                                            cat.id === 'bhakti' && styles.categoryBhaktiText,
+                                                            cat.id === 'cinema' && styles.categoryCinemaText,
+                                                            cat.id === 'sports' && styles.categorySportsText
+                                                        ]}
+                                                    >
+                                                        {cat.title}
+                                                    </Text>
+                                                )}
+                                                {cat.id === 'main' && (
+                                                    <Image
+                                                        source={require('../assets/images/res_rectangle.png')}
+                                                        style={{ width: 70, height: 70, marginRight: -5 }}
+                                                        contentFit="contain"
+                                                    />
+                                                )}
                                             </View>
-                                        </TouchableOpacity>
-                                    ))}
-                                    <View style={{ height: 40 }} />
-                                </ScrollView>
-                            </SafeAreaView>
-                        </View>
-                    )
-                }
-
-                {/* 🌍 LOCAL NEWS LOCATION SELECTOR */}
-                {
-                    isLocalNewsLocationVisible && (
-                        <View style={[styles.fullModalOverlay, { backgroundColor: '#fff' }]}>
-                            <SafeAreaView style={styles.fullSpace}>
-                                <View style={styles.locHeaderRef}>
-                                    <Text style={styles.locHeaderLeftText}>Change location</Text>
-                                    <View style={styles.locHeaderCenter}>
-                                        <Image
-                                            source={require('../assets/images/res_8k_logo_1.png')}
-                                            style={styles.locHeaderLogo}
-                                            contentFit="contain"
-                                        />
-                                    </View>
-                                    <TouchableOpacity onPress={() => setIsLocalNewsLocationVisible(false)} style={styles.locHeaderRight}>
-                                        <Ionicons name="chevron-forward" size={28} color="#1a73e8" />
+                                        </View>
                                     </TouchableOpacity>
+                                ))}
+                                <View style={{ height: 40 }} />
+                            </ScrollView>
+                        </SafeAreaView>
+                    </View>
+                )
+            }
+
+            {/* 🌍 1. LOCAL NEWS LOCATION SELECTOR (OLD UI - Simple List) */}
+            {
+                isLocalNewsLocationVisible && (
+                    <View style={[styles.fullModalOverlay, { backgroundColor: '#fff' }]}>
+                        <SafeAreaView style={styles.fullSpace}>
+                            <View style={styles.locHeaderRef}>
+                                <View style={styles.locHeaderCenter}>
+                                    <Image
+                                        source={require('../assets/images/res_8k_logo_1.png')}
+                                        style={styles.locHeaderLogo}
+                                        contentFit="contain"
+                                    />
+                                </View>
+                                <Text style={styles.locHeaderLeftText}>Change location</Text>
+                                <TouchableOpacity onPress={() => setIsLocalNewsLocationVisible(false)} style={styles.locHeaderRight}>
+                                    <Ionicons name="chevron-forward" size={28} color="#1a73e8" />
+                                </TouchableOpacity>
+                            </View>
+
+                            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 30 }} showsVerticalScrollIndicator={false}>
+                                <Text style={styles.locRefInstruction}>మీకు కావాల్సిన నియోజకవర్గం ఎంచుకోండి</Text>
+
+                                {/* Search Box */}
+                                <View style={styles.locRefSearchContainer}>
+                                    <View style={styles.locRefSearchBox}>
+                                        <Ionicons name="location-sharp" size={20} color="#777" />
+                                        <TextInput
+                                            style={styles.locRefInput}
+                                            placeholder="మీ నియోజకవర్గం పేరు శోధించండి..."
+                                            placeholderTextColor="#999"
+                                            value={localNewsSearchQuery}
+                                            onChangeText={setLocalNewsSearchQuery}
+                                        />
+                                        <Ionicons name="search" size={20} color="#777" />
+                                    </View>
                                 </View>
 
-                                <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 30 }} showsVerticalScrollIndicator={false}>
-                                    <Text style={styles.locRefInstruction}>మీకు కావాల్సిన నియోజకవర్గం ఎంచుకోండి</Text>
+                                {/* Location List */}
+                                <View style={{ marginTop: 10 }}>
+                                    {(() => {
+                                        const searchLower = localNewsSearchQuery.toLowerCase().trim();
 
-                                    {/* Search Box */}
-                                    <View style={styles.locRefSearchContainer}>
-                                        <View style={styles.locRefSearchBox}>
-                                            <Ionicons name="location-sharp" size={20} color="#777" />
+                                        // Only show results if user is typing
+                                        if (searchLower === '') return null;
+
+                                        const filteredLocations = ALL_LOCATIONS_DATA.filter(loc =>
+                                            loc.telugu.includes(localNewsSearchQuery) ||
+                                            loc.name.toLowerCase().includes(searchLower)
+                                        );
+
+                                        if (filteredLocations.length === 0) {
+                                            return <Text style={{ color: '#999', padding: 10, textAlign: 'center' }}>No location found</Text>;
+                                        }
+
+                                        return filteredLocations.map((loc, idx) => (
+                                            <TouchableOpacity
+                                                key={idx}
+                                                style={styles.locListItem}
+                                                onPress={() => {
+                                                    setUserLocation(loc.telugu);
+                                                    AsyncStorage.setItem('USER_LOCATION', loc.telugu).catch(err => console.error(err));
+                                                    setActiveCategory('local');
+                                                    setFilterMode('all');
+                                                    setIsTutorialMode(false);
+                                                    setLocalNewsSearchQuery('');
+                                                    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+                                                    setIsLocalNewsLocationVisible(false);
+                                                    setIsHUDVisible(true);
+                                                }}
+                                            >
+                                                <View style={styles.locListLeft}>
+                                                    <View style={styles.locListIconCircle}>
+                                                        <Ionicons name="location-sharp" size={18} color="#1a73e8" />
+                                                    </View>
+                                                    <Text style={styles.locListItemText}>{loc.telugu}</Text>
+                                                </View>
+                                                <Ionicons name="chevron-forward" size={22} color="#999" />
+                                            </TouchableOpacity>
+                                        ));
+                                    })()}
+                                </View>
+                            </ScrollView>
+                        </SafeAreaView>
+                    </View>
+                )
+            }
+
+            {/* 🌍 2. MENU LOCATION SELECTOR (NEW UI - Enhanced) */}
+            {
+                isMenuLocationVisible && (
+                    <View style={[styles.fullModalOverlay, { backgroundColor: '#fff' }]}>
+                        <SafeAreaView style={styles.fullSpace}>
+                            <View style={styles.locHeaderRef}>
+                                <Text style={[styles.locHeaderLeftText, { width: 200 }]}>మీ ప్రాంతాన్ని ఎంచుకోండి</Text>
+                                <View style={{ flex: 1 }} />
+                                <TouchableOpacity onPress={() => setIsMenuLocationVisible(false)} style={styles.locHeaderRight}>
+                                    <Ionicons name="close" size={28} color="#000" />
+                                </TouchableOpacity>
+                            </View>
+
+                            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20 }} showsVerticalScrollIndicator={false}>
+                                {/* 1. Manual Search Section */}
+                                <View style={styles.locSearchCard}>
+                                    <Text style={styles.locSearchPrompt}>మీ లొకేషన్ను మీరే స్వయంగా ఎంచుకునేందుకు ఈ ఆప్షన్ ఎంచుకోండి</Text>
+
+                                    {(!isSearching && userLocation) ? (
+                                        <TouchableOpacity style={styles.locSearchInputBox} onPress={() => { setIsSearching(true); setLocalNewsSearchQuery(''); }}>
+                                            <View style={styles.locInputChip}>
+                                                <Text style={styles.locInputText}>{userLocation}</Text>
+                                                <TouchableOpacity onPress={(e) => { e.stopPropagation(); setIsSearching(true); setLocalNewsSearchQuery(''); }}>
+                                                    <Ionicons name="close" size={14} color="#666" style={{ marginLeft: 5 }} />
+                                                </TouchableOpacity>
+                                            </View>
+                                            <View style={{ flex: 1 }} />
+                                            <Ionicons name="search" size={20} color="#999" />
+                                        </TouchableOpacity>
+                                    ) : (
+                                        <View style={styles.locSearchInputBox}>
+                                            <Ionicons name="search" size={20} color="#999" style={{ marginRight: 10 }} />
                                             <TextInput
-                                                style={styles.locRefInput}
-                                                placeholder="మీ నియోజకవర్గం పేరు శోధించండి..."
+                                                style={{ flex: 1, color: '#000', fontSize: 16 }}
+                                                placeholder="Search City..."
                                                 placeholderTextColor="#999"
                                                 value={localNewsSearchQuery}
                                                 onChangeText={setLocalNewsSearchQuery}
+                                                autoFocus
                                             />
-                                            <Ionicons name="search" size={20} color="#777" />
-                                        </View>
-                                    </View>
-
-                                    {/* Location List */}
-                                    <View style={{ marginTop: 10 }}>
-                                        {(() => {
-                                            const allLocations = [
-                                                { telugu: 'హైదరాబాద్', english: 'hyderabad', id: 'hyd' },
-                                                { telugu: 'కూకట్‌పల్లి', english: 'kukatpally', id: 'kukatpally' },
-                                                { telugu: 'సికింద్రాబాద్', english: 'secunderabad', id: 'sec' },
-                                                { telugu: 'శ్రీకాకుళం', english: 'srikakulam', id: 'sri' },
-                                                { telugu: 'గుంటూరు', english: 'guntur', id: 'guntur' },
-                                                { telugu: 'విజయవాడ', english: 'vijayawada', id: 'vij' },
-                                                { telugu: 'విశాఖపట్నం', english: 'visakhapatnam', id: 'vizag' },
-                                                { telugu: 'తిరుపతి', english: 'tirupati', id: 'tirupati' }
-                                            ];
-
-                                            const searchLower = localNewsSearchQuery.toLowerCase().trim();
-                                            const filteredLocations = searchLower === ''
-                                                ? allLocations
-                                                : allLocations.filter(loc =>
-                                                    loc.telugu.includes(localNewsSearchQuery) ||
-                                                    loc.english.includes(searchLower)
-                                                );
-
-                                            return filteredLocations.map((loc, idx) => (
-                                                <TouchableOpacity
-                                                    key={idx}
-                                                    style={styles.locListItem}
-                                                    onPress={() => {
-                                                        setSelectedLocalLocation(loc.telugu);
-                                                        setUserLocation(loc.telugu);
-                                                        setActiveCategory('local');
-                                                        setFilterMode('all');
-                                                        setIsTutorialMode(false);
-                                                        flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
-                                                        setIsLocalNewsLocationVisible(false);
-                                                        setIsHUDVisible(true);
-                                                    }}
-                                                >
-                                                    <View style={styles.locListLeft}>
-                                                        <View style={styles.locListIconCircle}>
-                                                            <Ionicons name="location-sharp" size={18} color="#1a73e8" />
-                                                        </View>
-                                                        <Text style={styles.locListItemText}>{loc.telugu}</Text>
-                                                    </View>
-                                                    <Ionicons name="chevron-forward" size={22} color="#999" />
+                                            {localNewsSearchQuery.length > 0 && (
+                                                <TouchableOpacity onPress={() => setLocalNewsSearchQuery('')}>
+                                                    <Ionicons name="close-circle" size={20} color="#ccc" />
                                                 </TouchableOpacity>
-                                            ));
-                                        })()}
-                                    </View>
-                                </ScrollView>
-                            </SafeAreaView>
-                        </View>
-                    )
-                }
-
-                {/* 📤 CUSTOM SHARE OVERLAY (Fits inside App Layout) */}
-                {
-                    isShareModalVisible && (
-                        <View style={styles.modalOverlay}>
-                            <Pressable style={styles.fullSpace} onPress={() => setShareModalVisible(false)}>
-                                <View style={{ flex: 1 }} />
-                                <Pressable style={styles.shareContainerSmall} onPress={(e) => e.stopPropagation()}>
-                                    <View style={styles.sharePill} />
-                                    <Text style={styles.shareTitleText}>Share</Text>
-
-                                    <View style={styles.shareGrid}>
-                                        {[
-                                            { name: 'WhatsApp', icon: 'logo-whatsapp', color: '#25D366' },
-                                            { name: 'WhatsApp Status', icon: 'sync-circle', color: '#25D366' },
-                                            { name: 'X Share', icon: 'logo-twitter', color: '#000' },
-                                            { name: 'Instagram', icon: 'logo-instagram', color: '#E4405F' },
-                                            { name: 'Instagram Chat', icon: 'chatbubbles', color: '#E4405F' },
-                                            { name: 'Instagram Stories', icon: 'add-circle', color: '#C13584' },
-                                            { name: 'Facebook', icon: 'logo-facebook', color: '#1877F2' },
-                                            { name: 'Facebook Stories', icon: 'book', color: '#1877F2' },
-                                            { name: 'Telegram', icon: 'paper-plane', color: '#0088CC' },
-                                            { name: 'Copy Link', icon: 'link', color: '#444' },
-                                            { name: 'More', icon: 'ellipsis-horizontal', color: '#888' },
-                                        ].map((item) => (
-                                            <Pressable key={item.name} style={styles.shareGridItem} onPress={() => handleShareAction(item.name)}>
-                                                <View style={[styles.shareIconBox, { backgroundColor: item.color }]}>
-                                                    <Ionicons name={item.icon as any} size={28} color="#fff" />
-                                                </View>
-                                                <Text style={styles.shareItemLabel}>{item.name}</Text>
-                                            </Pressable>
-                                        ))}
-                                    </View>
-                                    <View style={{ height: 40 }} />
-                                </Pressable>
-                            </Pressable>
-                        </View>
-                    )
-                }
-
-                {/* 💬 COMMENT OVERLAY (Morphing Reveal Expansion) */}
-                {
-                    commentModalVisible && (
-                        <Animated.View style={[styles.modalOverlay, overlayAnimationStyle]}>
-                            <Pressable style={styles.fullSpace} onPress={closeComments} />
-                            <Animated.View style={[styles.commentContainer, commentAnimationStyle]}>
-                                {/* 1. Header: Back | Title | Toggle */}
-                                <View style={styles.commentHeader}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                                        <TouchableOpacity onPress={closeComments} style={{ padding: 5, marginRight: 8 }}>
-                                            <Ionicons name="arrow-back" size={24} color="#999" />
-                                        </TouchableOpacity>
-                                        <Text style={styles.commentHeaderTitle} numberOfLines={1}>{currentNewsTitle}</Text>
-                                    </View>
-                                    <View style={{ alignItems: 'center' }}>
-                                        <Text style={{ fontSize: 10, color: '#666', marginBottom: -4 }}>కామెంట్స్</Text>
-                                        <Switch
-                                            value={true}
-                                            onValueChange={() => { }}
-                                            trackColor={{ false: "#D1D1D1", true: "#4A90E2" }}
-                                            thumbColor="#fff"
-                                            style={{ transform: [{ scaleX: 0.7 }, { scaleY: 0.7 }] }}
-                                        />
-                                    </View>
-                                </View>
-
-                                {/* 2. Scrollable Comment List */}
-                                <ScrollView style={styles.commentList} showsVerticalScrollIndicator={false}>
-                                    {isViewingVideoComments && (
-                                        <View style={styles.relevantDropdown}>
-                                            <Text style={styles.relevantText}>Most relevant</Text>
-                                            <Ionicons name="chevron-down" size={16} color="#000" />
+                                            )}
                                         </View>
                                     )}
 
-                                    {comments.map((item, index) => {
-                                        const commentNumber = comments.length - index;
+                                    {isSearching && (
+                                        <View style={{ maxHeight: 200, marginBottom: 10 }}>
+                                            {(() => {
+                                                if (localNewsSearchQuery.trim().length === 0) return null;
 
-                                        if (isViewingVideoComments) {
-                                            return (
-                                                <View key={item.id} style={styles.videoCommentItem}>
-                                                    {/* Left: Avatar */}
-                                                    <View style={[styles.videoAvatar, { backgroundColor: ['#00BFA5', '#00C853', '#FFD600', '#FF4081'][index % 4], justifyContent: 'center', alignItems: 'center' }]}>
-                                                        {/* Using placeholder initials if no image */}
-                                                        <Text style={{ color: '#fff', fontSize: 14, fontWeight: 'bold' }}>{item.user.charAt(0)}</Text>
-                                                    </View>
+                                                const searchLower = localNewsSearchQuery.toLowerCase();
+                                                const filtered = ALL_LOCATIONS_DATA.filter(loc =>
+                                                    loc.telugu.includes(localNewsSearchQuery) ||
+                                                    loc.name.toLowerCase().startsWith(searchLower) ||
+                                                    loc.name.toLowerCase().includes(searchLower)
+                                                );
 
-                                                    {/* Right: Content */}
-                                                    <View style={styles.videoContent}>
-                                                        <View style={styles.videoUserRow}>
-                                                            <Text style={styles.videoUserName}>{item.user}</Text>
-                                                            <Text style={styles.videoTime}>· {getTimeAgo(item.timestamp).replace(' ago', '')}</Text>
-                                                        </View>
+                                                if (filtered.length === 0) {
+                                                    return <Text style={{ color: '#999', padding: 10 }}>No location found</Text>;
+                                                }
 
-                                                        <Text style={styles.videoCommentText}>{item.text}</Text>
+                                                return filtered.map((loc, idx) => (
+                                                    <TouchableOpacity key={idx} style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#eee' }} onPress={() => {
+                                                        setUserLocation(loc.telugu);
+                                                        AsyncStorage.setItem('USER_LOCATION', loc.telugu).catch(err => console.error(err));
+                                                        setActiveCategory('local');
+                                                        setFilterMode('all');
+                                                        setIsSearching(false);
+                                                        setLocalNewsSearchQuery('');
 
-                                                        <View style={styles.videoActionRow}>
-                                                            <Text style={styles.videoActionText}>Reply</Text>
+                                                        // Close Modal & Go to Feed
+                                                        setIsTutorialMode(false);
+                                                        flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+                                                        setIsMenuLocationVisible(false);
+                                                        setIsHUDVisible(true);
+                                                    }}>
+                                                        <Text style={{ fontSize: 16, color: '#333' }}>{loc.telugu}</Text>
+                                                    </TouchableOpacity>
+                                                ));
+                                            })()}
+                                        </View>
+                                    )}
 
-                                                            <View style={styles.videoLikeContainer}>
-                                                                <View style={styles.videoLikeBadge}>
-                                                                    <Ionicons name="thumbs-up" size={10} color="#fff" />
-                                                                </View>
-                                                                <Text style={styles.videoLikeCount}>{item.likeCount}</Text>
-                                                            </View>
+                                    <Text style={styles.locSearchSub}>వార్తల విధానం: నియోజకవర్గాల వారీగా</Text>
+                                </View>
 
-                                                            <View style={styles.videoReactionIcons}>
-                                                                <Ionicons name="thumbs-up-outline" size={20} color="#65676b" />
-                                                                <Ionicons name="thumbs-down-outline" size={20} color="#65676b" />
-                                                            </View>
-                                                        </View>
+                                {/* 2. Allow Location Section */}
+                                <Text style={styles.locPermTitle}>మీ చుట్టూ జరిగే వార్తలు పొందేందుకు లొకేషన్ అనుమతివ్వండి</Text>
+                                <TouchableOpacity style={styles.locPermBtn} onPress={() => { alert('Location permission requested'); }}>
+                                    <View style={styles.locPermIconCircle}>
+                                        <Ionicons name="locate" size={18} color="#fff" />
+                                    </View>
+                                    <Text style={styles.locPermBtnText}>లొకేషన్ అనుమతించండి</Text>
+                                </TouchableOpacity>
 
-                                                        {item.replies.length > 0 && (
-                                                            <TouchableOpacity onPress={() => { }}>
-                                                                <Text style={styles.viewRepliesText}>
-                                                                    <Ionicons name="return-down-forward" size={14} color="#65676b" /> View {item.replies.length} reply
-                                                                </Text>
-                                                            </TouchableOpacity>
-                                                        )}
-                                                    </View>
-                                                </View>
-                                            );
-                                        }
+                                {/* 3. Favorites Section */}
+                                <View style={styles.locFavHeader}>
+                                    <Ionicons name="star" size={18} color="#1a73e8" />
+                                    <Text style={styles.locFavTitle}>మీకు ఇష్టమైన నియోజకవర్గాలు</Text>
+                                </View>
 
+                                {/* List */}
+                                <View>
+                                    {['కూకట్‌పల్లి', 'సికింద్రాబాద్', 'శ్రీకాకుళం'].map((locName, idx) => (
+                                        <TouchableOpacity key={idx} style={styles.locHistoryItem} onPress={() => {
+                                            setUserLocation(locName);
+                                            AsyncStorage.setItem('USER_LOCATION', locName).catch(err => console.error(err));
+                                            setActiveCategory('local');
+                                            setFilterMode('all');
+                                            setIsTutorialMode(false);
+                                            flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+                                            setIsMenuLocationVisible(false); // Close Menu UI
+                                            setIsHUDVisible(true);
+                                        }}>
+                                            <View style={styles.locHistoryIcon}>
+                                                <Ionicons name="time-outline" size={16} color="#666" />
+                                            </View>
+                                            <Text style={styles.locHistoryText}>{locName}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </ScrollView>
+                        </SafeAreaView>
+                    </View>
+                )
+            }
+
+            {/* 📤 CUSTOM SHARE OVERLAY (Fits inside App Layout) */}
+            {
+                isShareModalVisible && (
+                    <View style={styles.modalOverlay}>
+                        <Pressable style={styles.fullSpace} onPress={() => setShareModalVisible(false)}>
+                            <View style={{ flex: 1 }} />
+                            <Pressable style={styles.shareContainerSmall} onPress={(e) => e.stopPropagation()}>
+                                <View style={styles.sharePill} />
+                                <Text style={styles.shareTitleText}>Share</Text>
+
+                                <View style={styles.shareGrid}>
+                                    {[
+                                        { name: 'WhatsApp', icon: 'logo-whatsapp', color: '#25D366' },
+                                        { name: 'WhatsApp Status', icon: 'sync-circle', color: '#25D366' },
+                                        { name: 'X Share', icon: 'logo-twitter', color: '#000' },
+                                        { name: 'Instagram', icon: 'logo-instagram', color: '#E4405F' },
+                                        { name: 'Instagram Chat', icon: 'chatbubbles', color: '#E4405F' },
+                                        { name: 'Instagram Stories', icon: 'add-circle', color: '#C13584' },
+                                        { name: 'Facebook', icon: 'logo-facebook', color: '#1877F2' },
+                                        { name: 'Facebook Stories', icon: 'book', color: '#1877F2' },
+                                        { name: 'Telegram', icon: 'paper-plane', color: '#0088CC' },
+                                        { name: 'Copy Link', icon: 'link', color: '#444' },
+                                        { name: 'More', icon: 'ellipsis-horizontal', color: '#888' },
+                                    ].map((item) => (
+                                        <Pressable key={item.name} style={styles.shareGridItem} onPress={() => handleShareAction(item.name)}>
+                                            <View style={[styles.shareIconBox, { backgroundColor: item.color }]}>
+                                                <Ionicons name={item.icon as any} size={28} color="#fff" />
+                                            </View>
+                                            <Text style={styles.shareItemLabel}>{item.name}</Text>
+                                        </Pressable>
+                                    ))}
+                                </View>
+                                <View style={{ height: 40 }} />
+                            </Pressable>
+                        </Pressable>
+                    </View>
+                )
+            }
+
+            {/* 💬 COMMENT OVERLAY (Morphing Reveal Expansion) */}
+            {
+                commentModalVisible && (
+                    <Animated.View style={[styles.modalOverlay, overlayAnimationStyle]}>
+                        <Pressable style={styles.fullSpace} onPress={closeComments} />
+                        <Animated.View style={[styles.commentContainer, commentAnimationStyle]}>
+                            {/* 1. Header: Back | Title | Toggle */}
+                            <View style={styles.commentHeader}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                    <TouchableOpacity onPress={closeComments} style={{ padding: 5, marginRight: 8 }}>
+                                        <Ionicons name="arrow-back" size={24} color="#999" />
+                                    </TouchableOpacity>
+                                    <Text style={styles.commentHeaderTitle} numberOfLines={1}>{currentNewsTitle}</Text>
+                                </View>
+                                <View style={{ alignItems: 'center' }}>
+                                    <Text style={{ fontSize: 10, color: '#666', marginBottom: -4 }}>నోటిఫికేషన్లు</Text>
+                                    <Switch
+                                        value={currentNewsId ? (notificationPreferences[currentNewsId] ?? true) : true}
+                                        onValueChange={toggleNotifications}
+                                        trackColor={{ false: "#D1D1D1", true: "#4A90E2" }}
+                                        thumbColor="#fff"
+                                        style={{ transform: [{ scaleX: 0.7 }, { scaleY: 0.7 }] }}
+                                    />
+                                </View>
+                            </View>
+
+                            {/* 2. Scrollable Comment List */}
+                            <ScrollView style={styles.commentList} showsVerticalScrollIndicator={false}>
+                                {isViewingVideoComments && (
+                                    <View style={styles.relevantDropdown}>
+                                        <Text style={styles.relevantText}>Most relevant</Text>
+                                        <Ionicons name="chevron-down" size={16} color="#000" />
+                                    </View>
+                                )}
+
+                                {comments.filter(c => !blockedCommentIds.includes(c.id) && !blockedUserIds.includes(c.userId || c.user)).map((item, index) => {
+                                    const commentNumber = comments.length - index;
+                                    const isBlocked = blockedCommentIds.includes(item.id) || blockedUserIds.includes(item.userId || item.user);
+
+                                    if (isViewingVideoComments) {
                                         return (
-                                            <View key={item.id} style={styles.commentItemWrap}>
-                                                <View style={styles.commentItem}>
-                                                    {/* Left: Avatar with Number */}
-                                                    <View style={[styles.avatarCircle, { backgroundColor: ['#00BFA5', '#00C853', '#FFD600', '#FF4081'][index % 4] }]}>
-                                                        <Text style={styles.avatarNumber}>{commentNumber}</Text>
+                                            <View key={item.id} style={styles.videoCommentItem}>
+                                                {/* Left: Avatar */}
+                                                <View style={[styles.videoAvatar, { backgroundColor: ['#00BFA5', '#00C853', '#FFD600', '#FF4081'][index % 4], justifyContent: 'center', alignItems: 'center' }]}>
+                                                    {/* Using placeholder initials if no image */}
+                                                    <Text style={{ color: '#fff', fontSize: 14, fontWeight: 'bold' }}>{item.user.charAt(0)}</Text>
+                                                </View>
+
+                                                {/* Right: Content */}
+                                                <View style={styles.videoContent}>
+                                                    <View style={styles.videoUserRow}>
+                                                        <Text style={styles.videoUserName}>{item.user}</Text>
+                                                        <Text style={styles.videoTime}>· {getTimeAgo(item.timestamp).replace(' ago', '')}</Text>
                                                     </View>
 
-                                                    {/* Right: Content */}
-                                                    <View style={styles.commentContentWrapper}>
-                                                        {/* Gray Box for Text */}
-                                                        <View style={styles.commentBubble}>
-                                                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                                    <Text style={styles.commentUserName}>{item.user}</Text>
-                                                                    {item.isMe && (
-                                                                        <View style={styles.mePill}>
-                                                                            <Text style={styles.meText}>me</Text>
-                                                                        </View>
-                                                                    )}
-                                                                </View>
-                                                                <Text style={styles.footerTimeText}>{getTimeAgo(item.timestamp)}</Text>
+                                                    {item.isSensitive && !revealedSensitiveIds.includes(item.id) ? (
+                                                        <TouchableOpacity style={styles.sensitiveContainer} onPress={() => revealSensitive(item.id)}>
+                                                            <View style={styles.sensitiveContentRow}>
+                                                                <Ionicons name="eye-off-outline" size={20} color="#666" />
+                                                                <Text style={styles.sensitiveText}>Sensitive content</Text>
                                                             </View>
-                                                            <TouchableOpacity disabled>
-                                                                <Text style={styles.commentLocation}>📍 {item.location || 'Ranga Reddy (D)'}</Text>
-                                                            </TouchableOpacity>
-                                                            <Text style={styles.commentTextContent}>{item.text}</Text>
+                                                            <View style={styles.sensitiveTapBtn}>
+                                                                <Text style={styles.sensitiveTapText}>Tap to</Text>
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                    ) : (
+                                                        <Text style={styles.videoCommentText}>{item.text}</Text>
+                                                    )}
+
+                                                    <View style={styles.videoActionRow}>
+                                                        <Text style={styles.videoActionText}>Reply</Text>
+
+                                                        <View style={styles.videoLikeContainer}>
+                                                            <View style={styles.videoLikeBadge}>
+                                                                <Ionicons name="thumbs-up" size={10} color="#fff" />
+                                                            </View>
+                                                            <Text style={styles.videoLikeCount}>{item.likeCount}</Text>
                                                         </View>
 
-                                                        {/* Footer: Reply | Delete | Icons */}
-                                                        <View style={styles.commentFooterRow}>
-                                                            <View style={styles.footerLeft}>
-                                                                <TouchableOpacity style={styles.footerAction} onPress={() => setReplyTarget({ commentId: item.id, userName: item.user })}>
-                                                                    <Ionicons name="arrow-undo" size={14} color="#666" />
-                                                                    <Text style={styles.footerReplyText}>Reply</Text>
-                                                                </TouchableOpacity>
-
-                                                                <TouchableOpacity style={styles.footerAction} onPress={() => handleLikeComment(item.id)}>
-                                                                    <Ionicons name={item.likedByMe ? "heart" : "heart-outline"} size={16} color={item.likedByMe ? "#e44" : "#666"} />
-                                                                    <Text style={[styles.footerReplyText, item.likedByMe && { color: '#e44' }]}>{item.likeCount > 0 ? item.likeCount : 'Like'}</Text>
-                                                                </TouchableOpacity>
-
-                                                                {item.isMe && (
-                                                                    <TouchableOpacity style={styles.footerAction} onPress={() => handleDeleteAction(item.id)}>
-                                                                        <Ionicons name="trash-outline" size={14} color="#666" />
-                                                                        <Text style={styles.footerReplyText}>Delete</Text>
-                                                                    </TouchableOpacity>
-                                                                )}
-                                                            </View>
-
-                                                            <View style={styles.footerRight}>
-                                                                <TouchableOpacity onPress={() => handleCopyComment(item.text)}>
-                                                                    <Ionicons name="copy-outline" size={16} color="#aaa" style={styles.footerIcon} />
-                                                                </TouchableOpacity>
-                                                                <TouchableOpacity onPress={() => handleReportComment(item.id)}>
-                                                                    <Ionicons name="alert-circle-outline" size={16} color="#aaa" />
-                                                                </TouchableOpacity>
-                                                            </View>
+                                                        <View style={styles.videoReactionIcons}>
+                                                            <Ionicons name="thumbs-up-outline" size={20} color="#65676b" />
+                                                            <Ionicons name="thumbs-down-outline" size={20} color="#65676b" />
                                                         </View>
-
-                                                        {/* REPLIES SECTION */}
-                                                        {item.replies.length > 0 && (
-                                                            <View style={styles.repliesContainer}>
-                                                                {item.replies.map((reply) => (
-                                                                    <View key={reply.id} style={styles.replyItem}>
-                                                                        <View style={styles.replyThreadLine} />
-                                                                        <View style={styles.replyContent}>
-                                                                            <View style={styles.replyBubble}>
-                                                                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                                                        <Text style={styles.commentUserName}># {reply.user}</Text>
-                                                                                        {reply.isMe && (
-                                                                                            <View style={styles.mePill}>
-                                                                                                <Text style={styles.meText}>me</Text>
-                                                                                            </View>
-                                                                                        )}
-                                                                                    </View>
-                                                                                    <Text style={styles.footerTimeText}>{getTimeAgo(reply.timestamp)}</Text>
-                                                                                </View>
-                                                                                <Text style={styles.commentTextContent}>{reply.text}</Text>
-                                                                            </View>
-
-                                                                            <View style={styles.commentFooterRow}>
-                                                                                <View style={styles.footerLeft}>
-                                                                                    <TouchableOpacity style={styles.footerAction} onPress={() => handleLikeComment(item.id, reply.id)}>
-                                                                                        <Ionicons name={reply.likedByMe ? "heart" : "heart-outline"} size={14} color={reply.likedByMe ? "#e44" : "#666"} />
-                                                                                        <Text style={[styles.footerReplyText, reply.likedByMe && { color: '#e44' }]}>{reply.likeCount > 0 ? reply.likeCount : 'Like'}</Text>
-                                                                                    </TouchableOpacity>
-                                                                                    {reply.isMe && (
-                                                                                        <TouchableOpacity style={styles.footerAction} onPress={() => handleDeleteAction(item.id, reply.id)}>
-                                                                                            <Ionicons name="trash-outline" size={12} color="#666" />
-                                                                                            <Text style={styles.footerReplyText}>Delete</Text>
-                                                                                        </TouchableOpacity>
-                                                                                    )}
-                                                                                </View>
-                                                                            </View>
-                                                                        </View>
-                                                                    </View>
-                                                                ))}
-                                                            </View>
-                                                        )}
                                                     </View>
+
+                                                    {item.replies.length > 0 && (
+                                                        <TouchableOpacity onPress={() => { }}>
+                                                            <Text style={styles.viewRepliesText}>
+                                                                <Ionicons name="return-down-forward" size={14} color="#65676b" /> View {item.replies.length} reply
+                                                            </Text>
+                                                        </TouchableOpacity>
+                                                    )}
                                                 </View>
                                             </View>
                                         );
-                                    })}
-                                </ScrollView>
+                                    }
 
-                                {/* 3. Bottom: Reactions + Input */}
-                                <KeyboardAvoidingView
-                                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                                    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-                                >
-                                    {isViewingVideoComments ? (
-                                        <View style={styles.videoInputContainer}>
-                                            <TextInput
-                                                style={styles.videoInput}
-                                                placeholder="Write a comment..."
-                                                placeholderTextColor="#65676b"
-                                                value={newComment}
-                                                onChangeText={setNewComment}
-                                            />
-                                        </View>
-                                    ) : (
-                                        <View style={styles.bottomInputContainer}>
-                                            {/* Emoji Reaction Bar */}
-                                            <View style={styles.reactionBar}>
-                                                <Pressable style={styles.reactionEmoji}><Text style={{ fontSize: 20 }}>😂</Text></Pressable>
-                                                <Pressable style={styles.reactionEmoji}><Text style={{ fontSize: 20 }}>❤️</Text></Pressable>
-                                                <Pressable style={styles.reactionEmoji}><Text style={{ fontSize: 20 }}>😍</Text></Pressable>
-                                                <Pressable style={styles.reactionEmoji}><Text style={{ fontSize: 20 }}>🤣</Text></Pressable>
-                                                <Pressable style={styles.reactionEmoji}><Text style={{ fontSize: 20 }}>😆</Text></Pressable>
-                                                <Ionicons name="chevron-forward" size={20} color="#999" />
-                                            </View>
+                                    const visibleReplies = item.replies.filter(r => !blockedUserIds.includes(r.userId || r.user));
 
-                                            <View style={styles.inputRow}>
-                                                <View style={styles.inputLeftIcons}>
-                                                    <View style={styles.giftIconBox}>
-                                                        <Text style={{ fontSize: 9, fontWeight: 'bold' }}>GIF</Text>
-                                                    </View>
-                                                    <Ionicons name="happy-outline" size={24} color="#666" style={{ marginLeft: 15 }} />
+                                    return (
+                                        <View key={item.id} style={styles.commentItemWrap}>
+                                            <View style={styles.commentItem}>
+                                                {/* Left: Avatar with Number */}
+                                                <View style={[styles.avatarCircle, { backgroundColor: ['#00BFA5', '#00C853', '#FFD600', '#FF4081'][index % 4] }]}>
+                                                    <Text style={styles.avatarNumber}>{commentNumber}</Text>
                                                 </View>
 
-                                                <View style={{ flex: 1 }}>
-                                                    {replyTarget && (
-                                                        <View style={styles.replyIndicator}>
-                                                            <Text style={styles.replyIndicatorText}>Replying to @{replyTarget.userName}</Text>
-                                                            <TouchableOpacity onPress={() => setReplyTarget(null)}>
-                                                                <Ionicons name="close-circle" size={16} color="#444" />
+                                                {/* Right: Content */}
+                                                <View style={styles.commentContentWrapper}>
+                                                    {/* Gray Box for Text */}
+                                                    <View style={styles.commentBubble}>
+                                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                                <Text style={styles.commentUserName}>{item.user}</Text>
+                                                                {item.isMe && (
+                                                                    <View style={styles.mePill}>
+                                                                        <Text style={styles.meText}>me</Text>
+                                                                    </View>
+                                                                )}
+                                                            </View>
+                                                            <Text style={styles.footerTimeText}>{getTimeAgo(item.timestamp)}</Text>
+                                                        </View>
+                                                        <TouchableOpacity disabled>
+                                                            <Text style={styles.commentLocation}>📍 {item.location || 'Ranga Reddy (D)'}</Text>
+                                                        </TouchableOpacity>
+
+                                                        {item.isSensitive && !revealedSensitiveIds.includes(item.id) ? (
+                                                            <TouchableOpacity style={styles.sensitiveContainer} onPress={() => revealSensitive(item.id)}>
+                                                                <View style={styles.sensitiveContentRow}>
+                                                                    <Ionicons name="eye-off-outline" size={20} color="#666" />
+                                                                    <Text style={styles.sensitiveText}>Sensitive content</Text>
+                                                                </View>
+                                                                <View style={styles.sensitiveTapBtn}>
+                                                                    <Text style={styles.sensitiveTapText}>Tap to</Text>
+                                                                </View>
+                                                            </TouchableOpacity>
+                                                        ) : (
+                                                            <Text style={styles.commentTextContent}>{item.text}</Text>
+                                                        )}
+                                                    </View>
+
+                                                    {/* Footer: Reply | Delete | Icons */}
+                                                    <View style={styles.commentFooterRow}>
+                                                        <View style={styles.footerLeft}>
+                                                            <TouchableOpacity style={styles.footerAction} onPress={() => setReplyTarget({ commentId: item.id, userName: item.user })}>
+                                                                <Ionicons name="arrow-undo" size={14} color="#666" />
+                                                                <Text style={styles.footerReplyText}>Reply</Text>
+                                                            </TouchableOpacity>
+
+                                                            <TouchableOpacity style={styles.footerAction} onPress={() => handleLikeComment(item.id)}>
+                                                                <Ionicons name={item.likedByMe ? "heart" : "heart-outline"} size={16} color={item.likedByMe ? "#e44" : "#666"} />
+                                                                <Text style={[styles.footerReplyText, item.likedByMe && { color: '#e44' }]}>{item.likeCount > 0 ? item.likeCount : 'Like'}</Text>
+                                                            </TouchableOpacity>
+
+                                                            {item.isMe && (
+                                                                <TouchableOpacity style={styles.footerAction} onPress={() => handleDeleteAction(item.id)}>
+                                                                    <Ionicons name="trash-outline" size={14} color="#666" />
+                                                                    <Text style={styles.footerReplyText}>Delete</Text>
+                                                                </TouchableOpacity>
+                                                            )}
+                                                        </View>
+
+                                                        <View style={styles.footerRight}>
+                                                            <TouchableOpacity onPress={() => handleCopyComment(item.text)}>
+                                                                <Ionicons name="copy-outline" size={16} color="#aaa" style={styles.footerIcon} />
+                                                            </TouchableOpacity>
+                                                            <TouchableOpacity onPress={() => handleReportComment(item.id)}>
+                                                                <Ionicons name="alert-circle-outline" size={18} color="#aaa" />
                                                             </TouchableOpacity>
                                                         </View>
-                                                    )}
-                                                    <TextInput
-                                                        style={styles.newInputStyle}
-                                                        placeholder={replyTarget ? "రిప్లై ఇవ్వండి..." : "కామెంట్ చేయండి"}
-                                                        placeholderTextColor="#999"
-                                                        value={newComment}
-                                                        onChangeText={setNewComment}
-                                                    />
-                                                </View>
+                                                    </View>
 
-                                                {/* Action Buttons */}
-                                                <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
-                                                    <Pressable style={styles.langToggleBtn}>
-                                                        <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>అ/A</Text>
-                                                    </Pressable>
+                                                    {/* REPLIES SECTION */}
+                                                    {visibleReplies.length > 0 && (
+                                                        <View style={styles.repliesContainer}>
+                                                            {visibleReplies.map((reply) => (
+                                                                <View key={reply.id} style={styles.replyItem}>
+                                                                    <View style={styles.replyThreadLine} />
+                                                                    <View style={styles.replyContent}>
+                                                                        <View style={styles.replyBubble}>
+                                                                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                                                    <Text style={styles.commentUserName}># {reply.user}</Text>
+                                                                                    {reply.isMe && (
+                                                                                        <View style={styles.mePill}>
+                                                                                            <Text style={styles.meText}>me</Text>
+                                                                                        </View>
+                                                                                    )}
+                                                                                </View>
+                                                                                <Text style={styles.footerTimeText}>{getTimeAgo(reply.timestamp)}</Text>
+                                                                            </View>
 
-                                                    {newComment.trim().length > 0 && (
-                                                        <Pressable style={styles.sendBtn} onPress={handleAddComment}>
-                                                            <Ionicons name="send" size={20} color="#1a73e8" />
-                                                        </Pressable>
+                                                                            {reply.isSensitive && !revealedSensitiveIds.includes(reply.id) ? (
+                                                                                <TouchableOpacity style={styles.sensitiveContainer} onPress={() => revealSensitive(reply.id)}>
+                                                                                    <View style={styles.sensitiveContentRow}>
+                                                                                        <Ionicons name="eye-off-outline" size={16} color="#666" />
+                                                                                        <Text style={[styles.sensitiveText, { fontSize: 12 }]}>Sensitive content</Text>
+                                                                                    </View>
+                                                                                    <View style={[styles.sensitiveTapBtn, { paddingHorizontal: 8, paddingVertical: 4 }]}>
+                                                                                        <Text style={[styles.sensitiveTapText, { fontSize: 11 }]}>Tap to</Text>
+                                                                                    </View>
+                                                                                </TouchableOpacity>
+                                                                            ) : (
+                                                                                <Text style={styles.commentTextContent}>{reply.text}</Text>
+                                                                            )}
+                                                                        </View>
+
+                                                                        <View style={styles.commentFooterRow}>
+                                                                            <View style={styles.footerLeft}>
+                                                                                <TouchableOpacity style={styles.footerAction} onPress={() => handleLikeComment(item.id, reply.id)}>
+                                                                                    <Ionicons name={reply.likedByMe ? "heart" : "heart-outline"} size={14} color={reply.likedByMe ? "#e44" : "#666"} />
+                                                                                    <Text style={[styles.footerReplyText, reply.likedByMe && { color: '#e44' }]}>{reply.likeCount > 0 ? reply.likeCount : 'Like'}</Text>
+                                                                                </TouchableOpacity>
+                                                                                {reply.isMe && (
+                                                                                    <TouchableOpacity style={styles.footerAction} onPress={() => handleDeleteAction(item.id, reply.id)}>
+                                                                                        <Ionicons name="trash-outline" size={12} color="#666" />
+                                                                                        <Text style={styles.footerReplyText}>Delete</Text>
+                                                                                    </TouchableOpacity>
+                                                                                )}
+                                                                            </View>
+                                                                            <View style={styles.footerRight}>
+                                                                                <TouchableOpacity onPress={() => handleReportComment(item.id, reply.id)}>
+                                                                                    <Ionicons name="alert-circle-outline" size={14} color="#aaa" />
+                                                                                </TouchableOpacity>
+                                                                            </View>
+                                                                        </View>
+                                                                    </View>
+                                                                </View>
+                                                            ))}
+                                                        </View>
                                                     )}
                                                 </View>
                                             </View>
                                         </View>
-                                    )}
-                                </KeyboardAvoidingView>
-                            </Animated.View>
+                                    );
+                                })}
+                            </ScrollView>
+
+                            {/* 3. Bottom: Reactions + Input */}
+                            <KeyboardAvoidingView
+                                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+                            >
+                                {isViewingVideoComments ? (
+                                    <View style={styles.videoInputContainer}>
+                                        <TextInput
+                                            style={styles.videoInput}
+                                            placeholder="Write a comment..."
+                                            placeholderTextColor="#65676b"
+                                            value={newComment}
+                                            onChangeText={setNewComment}
+                                        />
+                                    </View>
+                                ) : (
+                                    <View style={styles.bottomInputContainer}>
+                                        {/* Emoji Reaction Bar */}
+                                        <View style={styles.reactionBar}>
+                                            <Pressable style={styles.reactionEmoji}><Text style={{ fontSize: 20 }}>😂</Text></Pressable>
+                                            <Pressable style={styles.reactionEmoji}><Text style={{ fontSize: 20 }}>❤️</Text></Pressable>
+                                            <Pressable style={styles.reactionEmoji}><Text style={{ fontSize: 20 }}>😍</Text></Pressable>
+                                            <Pressable style={styles.reactionEmoji}><Text style={{ fontSize: 20 }}>🤣</Text></Pressable>
+                                            <Pressable style={styles.reactionEmoji}><Text style={{ fontSize: 20 }}>😆</Text></Pressable>
+                                            <Ionicons name="chevron-forward" size={20} color="#999" />
+                                        </View>
+
+                                        <View style={styles.inputRow}>
+                                            <View style={styles.inputLeftIcons}>
+                                                <View style={styles.giftIconBox}>
+                                                    <Text style={{ fontSize: 9, fontWeight: 'bold' }}>GIF</Text>
+                                                </View>
+                                                <Ionicons name="happy-outline" size={24} color="#666" style={{ marginLeft: 15 }} />
+                                            </View>
+
+                                            <View style={{ flex: 1 }}>
+                                                {replyTarget && (
+                                                    <View style={styles.replyIndicator}>
+                                                        <Text style={styles.replyIndicatorText}>Replying to @{replyTarget.userName}</Text>
+                                                        <TouchableOpacity onPress={() => setReplyTarget(null)}>
+                                                            <Ionicons name="close-circle" size={16} color="#444" />
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                )}
+                                                <TextInput
+                                                    style={styles.newInputStyle}
+                                                    placeholder={replyTarget ? "రిప్లై ఇవ్వండి..." : "కామెంట్ చేయండి"}
+                                                    placeholderTextColor="#999"
+                                                    value={newComment}
+                                                    onChangeText={setNewComment}
+                                                />
+                                            </View>
+
+                                            {/* Action Buttons */}
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
+                                                <Pressable style={styles.langToggleBtn}>
+                                                    <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>అ/A</Text>
+                                                </Pressable>
+
+                                                {newComment.trim().length > 0 && (
+                                                    <Pressable style={styles.sendBtn} onPress={handleAddComment}>
+                                                        <Ionicons name="send" size={20} color="#1a73e8" />
+                                                    </Pressable>
+                                                )}
+                                            </View>
+                                        </View>
+                                    </View>
+                                )}
+                            </KeyboardAvoidingView>
                         </Animated.View>
-                    )
-                }
 
-                {/* 🗑️ DELETE CONFIRMATION OVERLAY */}
-                {
-                    deleteTarget && (
-                        <View style={[styles.modalOverlay, { zIndex: 1100, backgroundColor: 'rgba(0,0,0,0.7)' }]}>
-                            <View style={styles.deleteModalCard}>
-                                <Ionicons name="trash" size={40} color="#e44" style={{ marginBottom: 15 }} />
-                                <Text style={styles.deleteModalTitle}>కామెంట్‌ను తొలగించాలా?</Text>
-                                <TouchableOpacity style={styles.deleteModalBtn} onPress={confirmDelete}>
-                                    <Text style={styles.deleteModalBtnText}>Delete Comment</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={styles.cancelModalBtn} onPress={() => setDeleteTarget(null)}>
-                                    <Text style={styles.cancelModalBtnText}>Cancel</Text>
-                                </TouchableOpacity>
+                        {/* 🚩 REPORT / MODERATION MODAL (IN-MODAL OVERLAY) */}
+                        {reportModalVisible && (
+                            <View style={[styles.modalOverlay, { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1200 }]}>
+                                <Pressable style={styles.fullSpace} onPress={() => { setReportModalVisible(false); setReportingItem(null); }} />
+                                <View style={styles.reportSheetContainer}>
+                                    <View style={styles.reportSheetPill} />
+                                    <Text style={styles.reportSheetTitle}>కామెంట్ మీద చర్య</Text>
+
+                                    <TouchableOpacity style={styles.reportActionItem} onPress={handleBlockComment}>
+                                        <View style={[styles.reportIconBox, { backgroundColor: '#fdecea' }]}>
+                                            <Ionicons name="chatbubble-outline" size={22} color="#d93025" />
+                                        </View>
+                                        <View style={styles.reportActionTextContent}>
+                                            <Text style={styles.reportActionLabel}>బ్లాక్ కామెంట్</Text>
+                                            <Text style={styles.reportActionSub}>ఈ కామెంట్‌ను మళ్లీ చూడకూడదు</Text>
+                                        </View>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={styles.reportActionItem} onPress={handleBlockUser}>
+                                        <View style={[styles.reportIconBox, { backgroundColor: '#fdecea' }]}>
+                                            <Ionicons name="person-remove-outline" size={22} color="#d93025" />
+                                        </View>
+                                        <View style={styles.reportActionTextContent}>
+                                            <Text style={styles.reportActionLabel}>బ్లాక్ యూజర్</Text>
+                                            <Text style={styles.reportActionSub}>ఈ యూజర్ నుండి వచ్చే అన్ని కామెంట్స్‌ను బ్లాక్ చేయండి</Text>
+                                        </View>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={styles.reportActionItem} onPress={handleSubmitModerationReport}>
+                                        <View style={[styles.reportIconBox, { backgroundColor: '#e8f0fe' }]}>
+                                            <Ionicons name="flag-outline" size={22} color="#1a73e8" />
+                                        </View>
+                                        <View style={styles.reportActionTextContent}>
+                                            <Text style={styles.reportActionLabel}>రిపోర్ట్ ఇష్యూ</Text>
+                                            <Text style={styles.reportActionSub}>ఈ కామెంట్‌పై మా టీమ్‌కు ఫిర్యాదు చేయండి</Text>
+                                        </View>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={styles.reportCancelBtn}
+                                        onPress={() => { setReportModalVisible(false); setReportingItem(null); }}
+                                    >
+                                        <Text style={styles.reportCancelText}>రద్దు చేయి</Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
+                        )}
+                    </Animated.View>
+                )
+            }
+
+            {/* 🗑️ DELETE CONFIRMATION OVERLAY */}
+            {
+                deleteTarget && (
+                    <View style={[styles.modalOverlay, { zIndex: 1100, backgroundColor: 'rgba(0,0,0,0.7)' }]}>
+                        <View style={styles.deleteModalCard}>
+                            <Ionicons name="trash" size={40} color="#e44" style={{ marginBottom: 15 }} />
+                            <Text style={styles.deleteModalTitle}>కామెంట్‌ను తొలగించాలా?</Text>
+                            <TouchableOpacity style={styles.deleteModalBtn} onPress={confirmDelete}>
+                                <Text style={styles.deleteModalBtnText}>Delete Comment</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.cancelModalBtn} onPress={() => setDeleteTarget(null)}>
+                                <Text style={styles.cancelModalBtnText}>Cancel</Text>
+                            </TouchableOpacity>
                         </View>
-                    )
-                }
+                    </View>
+                )
+            }
 
-                {/* ⚙️ OPTIONS & REPORT MODAL */}
-                {
-                    isOptionsVisible && (
-                        <View style={[styles.modalOverlay, { justifyContent: 'center' }]}>
-                            <Pressable style={styles.fullSpace} onPress={handleOptionsClose} />
+            {/* ⚙️ OPTIONS & REPORT MODAL */}
+            {
+                isOptionsVisible && (
+                    <View style={[styles.modalOverlay, { justifyContent: 'center' }]}>
+                        <Pressable style={styles.fullSpace} onPress={handleOptionsClose} />
 
-                            {/* 1. INITIAL MENU */}
-                            {reportStep === 'menu' && (
-                                <Pressable style={styles.optionsCard} onPress={(e) => e.stopPropagation()}>
-                                    <Pressable style={styles.closeButton} onPress={handleOptionsClose}>
-                                        <Ionicons name="close" size={20} color="#333" />
-                                    </Pressable>
-
-                                    <Pressable style={styles.optionsItem} onPress={() => setReportStep('form')}>
-                                        <Ionicons name="alert-circle-outline" size={24} color="#333" />
-                                        <View style={styles.optionTextContainer}>
-                                            <Text style={styles.optionTitle}>Report Story</Text>
-                                            <Text style={styles.optionSubtitle}>Help us improve better</Text>
-                                        </View>
-                                    </Pressable>
-
-                                    <Pressable style={styles.optionsItem} onPress={() => { alert('Downloading...'); handleOptionsClose(); }}>
-                                        <Ionicons name="download-outline" size={24} color="#333" />
-                                        <View style={styles.optionTextContainer}>
-                                            <Text style={styles.optionTitle}>Download</Text>
-                                            <Text style={styles.optionSubtitle}>Save to Local Directory</Text>
-                                        </View>
-                                    </Pressable>
-
-                                    <Pressable style={styles.optionsItem} onPress={() => { alert('Bookmarked'); handleOptionsClose(); }}>
-                                        <Ionicons name="bookmark-outline" size={24} color="#333" />
-                                        <View style={styles.optionTextContainer}>
-                                            <Text style={styles.optionTitle}>Bookmark</Text>
-                                            <Text style={styles.optionSubtitle}>Save to read offline</Text>
-                                        </View>
-                                    </Pressable>
-                                    <View style={{ height: 4, width: 40, backgroundColor: '#333', borderRadius: 2, alignSelf: 'center', marginTop: 15 }} />
+                        {/* 1. INITIAL MENU */}
+                        {reportStep === 'menu' && (
+                            <Pressable style={styles.optionsCard} onPress={(e) => e.stopPropagation()}>
+                                <Pressable style={styles.closeButton} onPress={handleOptionsClose}>
+                                    <Ionicons name="close" size={20} color="#333" />
                                 </Pressable>
-                            )}
 
-                            {/* 2. REPORT FORM */}
-                            {reportStep === 'form' && (
-                                <Pressable style={styles.reportCard} onPress={(e) => e.stopPropagation()}>
-                                    <Pressable style={styles.closeButtonRound} onPress={handleOptionsClose}>
-                                        <Ionicons name="close" size={20} color="#333" />
-                                    </Pressable>
-
-                                    {['Mistakes Observed', 'Wrong Content', 'Hateful Statement', 'Biased Story', 'Copyright Violation'].map((reason) => (
-                                        <Pressable key={reason} style={styles.radioItem} onPress={() => setSelectedReason(reason)}>
-                                            <Ionicons
-                                                name={selectedReason === reason ? "radio-button-on" : "radio-button-off"}
-                                                size={24}
-                                                color="#000"
-                                            />
-                                            <Text style={styles.radioLabel}>{reason}</Text>
-                                        </Pressable>
-                                    ))}
-
-                                    <Text style={styles.otherReasonLabel}>Other reasons</Text>
-                                    <TextInput
-                                        style={styles.reportInput}
-                                        placeholder="Please tell us why you want to report this story"
-                                        value={reportReasonText}
-                                        onChangeText={setReportReasonText}
-                                        multiline
-                                    />
-
-                                    <Pressable style={styles.reportSubmitBtn} onPress={handleReportSubmit}>
-                                        <Text style={styles.reportSubmitText}>Report a mistake</Text>
-                                    </Pressable>
+                                <Pressable style={styles.optionsItem} onPress={() => setReportStep('form')}>
+                                    <Ionicons name="alert-circle-outline" size={24} color="#333" />
+                                    <View style={styles.optionTextContainer}>
+                                        <Text style={styles.optionTitle}>Report Story</Text>
+                                        <Text style={styles.optionSubtitle}>Help us improve better</Text>
+                                    </View>
                                 </Pressable>
-                            )}
 
-                            {/* 3. SUCCESS MESSAGE */}
-                            {reportStep === 'success' && (
-                                <Pressable style={styles.successCard} onPress={(e) => e.stopPropagation()}>
-                                    <Pressable style={styles.closeButtonRoundAbsolute} onPress={handleOptionsClose}>
-                                        <Ionicons name="close" size={20} color="#333" />
-                                    </Pressable>
-                                    <Text style={styles.successTitle}>Report issue successfully</Text>
-                                    <Text style={styles.successSubtitle}>Help us improve better</Text>
+                                <Pressable style={styles.optionsItem} onPress={handleDownloadImage}>
+                                    <Ionicons name="download-outline" size={24} color="#333" />
+                                    <View style={styles.optionTextContainer}>
+                                        <Text style={styles.optionTitle}>Download</Text>
+                                        <Text style={styles.optionSubtitle}>Save to Local Directory</Text>
+                                    </View>
                                 </Pressable>
-                            )}
-                        </View>
-                    )
-                }
 
-                {/* 🛠️ MENU ACTION MODALS (Dynamic Content) */}
-                {
-                    activeMenuModal !== null && (
+                                <Pressable style={styles.optionsItem} onPress={() => handleToggleSave(currentNewsId!)}>
+                                    <Ionicons name={savedIds.includes(currentNewsId!) ? "bookmark" : "bookmark-outline"} size={24} color="#333" />
+                                    <View style={styles.optionTextContainer}>
+                                        <Text style={styles.optionTitle}>{savedIds.includes(currentNewsId!) ? "Unbookmark" : "Bookmark"}</Text>
+                                        <Text style={styles.optionSubtitle}>{savedIds.includes(currentNewsId!) ? "Remove from saved" : "Save to read offline"}</Text>
+                                    </View>
+                                </Pressable>
+                                <View style={{ height: 4, width: 40, backgroundColor: '#333', borderRadius: 2, alignSelf: 'center', marginTop: 15 }} />
+                            </Pressable>
+                        )}
+
+                        {/* 2. REPORT FORM */}
+                        {reportStep === 'form' && (
+                            <Pressable style={styles.reportCard} onPress={(e) => e.stopPropagation()}>
+                                <Pressable style={styles.closeButtonRound} onPress={handleOptionsClose}>
+                                    <Ionicons name="close" size={20} color="#333" />
+                                </Pressable>
+
+                                {['Mistakes Observed', 'Wrong Content', 'Hateful Statement', 'Biased Story', 'Copyright Violation'].map((reason) => (
+                                    <Pressable key={reason} style={styles.radioItem} onPress={() => setSelectedReason(reason)}>
+                                        <Ionicons
+                                            name={selectedReason === reason ? "radio-button-on" : "radio-button-off"}
+                                            size={24}
+                                            color="#000"
+                                        />
+                                        <Text style={styles.radioLabel}>{reason}</Text>
+                                    </Pressable>
+                                ))}
+
+                                <Text style={styles.otherReasonLabel}>Other reasons</Text>
+                                <TextInput
+                                    style={styles.reportInput}
+                                    placeholder="Please tell us why you want to report this story"
+                                    value={reportReasonText}
+                                    onChangeText={setReportReasonText}
+                                    multiline
+                                />
+
+                                <Pressable style={styles.reportSubmitBtn} onPress={handleReportSubmit}>
+                                    <Text style={styles.reportSubmitText}>Report a mistake</Text>
+                                </Pressable>
+                            </Pressable>
+                        )}
+
+                        {/* 3. SUCCESS MESSAGE */}
+                        {reportStep === 'success' && (
+                            <Pressable style={styles.successCard} onPress={(e) => e.stopPropagation()}>
+                                <Pressable style={styles.closeButtonRoundAbsolute} onPress={handleOptionsClose}>
+                                    <Ionicons name="close" size={20} color="#333" />
+                                </Pressable>
+                                <Text style={styles.successTitle}>Report issue successfully</Text>
+                                <Text style={styles.successSubtitle}>Help us improve better</Text>
+                            </Pressable>
+                        )}
+                    </View>
+                )
+            }
+
+            {/* 🛠️ MENU ACTION MODALS (Dynamic Content) */}
+            {
+                activeMenuModal !== null && (
+                    <View style={[
+                        styles.modalOverlay,
+                        { justifyContent: activeMenuModal === 'settings' ? 'flex-start' : 'center' },
+                        activeMenuModal === 'settings' && { backgroundColor: isNightModeEnabled ? '#121212' : '#fff', padding: 0 }
+                    ]}>
+                        <Pressable style={styles.fullSpace} onPress={() => setActiveMenuModal(null)} />
                         <View style={[
-                            styles.modalOverlay,
-                            { justifyContent: activeMenuModal === 'settings' ? 'flex-start' : 'center' },
-                            activeMenuModal === 'settings' && { backgroundColor: '#fff', padding: 0 }
+                            styles.actionModalContainer,
+                            activeMenuModal === 'settings' && styles.settingsFullModal
                         ]}>
-                            <Pressable style={styles.fullSpace} onPress={() => setActiveMenuModal(null)} />
-                            <View style={[
-                                styles.actionModalContainer,
-                                activeMenuModal === 'settings' && styles.settingsFullModal
-                            ]}>
+                            {activeMenuModal !== 'lang' && (
                                 <View style={styles.commentHeader}>
                                     {activeMenuModal === 'settings' ? (
                                         <>
                                             <Pressable onPress={() => setActiveMenuModal(null)} style={{ padding: 5, marginRight: 10 }}>
-                                                <Ionicons name="arrow-back" size={28} color="#000" />
+                                                <Ionicons name="arrow-back" size={28} color={isNightModeEnabled ? "#fff" : "#000"} />
                                             </Pressable>
-                                            <Text style={styles.commentHeaderTitle}>Settings</Text>
+                                            <Text style={[styles.commentHeaderTitle, isNightModeEnabled && { color: '#fff' }]}>Settings</Text>
                                         </>
                                     ) : (
                                         <>
                                             <Text style={styles.commentHeaderTitle}>
-                                                {(activeMenuModal === 'profile' ? 'Edit Profile' : (activeMenuModal === 'lang' ? 'Select Language' : (activeMenuModal === 'saved' ? 'Saved Stories' : (activeMenuModal === 'feedback' ? 'Send Feedback' : 'Report an Issue'))))}
+                                                {(activeMenuModal === 'profile' ? 'Edit Profile' : (activeMenuModal === 'saved' ? 'Saved Stories' : (activeMenuModal === 'feedback' ? 'Send Feedback' : 'Report an Issue')))}
                                             </Text>
                                             <Pressable onPress={() => setActiveMenuModal(null)}>
                                                 <Ionicons name="close" size={28} color="#000" />
@@ -2774,349 +3698,397 @@ export default function NewsFeedScreen() {
                                         </>
                                     )}
                                 </View>
+                            )}
 
-                                {/* --- Settings Content --- */}
-                                {activeMenuModal === 'settings' && (
-                                    <ScrollView style={{ flex: 1, padding: 20 }} showsVerticalScrollIndicator={false}>
-                                        <TouchableOpacity style={styles.settingsItem}>
-                                            <View style={[styles.settingsIconBox, { backgroundColor: '#F8F1E6' }]}>
-                                                <Ionicons name="language" size={20} color="#B8860B" />
-                                            </View>
-                                            <Text style={styles.settingsLabel}>Language</Text>
-                                            <View style={styles.settingsSelector}>
-                                                <Text style={styles.settingsSelectorText}>Telugu</Text>
-                                                <Ionicons name="chevron-down" size={16} color="#666" />
-                                            </View>
-                                        </TouchableOpacity>
-
-                                        <View style={styles.settingsItem}>
-                                            <View style={[styles.settingsIconBox, { backgroundColor: '#E8F1FB' }]}>
-                                                <Ionicons name="notifications" size={20} color="#4A90E2" />
-                                            </View>
-                                            <Text style={styles.settingsLabel}>Notification</Text>
-                                            <Switch
-                                                value={isNotificationEnabled}
-                                                onValueChange={setIsNotificationEnabled}
-                                                trackColor={{ false: "#D1D1D1", true: "#4A90E2" }}
-                                                thumbColor="#fff"
-                                            />
+                            {/* --- Settings Content --- */}
+                            {activeMenuModal === 'settings' && (
+                                <ScrollView style={{ flex: 1, padding: 20 }} showsVerticalScrollIndicator={false}>
+                                    <TouchableOpacity style={[styles.settingsItem, isNightModeEnabled && { backgroundColor: '#1e1e1e' }]} onPress={() => setActiveMenuModal('lang')}>
+                                        <View style={[styles.settingsIconBox, { backgroundColor: isNightModeEnabled ? '#333' : '#F8F1E6' }]}>
+                                            <Ionicons name="language" size={20} color="#B8860B" />
                                         </View>
-
-                                        <View style={styles.settingsItem}>
-                                            <View style={[styles.settingsIconBox, { backgroundColor: '#F0F0F0' }]}>
-                                                <Ionicons name="moon" size={20} color="#666" />
-                                            </View>
-                                            <Text style={styles.settingsLabel}>Night Mode</Text>
-                                            <Switch
-                                                value={isNightModeEnabled}
-                                                onValueChange={setIsNightModeEnabled}
-                                                trackColor={{ false: "#D1D1D1", true: "#4A90E2" }}
-                                                thumbColor="#fff"
-                                            />
+                                        <Text style={[styles.settingsLabel, isNightModeEnabled && { color: '#fff' }]}>Language</Text>
+                                        <View style={styles.settingsSelector}>
+                                            <Text style={[styles.settingsSelectorText, isNightModeEnabled && { color: '#ccc' }]}>{currentLanguage}</Text>
+                                            <Ionicons name="chevron-down" size={16} color={isNightModeEnabled ? "#ccc" : "#666"} />
                                         </View>
+                                    </TouchableOpacity>
 
-                                        <TouchableOpacity style={styles.settingsItem}>
-                                            <View style={[styles.settingsIconBox, { backgroundColor: '#F0F7FF' }]}>
-                                                <Ionicons name="play-circle" size={20} color="#FF8F00" />
-                                            </View>
-                                            <Text style={styles.settingsLabel}>Auto play</Text>
-                                            <Switch
-                                                value={isAutoPlayEnabled}
-                                                onValueChange={setIsAutoPlayEnabled}
-                                                trackColor={{ false: "#D1D1D1", true: "#4A90E2" }}
-                                                thumbColor="#fff"
-                                            />
-                                        </TouchableOpacity>
-
-                                        <TouchableOpacity style={styles.settingsItem}>
-                                            <View style={[styles.settingsIconBox, { backgroundColor: '#F0F0F0' }]}>
-                                                <Ionicons name="text" size={20} color="#666" />
-                                            </View>
-                                            <Text style={styles.settingsLabel}>Text Size</Text>
-                                            <View style={styles.settingsSelector}>
-                                                <Text style={styles.settingsSelectorText}>Small</Text>
-                                                <Ionicons name="chevron-down" size={16} color="#666" />
-                                            </View>
-                                        </TouchableOpacity>
-
-                                        <View style={styles.aboutAppContainer}>
-                                            <View style={styles.aboutAppHeader}>
-                                                <Text style={styles.aboutAppHeaderText}>About App</Text>
-                                            </View>
-                                            <TouchableOpacity style={styles.aboutItem}>
-                                                <Ionicons name="information-circle-outline" size={22} color="#333" />
-                                                <Text style={styles.aboutItemLabel}>About us</Text>
-                                                <Ionicons name="chevron-forward" size={18} color="#999" />
-                                            </TouchableOpacity>
-                                            <TouchableOpacity style={styles.aboutItem}>
-                                                <Ionicons name="shield-checkmark-outline" size={22} color="#333" />
-                                                <Text style={styles.aboutItemLabel}>Privacy Policy</Text>
-                                                <Ionicons name="chevron-forward" size={18} color="#999" />
-                                            </TouchableOpacity>
-                                            <TouchableOpacity style={styles.aboutItem}>
-                                                <Ionicons name="document-text-outline" size={22} color="#333" />
-                                                <Text style={styles.aboutItemLabel}>Regulations & Conditions</Text>
-                                                <Ionicons name="chevron-forward" size={18} color="#999" />
-                                            </TouchableOpacity>
-                                            <TouchableOpacity style={[styles.aboutItem, { borderBottomWidth: 0 }]}>
-                                                <Ionicons name="chatbubble-ellipses-outline" size={22} color="#333" />
-                                                <Text style={styles.aboutItemLabel}>Feedback</Text>
-                                                <Ionicons name="chevron-forward" size={18} color="#999" />
-                                            </TouchableOpacity>
+                                    <View style={[styles.settingsItem, isNightModeEnabled && { backgroundColor: '#1e1e1e' }]}>
+                                        <View style={[styles.settingsIconBox, { backgroundColor: isNightModeEnabled ? '#333' : '#E8F1FB' }]}>
+                                            <Ionicons name="notifications" size={20} color="#4A90E2" />
                                         </View>
-                                    </ScrollView>
-                                )}
-
-                                {/* --- Profile Content --- */}
-                                {activeMenuModal === 'profile' && (
-                                    <View style={styles.formContent}>
-                                        <View style={[styles.profileCircleLarge, { overflow: 'hidden' }]}>
-                                            <Image
-                                                source="https://png.pngtree.com/png-vector/20231019/ourmid/pngtree-user-profile-avatar-png-image_10211469.png"
-                                                style={styles.profileAvatarImg}
-                                                contentFit="cover"
-                                            />
-                                        </View>
-                                        <Text style={styles.inputLabel}>DISPLAY NAME</Text>
-                                        <TextInput
-                                            style={styles.formInput}
-                                            value={tempName}
-                                            onChangeText={setTempName}
-                                            placeholder="Enter your name"
+                                        <Text style={[styles.settingsLabel, isNightModeEnabled && { color: '#fff' }]}>Notification</Text>
+                                        <Switch
+                                            value={isNotificationEnabled}
+                                            onValueChange={setIsNotificationEnabled}
+                                            trackColor={{ false: "#D1D1D1", true: "#4A90E2" }}
+                                            thumbColor="#fff"
                                         />
-                                        <Pressable style={styles.submitBtn} onPress={handleUpdateName}>
-                                            <Text style={styles.submitBtnText}>Save Changes</Text>
-                                        </Pressable>
                                     </View>
-                                )}
 
-                                {/* --- Language Content --- */}
-                                {activeMenuModal === 'lang' && (
-                                    <View style={styles.langList}>
-                                        {['English', 'Telugu (తెలుగు)', 'Hindi (हिन्दी)'].map((lang) => (
-                                            <Pressable
-                                                key={lang}
-                                                style={styles.langItem}
-                                                onPress={() => handleSelectLanguage(lang.split(' ')[0])}
-                                            >
-                                                <Text style={[styles.langText, currentLanguage === lang.split(' ')[0] && styles.langTextActive]}>
-                                                    {lang}
-                                                </Text>
-                                                {currentLanguage === lang.split(' ')[0] && (
-                                                    <Ionicons name="checkmark-circle" size={24} color="#1a73e8" />
-                                                )}
-                                            </Pressable>
-                                        ))}
+                                    <View style={[styles.settingsItem, isNightModeEnabled && { backgroundColor: '#1e1e1e' }]}>
+                                        <View style={[styles.settingsIconBox, { backgroundColor: isNightModeEnabled ? '#333' : '#F0F0F0' }]}>
+                                            <Ionicons name="moon" size={20} color={isNightModeEnabled ? "#fff" : "#666"} />
+                                        </View>
+                                        <Text style={[styles.settingsLabel, isNightModeEnabled && { color: '#fff' }]}>Night Mode</Text>
+                                        <Switch
+                                            value={isNightModeEnabled}
+                                            onValueChange={setIsNightModeEnabled}
+                                            trackColor={{ false: "#D1D1D1", true: "#4A90E2" }}
+                                            thumbColor="#fff"
+                                        />
                                     </View>
-                                )}
 
-                                {/* --- Saved Stories Content --- */}
-                                {activeMenuModal === 'saved' && (
-                                    <ScrollView style={styles.savedScroll}>
-                                        {savedIds.length > 0 ? (
-                                            newsData.filter(item => savedIds.includes(item.id)).map(item => (
-                                                <View key={item.id} style={styles.savedItem}>
-                                                    <Ionicons name="bookmark" size={20} color="#fbbc04" style={{ marginRight: 10 }} />
-                                                    <View style={{ flex: 1 }}>
-                                                        <Text style={styles.savedTitle} numberOfLines={1}>{item.title}</Text>
-                                                        <Text style={styles.savedDesc} numberOfLines={1}>{item.description}</Text>
-                                                    </View>
-                                                    <Pressable onPress={() => handleToggleSave(item.id)}>
-                                                        <Ionicons name="trash-outline" size={20} color="#e44" />
-                                                    </Pressable>
-                                                </View>
-                                            ))
-                                        ) : (
-                                            <View style={styles.emptyState}>
-                                                <Ionicons name="bookmark-outline" size={60} color="#ccc" />
-                                                <Text style={styles.emptyText}>No saved stories yet.</Text>
-                                            </View>
-                                        )}
-                                    </ScrollView>
-                                )}
+                                    <TouchableOpacity style={styles.settingsItem}>
+                                        <View style={[styles.settingsIconBox, { backgroundColor: '#F0F7FF' }]}>
+                                            <Ionicons name="play-circle" size={20} color="#FF8F00" />
+                                        </View>
+                                        <Text style={styles.settingsLabel}>Auto play</Text>
+                                        <Switch
+                                            value={isAutoPlayEnabled}
+                                            onValueChange={setIsAutoPlayEnabled}
+                                            trackColor={{ false: "#D1D1D1", true: "#4A90E2" }}
+                                            thumbColor="#fff"
+                                        />
+                                    </TouchableOpacity>
 
-                                {/* --- Feedback / Report Content --- */}
-                                {(activeMenuModal === 'feedback' || activeMenuModal === 'report') && (
-                                    <View style={styles.formContent}>
-                                        <Text style={styles.inputLabel}>
-                                            {activeMenuModal === 'feedback' ? 'TELL US WHAT YOU THINK' : 'WHAT IS THE ISSUE?'}
+                                    <TouchableOpacity style={styles.settingsItem}>
+                                        <View style={[styles.settingsIconBox, { backgroundColor: '#F0F0F0' }]}>
+                                            <Ionicons name="text" size={20} color="#666" />
+                                        </View>
+                                        <Text style={styles.settingsLabel}>Text Size</Text>
+                                        <View style={styles.settingsSelector}>
+                                            <Text style={styles.settingsSelectorText}>Small</Text>
+                                            <Ionicons name="chevron-down" size={16} color="#666" />
+                                        </View>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={styles.settingsItem} onPress={() => setActiveMenuModal('saved')}>
+                                        <View style={[styles.settingsIconBox, { backgroundColor: '#FFF4E6' }]}>
+                                            <Ionicons name="bookmark" size={20} color="#FF8C00" />
+                                        </View>
+                                        <Text style={styles.settingsLabel}>Saved Bookmarks</Text>
+                                        <Ionicons name="chevron-forward" size={18} color="#999" style={{ marginLeft: 'auto' }} />
+                                    </TouchableOpacity>
+
+                                    <View style={styles.aboutAppContainer}>
+                                        <View style={styles.aboutAppHeader}>
+                                            <Text style={styles.aboutAppHeaderText}>About App</Text>
+                                        </View>
+                                        <TouchableOpacity style={styles.aboutItem}>
+                                            <Ionicons name="information-circle-outline" size={22} color="#333" />
+                                            <Text style={styles.aboutItemLabel}>About us</Text>
+                                            <Ionicons name="chevron-forward" size={18} color="#999" />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={styles.aboutItem}>
+                                            <Ionicons name="shield-checkmark-outline" size={22} color="#333" />
+                                            <Text style={styles.aboutItemLabel}>Privacy Policy</Text>
+                                            <Ionicons name="chevron-forward" size={18} color="#999" />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={styles.aboutItem}>
+                                            <Ionicons name="document-text-outline" size={22} color="#333" />
+                                            <Text style={styles.aboutItemLabel}>Regulations & Conditions</Text>
+                                            <Ionicons name="chevron-forward" size={18} color="#999" />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[styles.aboutItem, { borderBottomWidth: 0 }]}>
+                                            <Ionicons name="chatbubble-ellipses-outline" size={22} color="#333" />
+                                            <Text style={styles.aboutItemLabel}>Feedback</Text>
+                                            <Ionicons name="chevron-forward" size={18} color="#999" />
+                                        </TouchableOpacity>
+                                    </View>
+                                </ScrollView>
+                            )}
+
+                            {/* --- Profile Content --- */}
+                            {activeMenuModal === 'profile' && (
+                                <View style={styles.formContent}>
+                                    <View style={[styles.profileCircleLarge, { overflow: 'hidden' }]}>
+                                        <Image
+                                            source="https://png.pngtree.com/png-vector/20231019/ourmid/pngtree-user-profile-avatar-png-image_10211469.png"
+                                            style={styles.profileAvatarImg}
+                                            contentFit="cover"
+                                        />
+                                    </View>
+                                    <Text style={styles.inputLabel}>DISPLAY NAME</Text>
+                                    <TextInput
+                                        style={styles.formInput}
+                                        value={tempName}
+                                        onChangeText={setTempName}
+                                        placeholder="Enter your name"
+                                    />
+                                    <Pressable style={styles.submitBtn} onPress={handleUpdateName}>
+                                        <Text style={styles.submitBtnText}>Save Changes</Text>
+                                    </Pressable>
+                                </View>
+                            )}
+
+                            {/* --- Language Content --- */}
+                            {activeMenuModal === 'lang' && (
+                                <View style={{ flex: 1, backgroundColor: '#fff', paddingTop: 20 }}>
+                                    {/* Header */}
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingHorizontal: 20 }}>
+                                        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#333', flex: 1, textAlign: 'center', lineHeight: 28, fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif-condensed' }}>
+                                            Choose your preferred language{'\n'}to read the news
                                         </Text>
-                                        <TextInput
-                                            style={[styles.formInput, { height: 120, textAlignVertical: 'top' }]}
-                                            value={feedbackText}
-                                            onChangeText={setFeedbackText}
-                                            placeholder="Type your message here..."
-                                            multiline
-                                        />
-                                        <Pressable style={styles.submitBtn} onPress={handleSubmitFeedback}>
-                                            <Text style={styles.submitBtnText}>Submit</Text>
-                                        </Pressable>
+                                        <TouchableOpacity onPress={() => setActiveMenuModal(null)} style={{ padding: 5, backgroundColor: '#ccc', borderRadius: 15 }}>
+                                            <Ionicons name="close" size={18} color="#fff" />
+                                        </TouchableOpacity>
                                     </View>
-                                )}
-                            </View>
+
+                                    <ScrollView contentContainerStyle={{ padding: 20 }}>
+                                        {/* Top 3 Full Width */}
+                                        {LANGUAGES.slice(0, 3).map((lang) => (
+                                            <TouchableOpacity
+                                                key={lang.id}
+                                                style={[styles.langCard, { borderBottomColor: lang.color }]}
+                                                onPress={() => handleSelectLanguage(lang.name)}
+                                            >
+                                                <View style={styles.langIconBox}>
+                                                    <Text style={[styles.langLetter, { color: lang.color }]}>{lang.letter}</Text>
+                                                    {/* Decorative dots */}
+                                                    <View style={[styles.dot, { backgroundColor: lang.color, top: 0, left: 10, opacity: 0.4 }]} />
+                                                    <View style={[styles.dot, { backgroundColor: lang.color, bottom: 5, right: 0, opacity: 0.6 }]} />
+                                                </View>
+                                                <View style={styles.langTextBox}>
+                                                    <Text style={styles.langLocalName}>{lang.localName}</Text>
+                                                    <Text style={styles.langEnglishName}>{lang.name}</Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                        ))}
+
+                                        {/* Grid for the rest */}
+                                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                                            {LANGUAGES.slice(3).map((lang) => (
+                                                <TouchableOpacity
+                                                    key={lang.id}
+                                                    style={[styles.langCardGrid, { borderBottomColor: lang.color }]}
+                                                    onPress={() => handleSelectLanguage(lang.name)}
+                                                >
+                                                    <View style={styles.langIconBoxSmall}>
+                                                        <Text style={[styles.langLetterSmall, { color: lang.color }]}>{lang.letter}</Text>
+                                                        <View style={[styles.dot, { backgroundColor: lang.color, top: -2, left: 8, opacity: 0.4, width: 4, height: 4 }]} />
+                                                    </View>
+                                                    <View>
+                                                        <Text style={styles.langLocalNameSmall}>{lang.localName}</Text>
+                                                        <Text style={styles.langEnglishNameSmall}>{lang.name}</Text>
+                                                    </View>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </View>
+                                    </ScrollView>
+                                </View>
+                            )}
+
+                            {/* --- Saved Stories Content --- */}
+                            {activeMenuModal === 'saved' && (
+                                <ScrollView style={styles.savedScroll}>
+                                    {savedIds.length > 0 ? (
+                                        newsData.filter(item => savedIds.includes(item.id)).map(item => (
+                                            <View key={item.id} style={styles.savedItem}>
+                                                <Ionicons name="bookmark" size={20} color="#fbbc04" style={{ marginRight: 10 }} />
+                                                <View style={{ flex: 1 }}>
+                                                    <Text style={styles.savedTitle} numberOfLines={1}>{item.title}</Text>
+                                                    <Text style={styles.savedDesc} numberOfLines={1}>{item.description}</Text>
+                                                </View>
+                                                <Pressable onPress={() => handleToggleSave(item.id)}>
+                                                    <Ionicons name="trash-outline" size={20} color="#e44" />
+                                                </Pressable>
+                                            </View>
+                                        ))
+                                    ) : (
+                                        <View style={styles.emptyState}>
+                                            <Ionicons name="bookmark-outline" size={60} color="#ccc" />
+                                            <Text style={styles.emptyText}>No saved stories yet.</Text>
+                                        </View>
+                                    )}
+                                </ScrollView>
+                            )}
+
+                            {/* --- Feedback / Report Content --- */}
+                            {(activeMenuModal === 'feedback' || activeMenuModal === 'report') && (
+                                <View style={styles.formContent}>
+                                    <Text style={styles.inputLabel}>
+                                        {activeMenuModal === 'feedback' ? 'TELL US WHAT YOU THINK' : 'WHAT IS THE ISSUE?'}
+                                    </Text>
+                                    <TextInput
+                                        style={[styles.formInput, { height: 120, textAlignVertical: 'top' }]}
+                                        value={feedbackText}
+                                        onChangeText={setFeedbackText}
+                                        placeholder="Type your message here..."
+                                        multiline
+                                    />
+                                    <Pressable style={styles.submitBtn} onPress={handleSubmitFeedback}>
+                                        <Text style={styles.submitBtnText}>Submit</Text>
+                                    </Pressable>
+                                </View>
+                            )}
                         </View>
-                    )
-                }
+                    </View>
+                )
+            }
 
-                <Animated.View style={[styles.overlay, overlayStyle]}>
-                    <Pressable style={{ flex: 1 }} onPress={toggleMenu} />
-                </Animated.View>
+            <Animated.View style={[styles.overlay, overlayStyle]}>
+                <Pressable style={{ flex: 1 }} onPress={toggleMenu} />
+            </Animated.View>
 
-                <Animated.View style={[styles.menuContainer, menuStyle]}>
-                    <View style={styles.customMenuHeader}>
-                        <TouchableOpacity style={styles.menuIconBtn} onPress={() => { toggleMenu(); setActiveMenuModal('settings'); }}>
-                            <Ionicons name="settings-outline" size={24} color="#666" />
+            <Animated.View style={[styles.menuContainer, menuStyle]}>
+                <View style={styles.customMenuHeader}>
+                    <TouchableOpacity style={styles.menuIconBtn} onPress={() => { toggleMenu(); setActiveMenuModal('settings'); }}>
+                        <Ionicons name="settings-outline" size={24} color="#666" />
+                    </TouchableOpacity>
+                    <Image
+                        source={require('../assets/images/res_screenshot_2026_01_06_170338.png')}
+                        style={styles.menuLogo}
+                        contentFit="contain"
+                    />
+                    <TouchableOpacity style={styles.menuNewsHeader} onPress={() => { toggleMenu(); }}>
+                        <Text style={styles.menuNewsText}>న్యూస్</Text>
+                        <Ionicons name="chevron-forward" size={22} color="#4A90E2" />
+                    </TouchableOpacity>
+                </View>
+
+                <ScrollView style={styles.newMenuList} showsVerticalScrollIndicator={false}>
+                    {/* 2. Guest Login Card */}
+                    <TouchableOpacity style={styles.guestCard} onPress={() => {
+                        toggleMenu();
+                        setIsLoginModalVisible(true);
+                    }}>
+                        <View style={[styles.guestIconCircle, { overflow: 'hidden' }]}>
+                            <Image
+                                source="https://png.pngtree.com/png-vector/20231019/ourmid/pngtree-user-profile-avatar-png-image_10211469.png"
+                                style={styles.profileAvatarImg}
+                                contentFit="cover"
+                            />
+                        </View>
+                        <Text style={styles.guestTextLogin}>Guest Login</Text>
+                        <View style={{ flex: 1 }} />
+                        <Ionicons name="chevron-forward" size={20} color="#ccc" />
+                    </TouchableOpacity>
+
+                    {/* 3. States Grid (Row 1) */}
+                    <View style={styles.gridRow}>
+                        <TouchableOpacity style={styles.gridItemState} onPress={() => { setActiveCategory('andhra'); toggleMenu(); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}>
+                            <Image source={require('../assets/images/res_ap_map_outline.png')} style={styles.stateMapIcon} contentFit="contain" />
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.stateTitle}>ఆంధ్రప్రదేశ్</Text>
+                                <Text style={styles.stateSubText}>Only Andhra Pradesh News</Text>
+                            </View>
                         </TouchableOpacity>
-                        <Image
-                            source={require('../assets/images/res_screenshot_2026_01_06_170338.png')}
-                            style={styles.menuLogo}
-                            contentFit="contain"
-                        />
-                        <TouchableOpacity style={styles.menuNewsHeader} onPress={() => { toggleMenu(); }}>
-                            <Text style={styles.menuNewsText}>న్యూస్</Text>
-                            <Ionicons name="chevron-forward" size={22} color="#4A90E2" />
+                        <View style={{ width: 10 }} />
+                        <TouchableOpacity style={styles.gridItemState} onPress={() => { setActiveCategory('telangana'); toggleMenu(); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}>
+                            <Image source={require('../assets/images/res_telangana_map_outline.png')} style={styles.stateMapIcon} contentFit="contain" />
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.stateTitle}>తెలంగాణ</Text>
+                                <Text style={styles.stateSubText}>Only Telangana News</Text>
+                            </View>
                         </TouchableOpacity>
                     </View>
 
-                    <ScrollView style={styles.newMenuList} showsVerticalScrollIndicator={false}>
-                        {/* 2. Guest Login Card */}
-                        <TouchableOpacity style={styles.guestCard} onPress={() => {
-                            toggleMenu();
-                            setIsLoginModalVisible(true);
-                        }}>
-                            <View style={[styles.guestIconCircle, { overflow: 'hidden' }]}>
-                                <Image
-                                    source="https://png.pngtree.com/png-vector/20231019/ourmid/pngtree-user-profile-avatar-png-image_10211469.png"
-                                    style={styles.profileAvatarImg}
-                                    contentFit="cover"
-                                />
+                    {/* 4. News Grid (Row 2) */}
+                    <View style={styles.gridRow}>
+                        <TouchableOpacity style={styles.gridItemSimple} onPress={() => { setActiveCategory('national'); toggleMenu(); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}>
+                            <Text style={styles.gridTitleNational}>జాతీయం</Text>
+                            <Text style={styles.gridSubCenter}>Only National News</Text>
+                        </TouchableOpacity>
+                        <View style={{ width: 10 }} />
+                        <TouchableOpacity style={styles.gridItemSimple}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
+                                <Ionicons name="search" size={24} color="#000" />
+                                <Text style={[styles.gridTitleMain, { marginLeft: 8 }]}>Fact Check</Text>
                             </View>
-                            <Text style={styles.guestTextLogin}>Guest Login</Text>
-                            <View style={{ flex: 1 }} />
-                            <Ionicons name="chevron-forward" size={20} color="#ccc" />
+                            <Text style={styles.gridSubTeluguFact}>న్యూస్ పబ్లిష్ అయిందా.. లేదో వెరిఫై</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* 5. Big Cards Row */}
+                    <View style={styles.gridRow}>
+                        <TouchableOpacity
+                            style={[styles.bigCard, { backgroundColor: '#F8F9FA' }]}
+                            onPress={() => { toggleMenu(); setIsDigitalMagazineVisible(true); }}
+                        >
+                            <View style={styles.magazineIconCircle}>
+                                <MaterialCommunityIcons name="newspaper-variant-outline" size={24} color="#0F5B8B" />
+                            </View>
+                            <Text style={styles.bigCardTextLarge}>డిజిటల్{"\n"}మ్యాగజిన్స్</Text>
+                        </TouchableOpacity>
+                        <View style={{ width: 10 }} />
+                        <TouchableOpacity style={[styles.bigCard, { backgroundColor: '#F8F9FA', padding: 15 }]}>
+                            <View style={styles.pollGroupIcon}>
+                                <MaterialCommunityIcons name="account-group-outline" size={32} color="#555" />
+                            </View>
+                            <Text style={styles.bigCardTextLargeCenter}>పోల్స్</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* 6. List Items */}
+                    <View style={styles.menuListContainerFlat}>
+                        {/* Selected Location */}
+                        <TouchableOpacity style={styles.menuListItemFlat} onPress={() => {
+                            toggleMenu();
+                            setIsMenuLocationVisible(true);
+                        }}>
+                            <View style={styles.menuListLeftRow}>
+                                <Ionicons name="location-outline" size={26} color="#000" />
+                                <View style={{ marginLeft: 15 }}>
+                                    <Text style={styles.menuListLabel}>మీరు ఎంచుకున్న స్థానం</Text>
+                                    <Text style={styles.menuListLocationBlue}>{userLocation}</Text>
+                                </View>
+                            </View>
+                            <Ionicons name="chevron-forward" size={20} color="#333" />
                         </TouchableOpacity>
 
-                        {/* 3. States Grid (Row 1) */}
-                        <View style={styles.gridRow}>
-                            <TouchableOpacity style={styles.gridItemState} onPress={() => { setActiveCategory('andhra'); toggleMenu(); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}>
-                                <Image source={require('../assets/images/res_ap_map_outline.png')} style={styles.stateMapIcon} contentFit="contain" />
-                                <View style={{ flex: 1 }}>
-                                    <Text style={styles.stateTitle}>ఆంధ్రప్రదేశ్</Text>
-                                    <Text style={styles.stateSubText}>Only Andhra Pradesh News</Text>
-                                </View>
-                            </TouchableOpacity>
-                            <View style={{ width: 10 }} />
-                            <TouchableOpacity style={styles.gridItemState} onPress={() => { setActiveCategory('telangana'); toggleMenu(); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}>
-                                <Image source={require('../assets/images/res_telangana_map_outline.png')} style={styles.stateMapIcon} contentFit="contain" />
-                                <View style={{ flex: 1 }}>
-                                    <Text style={styles.stateTitle}>తెలంగాణ</Text>
-                                    <Text style={styles.stateSubText}>Only Telangana News</Text>
-                                </View>
-                            </TouchableOpacity>
-                        </View>
+                        <TouchableOpacity style={styles.menuListItemFlat} onPress={toggleMenu}>
+                            <Text style={styles.menuListTitleSimpleBlack}>English News</Text>
+                            <Ionicons name="chevron-forward" size={20} color="#333" />
+                        </TouchableOpacity>
 
-                        {/* 4. News Grid (Row 2) */}
-                        <View style={styles.gridRow}>
-                            <TouchableOpacity style={styles.gridItemSimple} onPress={() => { setActiveCategory('national'); toggleMenu(); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}>
-                                <Text style={styles.gridTitleNational}>జాతీయం</Text>
-                                <Text style={styles.gridSubCenter}>Only National News</Text>
-                            </TouchableOpacity>
-                            <View style={{ width: 10 }} />
-                            <TouchableOpacity style={styles.gridItemSimple}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
-                                    <Ionicons name="search" size={24} color="#000" />
-                                    <Text style={[styles.gridTitleMain, { marginLeft: 8 }]}>Fact Check</Text>
-                                </View>
-                                <Text style={styles.gridSubTeluguFact}>న్యూస్ పబ్లిష్ అయిందా.. లేదో వెరిఫై</Text>
-                            </TouchableOpacity>
-                        </View>
+                        <TouchableOpacity style={styles.menuListItemFlat} onPress={toggleMenu}>
+                            <Text style={styles.menuListTitleSimpleBlack}>Job notifications</Text>
+                            <Ionicons name="chevron-forward" size={20} color="#333" />
+                        </TouchableOpacity>
 
-                        {/* 5. Big Cards Row */}
-                        <View style={styles.gridRow}>
-                            <TouchableOpacity
-                                style={[styles.bigCard, { backgroundColor: '#F8F9FA' }]}
-                                onPress={() => { toggleMenu(); setIsDigitalMagazineVisible(true); }}
-                            >
-                                <View style={styles.magazineIconCircle}>
-                                    <MaterialCommunityIcons name="newspaper-variant-outline" size={24} color="#0F5B8B" />
-                                </View>
-                                <Text style={styles.bigCardTextLarge}>డిజిటల్{"\n"}మ్యాగజిన్స్</Text>
-                            </TouchableOpacity>
-                            <View style={{ width: 10 }} />
-                            <TouchableOpacity style={[styles.bigCard, { backgroundColor: '#F8F9FA', padding: 15 }]}>
-                                <View style={styles.pollGroupIcon}>
-                                    <MaterialCommunityIcons name="account-group-outline" size={32} color="#555" />
-                                </View>
-                                <Text style={styles.bigCardTextLargeCenter}>పోల్స్</Text>
-                            </TouchableOpacity>
-                        </View>
+                        <TouchableOpacity style={styles.menuListItemFlat} onPress={toggleMenu}>
+                            <Text style={styles.menuListTitleSimpleBlack}>జాతకం & రాశి ఫలాలు వీడియోలు</Text>
+                            <Ionicons name="chevron-forward" size={20} color="#333" />
+                        </TouchableOpacity>
 
-                        {/* 6. List Items */}
-                        <View style={styles.menuListContainerFlat}>
-                            {/* Selected Location */}
-                            <TouchableOpacity style={styles.menuListItemFlat}>
-                                <View style={styles.menuListLeftRow}>
-                                    <Ionicons name="location-outline" size={26} color="#000" />
-                                    <View style={{ marginLeft: 15 }}>
-                                        <Text style={styles.menuListLabel}>మీరు ఎంచుకున్న స్థానం</Text>
-                                        <Text style={styles.menuListLocationBlue}>Hyderabad</Text>
-                                    </View>
-                                </View>
-                                <Ionicons name="chevron-forward" size={20} color="#333" />
-                            </TouchableOpacity>
+                        <TouchableOpacity style={styles.menuListItemFlat} onPress={toggleMenu}>
+                            <Text style={styles.menuListTitleSimpleBlack}>8k న్యూస్ ఎక్స్‌క్లూజివ్</Text>
+                            <Ionicons name="chevron-forward" size={20} color="#333" />
+                        </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.menuListItemFlat} onPress={toggleMenu}>
-                                <Text style={styles.menuListTitleSimpleBlack}>English News</Text>
-                                <Ionicons name="chevron-forward" size={20} color="#333" />
-                            </TouchableOpacity>
+                        <TouchableOpacity style={styles.menuListItemFlat}>
+                            <View style={styles.menuListLeftRow}>
+                                <Ionicons name="megaphone-outline" size={24} color="#000" />
+                                <Text style={[styles.menuListTitleSimpleBlack, { marginLeft: 15 }]}>Refer Now</Text>
+                            </View>
+                            <Ionicons name="chevron-forward" size={20} color="#333" />
+                        </TouchableOpacity>
+                    </View>
 
-                            <TouchableOpacity style={styles.menuListItemFlat} onPress={toggleMenu}>
-                                <Text style={styles.menuListTitleSimpleBlack}>Job notifications</Text>
-                                <Ionicons name="chevron-forward" size={20} color="#333" />
-                            </TouchableOpacity>
+                    <View style={{ height: 40 }} />
+                </ScrollView>
+            </Animated.View>
 
-                            <TouchableOpacity style={styles.menuListItemFlat} onPress={toggleMenu}>
-                                <Text style={styles.menuListTitleSimpleBlack}>జాతకం & రాశి ఫలాలు వీడియోలు</Text>
-                                <Ionicons name="chevron-forward" size={20} color="#333" />
-                            </TouchableOpacity>
-
-                            <TouchableOpacity style={styles.menuListItemFlat} onPress={toggleMenu}>
-                                <Text style={styles.menuListTitleSimpleBlack}>8k న్యూస్ ఎక్స్‌క్లూజివ్</Text>
-                                <Ionicons name="chevron-forward" size={20} color="#333" />
-                            </TouchableOpacity>
-
-                            <TouchableOpacity style={styles.menuListItemFlat}>
-                                <View style={styles.menuListLeftRow}>
-                                    <Ionicons name="megaphone-outline" size={24} color="#000" />
-                                    <Text style={[styles.menuListTitleSimpleBlack, { marginLeft: 15 }]}>Refer Now</Text>
-                                </View>
-                                <Ionicons name="chevron-forward" size={20} color="#333" />
-                            </TouchableOpacity>
-                        </View>
-
-                        <View style={{ height: 40 }} />
-                    </ScrollView>
-                </Animated.View>
-
-                {/* 🔐 LOGIN MODAL - REMOVED DUPLICATE MOCK */}
-
-
-            </>
+            {/* 🔐 LOGIN MODAL - REMOVED DUPLICATE MOCK */}
 
 
             {/* 🔐 FIREBASE LOGIN SCREEN */}
-            {isLoginModalVisible && (
-                <View style={[styles.fullModalOverlay, { backgroundColor: '#fff', zIndex: 10000 }]}>
-                    <LoginScreen
-                        onClose={() => setIsLoginModalVisible(false)}
-                        onLoginSuccess={() => {
-                            setIsLoginModalVisible(false);
-                            // Optionally show location selector after login
-                            // setTimeout(() => setIsLocationSelectorVisible(true), 300);
-                        }}
-                    />
-                </View>
-            )}
+            {
+                isLoginModalVisible && (
+                    <View style={[styles.fullModalOverlay, { backgroundColor: '#fff', zIndex: 10000 }]}>
+                        <LoginScreen
+                            onClose={() => setIsLoginModalVisible(false)}
+                            onLoginSuccess={() => {
+                                setIsLoginModalVisible(false);
+                                // Optionally show location selector after login
+                                // setTimeout(() => setIsLocationSelectorVisible(true), 300);
+                            }}
+                        />
+                    </View>
+                )
+            }
 
             {/* 🌍 LOCATION SELECTION SCREEN (Guest Login) */}
             {
@@ -5287,6 +6259,12 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '500',
     },
+    skipText: {
+        color: '#999',
+        fontSize: 14,
+        fontWeight: '600',
+        marginTop: 5,
+    },
     // 🙏 THANK YOU PAGE STYLES
     thankYouContainer: {
         width: '100%',
@@ -5405,6 +6383,197 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 12,
         fontWeight: 'bold',
+    },
+
+    // 🚩 REPORT SHEET STYLES
+    reportSheetContainer: {
+        position: 'absolute',
+        bottom: 0,
+        width: '100%',
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        paddingHorizontal: 20,
+        paddingTop: 15,
+        paddingBottom: 40,
+        elevation: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -5 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+    },
+    reportSheetPill: {
+        width: 40,
+        height: 5,
+        backgroundColor: '#eee',
+        borderRadius: 3,
+        alignSelf: 'center',
+        marginBottom: 20,
+    },
+    reportSheetTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#000',
+        marginBottom: 25,
+        textAlign: 'center',
+    },
+    reportActionItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f9f9f9',
+    },
+    reportIconBox: {
+        width: 46,
+        height: 46,
+        borderRadius: 23,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 15,
+    },
+    reportActionTextContent: {
+        flex: 1,
+    },
+    reportActionLabel: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    reportActionSub: {
+        fontSize: 12,
+        color: '#888',
+        marginTop: 2,
+    },
+    reportCancelBtn: {
+        marginTop: 25,
+        paddingVertical: 15,
+        alignItems: 'center',
+        backgroundColor: '#f5f5f5',
+        borderRadius: 15,
+    },
+    reportCancelText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#666',
+    },
+
+    // ⚠️ SENSITIVE CONTENT STYLES
+    sensitiveContainer: {
+        backgroundColor: '#F2F2F2',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginTop: 5,
+    },
+    sensitiveContentRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    sensitiveText: {
+        fontSize: 14,
+        color: '#666',
+        fontWeight: '500',
+    },
+    sensitiveTapBtn: {
+        backgroundColor: '#fff',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+    },
+    sensitiveTapText: {
+        fontSize: 13,
+        color: '#333',
+        fontWeight: '600',
+    },
+    // 🌍 NEW LANGUAGE UI STYLES
+    langCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 15,
+        marginBottom: 15,
+        borderBottomWidth: 4,
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+    },
+    langCardGrid: {
+        width: '48%',
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 15,
+        marginBottom: 15,
+        borderBottomWidth: 4,
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    langIconBox: {
+        width: 50,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 15,
+        position: 'relative',
+    },
+    langIconBoxSmall: {
+        width: 40,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 10,
+        position: 'relative',
+    },
+    langLetter: {
+        fontSize: 32,
+        fontWeight: 'bold',
+    },
+    langLetterSmall: {
+        fontSize: 24,
+        fontWeight: 'bold',
+    },
+    langTextBox: {
+        flex: 1,
+    },
+    langLocalName: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#000',
+    },
+    langEnglishName: {
+        fontSize: 14,
+        color: '#888',
+        fontWeight: '500',
+    },
+    langLocalNameSmall: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#000',
+    },
+    langEnglishNameSmall: {
+        fontSize: 12,
+        color: '#888',
+        fontWeight: '500',
+    },
+    dot: {
+        position: 'absolute',
+        width: 6,
+        height: 6,
+        borderRadius: 3,
     },
 });
 
