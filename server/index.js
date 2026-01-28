@@ -126,12 +126,12 @@ app.get('/api/news', async (req, res) => {
                     as: "likes"
                 }
             },
-            { $unwind: { path: "$category", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$location", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$fact_check", preserveNullAndEmptyArrays: true } },
             {
                 $addFields: {
-                    like_count: { $size: "$likes" }
+                    like_count: { $size: "$likes" },
+                    categories: "$category" // Rename or keep as is? Let's keep it and adjust consumer
                 }
             },
             { $project: { likes: 0 } }
@@ -144,13 +144,29 @@ app.get('/api/news', async (req, res) => {
 
 app.post('/api/news', authenticateToken, upload.single('image'), async (req, res) => {
     try {
-        const { title, description, category_id, sub_category, location_id, is_full_card, is_video, language, status, remarks } = req.body;
+        const {
+            title, description, category_id, category_ids, sub_category,
+            location_id, is_full_card, is_video, language, status, remarks,
+            type, redirect_url, placement
+        } = req.body;
         const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
         const creatorEmail = req.user.email;
         const creatorRole = req.user.role;
 
-        // Basic validation
-        if (!title || !category_id) return res.status(400).json({ error: "Title and Category are required" });
+        // ... extraction logic ...
+        let catIds = [];
+        if (category_ids) {
+            try {
+                const parsed = typeof category_ids === 'string' ? JSON.parse(category_ids) : category_ids;
+                catIds = Array.isArray(parsed) ? parsed : [parsed];
+            } catch (e) {
+                catIds = [category_ids];
+            }
+        } else if (category_id) {
+            catIds = [category_id];
+        }
+
+        if (catIds.length === 0) return res.status(400).json({ error: "At least one category is required" });
 
         const initialStatus = status || 'draft';
         const initialRemarks = remarks || (initialStatus === 'draft' ? 'Initial creation' : 'Submitted for review');
@@ -158,7 +174,7 @@ app.post('/api/news', authenticateToken, upload.single('image'), async (req, res
         const newItem = {
             title,
             description,
-            category_id: new ObjectId(category_id),
+            category_id: catIds.map(id => new ObjectId(id)),
             sub_category: sub_category || null,
             location_id: location_id ? new ObjectId(location_id) : null,
             image: imageUrl,
@@ -166,6 +182,10 @@ app.post('/api/news', authenticateToken, upload.single('image'), async (req, res
             is_video: is_video === 'true',
             language: language || 'te',
             status: initialStatus,
+            type: type || 'news', // 'news' or 'ad'
+            redirect_url: redirect_url || null,
+            placement: placement || 'trending', // Default placement
+            share_count: 0, // Track photo shares
             created_by: creatorEmail,
             created_at: new Date(),
             updated_at: new Date(),
@@ -181,7 +201,6 @@ app.post('/api/news', authenticateToken, upload.single('image'), async (req, res
         const result = await db.collection("news").insertOne(newItem);
         const newsId = result.insertedId;
 
-        // Automatically create news_media entry if image exists for mobile app compatibility
         if (imageUrl) {
             await db.collection("news_media").insertOne({
                 news_id: newsId,
@@ -221,6 +240,34 @@ app.patch('/api/news/:id/status', authenticateToken, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// Increment share count and log share action for a news item
+app.post('/api/news/:id/share', async (req, res) => {
+    const { user_id, platform } = req.body;
+    try {
+        // 1. Increment share_count in the news document
+        const result = await db.collection("news").findOneAndUpdate(
+            { _id: new ObjectId(req.params.id) },
+            { $inc: { share_count: 1 } },
+            { returnDocument: 'after' }
+        );
+
+        // 2. Log share action in news_shares (optional user_id/platform)
+        if (user_id || platform) {
+            await db.collection("news_shares").insertOne({
+                news_id: toId(req.params.id),
+                user_id: user_id ? toId(user_id) : null,
+                platform: platform || 'general',
+                created_at: new Date()
+            });
+        }
+
+        res.json({
+            success: true,
+            share_count: result.share_count || 0
+        });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 app.get('/api/categories', async (req, res) => {
     try {
         const categories = await db.collection("categories").find({}).toArray();
@@ -249,18 +296,6 @@ app.post('/api/news/:id/like', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.post('/api/news/:id/share', async (req, res) => {
-    const { user_id, platform } = req.body;
-    try {
-        await db.collection("news_shares").insertOne({
-            news_id: toId(req.params.id),
-            user_id: toId(user_id),
-            platform,
-            created_at: new Date()
-        });
-        res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message }); }
-});
 
 app.post('/api/news/:id/report', async (req, res) => {
     const { user_id, reason } = req.body;

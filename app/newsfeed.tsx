@@ -1,6 +1,7 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
+import * as Location from 'expo-location';
 import React, { useEffect, useState } from 'react';
 import {
     BackHandler,
@@ -58,7 +59,7 @@ const LANGUAGES = [
     { id: 'bangla', name: 'Bangla', localName: 'বাংলা', letter: 'বা', color: '#16A085' }, // Teal
 ];
 
-const API_URL = 'http://10.87.249.252:3000/api';
+const API_URL = 'http://192.168.29.70:3000/api';
 
 const DEFAULT_NEWS_DATA = [
     // 🏠 MAIN NEWS & TRENDING - MODI VISIBILITY
@@ -166,6 +167,14 @@ const DEFAULT_NEWS_DATA = [
         tags: ['bhakti', 'trending'],
         isFullCard: true
     },
+    {
+        id: 'full-bhakti-1',
+        title: 'ప్రార్థన',
+        description: 'ప్రశాంతమైన ఉదయం కోసం ప్రార్థన.',
+        image: require('../assets/images/res_praying_hands.png'),
+        tags: ['bhakti'],
+        isFullCard: true
+    },
 
     // 🚜 AGRICULTURE (Vyavasayam)
     {
@@ -211,6 +220,14 @@ const DEFAULT_NEWS_DATA = [
         tags: ['sports', 'trending'],
         isFullCard: true
     },
+    {
+        id: 'full-sports-comp',
+        title: 'Sports Complete',
+        description: 'Caught up with all sports news.',
+        image: require('../assets/images/res_25_category_complete_3.png'),
+        tags: ['sports', 'trending'],
+        isFullCard: true
+    },
 
     // 🏮 WISHES & FESTIVAL CARDS
     {
@@ -218,7 +235,7 @@ const DEFAULT_NEWS_DATA = [
         title: 'సంక్రాంతి శుభాకాంక్షలు: పండుగ సందడి',
         description: 'ముంగిట ముగ్గులు, గొబ్బెమ్మలు మరియు కోడి పందేలతో పల్లెల్లో పండుగ వాతావరణం నెలకొంది.',
         image: require('../assets/images/res_vivekanandha_2.jpg'),
-        tags: ['wishes', 'whatsapp'],
+        tags: ['whatsapp', 'trending'],
         isFullCard: true
     },
     {
@@ -226,7 +243,7 @@ const DEFAULT_NEWS_DATA = [
         title: 'హ్యాపీ బర్త్‌డే: విషెస్ కార్డ్స్',
         description: 'మీ స్నేహితులకు మరియు కుటుంబ సభ్యులకు ఈ ప్రత్యేకమైన విషెస్ మెసేజ్‌లను పంపండి.',
         image: require('../assets/images/res_whatsapp.jpg'),
-        tags: ['wishes', 'whatsapp', 'trending'],
+        tags: ['wishes', 'trending'],
         isFullCard: true
     },
 
@@ -352,15 +369,16 @@ const DEFAULT_NEWS_DATA = [
         title: 'Trending Viral Video',
         description: 'Watch the latest viral sensation now.',
         image: require('../assets/images/res_200297_912370117_medium.mp4'),
-        tags: ['videos', 'trending'],
-        isVideo: true
+        tags: ['videos'],
+        isVideo: true,
+        isFullCard: true
     },
     {
         id: 'video-1',
         title: 'సాంకేతిక విప్లవం: వీడియో రిపోర్ట్',
         description: 'రాబోయే కాలంలో ఏయే గ్యాడ్జెట్స్ మన జీవితాలను శాసించబోతున్నాయో చూడండి.',
         image: require('../assets/images/res_8k_news_top_bar_video_1.png'),
-        tags: ['videos', 'trending'],
+        tags: ['trending'],
         isVideo: true
     },
     {
@@ -368,7 +386,7 @@ const DEFAULT_NEWS_DATA = [
         title: 'తాజా వీడియో వార్తలు',
         description: 'రండి చూడండి! ఈ రోజు సోషల్ మీడియాలో వైరల్ అవుతున్న ఆసక్తికరమైన వీడియో.',
         image: require('../assets/images/res_picture11.png'),
-        tags: ['videos', 'trending'],
+        tags: ['trending'],
         isVideo: true
     },
     // 🏮 WISHES & FESTIVAL CARDS (FULL CARDS)
@@ -377,7 +395,7 @@ const DEFAULT_NEWS_DATA = [
         title: 'Full Card 1',
         description: 'Displaying full card image 1',
         image: require('../assets/images/res_20_photos_1.png'),
-        tags: ['wishes'],
+        tags: ['photos'],
         isFullCard: true
     },
     {
@@ -385,7 +403,7 @@ const DEFAULT_NEWS_DATA = [
         title: 'Full Card 2',
         description: 'Displaying full card image 2',
         image: require('../assets/images/res_22_photos_3.png'),
-        tags: ['wishes'],
+        tags: ['photos'],
         isFullCard: true
     },
     {
@@ -393,7 +411,7 @@ const DEFAULT_NEWS_DATA = [
         title: 'Full Card 3',
         description: 'Displaying full card image 3',
         image: require('../assets/images/res_23_photos_4.png'),
-        tags: ['wishes'],
+        tags: ['photos'],
         isFullCard: true
     },
     {
@@ -401,7 +419,7 @@ const DEFAULT_NEWS_DATA = [
         title: 'Full Card 4',
         description: 'Displaying full card image 4',
         image: require('../assets/images/res_23_ad_page.png'),
-        tags: ['wishes'],
+        tags: ['main', 'trending'],
         isFullCard: true
     },
     {
@@ -409,7 +427,7 @@ const DEFAULT_NEWS_DATA = [
         title: 'Full Card 5',
         description: 'Displaying full card image 5',
         image: require('../assets/images/res_24_photos_5.png'),
-        tags: ['wishes'],
+        tags: ['photos'],
         isFullCard: true
     },
     {
@@ -417,7 +435,7 @@ const DEFAULT_NEWS_DATA = [
         title: 'Full Card 6',
         description: 'Displaying full card image 6',
         image: require('../assets/images/res_25_category_complete_2.png'),
-        tags: ['wishes'],
+        tags: ['agriculture', 'trending'],
         isFullCard: true
     },
 
@@ -426,7 +444,7 @@ const DEFAULT_NEWS_DATA = [
         title: 'Full Card 8',
         description: 'Displaying full card image 8',
         image: require('../assets/images/res_25_category_complete_4.png'),
-        tags: ['wishes'],
+        tags: ['affairs', 'trending'],
         isFullCard: true
     },
     {
@@ -434,15 +452,15 @@ const DEFAULT_NEWS_DATA = [
         title: 'Full Card 9',
         description: 'Displaying full card image 9',
         image: require('../assets/images/res_25_category_complete_5.png'),
-        tags: ['wishes'],
+        tags: ['lifestyle', 'trending'],
         isFullCard: true
     },
     {
         id: 'full-card-10',
-        title: 'Full Card 10',
-        description: 'Displaying full card image 10',
+        title: 'Morning Status',
+        description: 'Start your day with positivity.',
         image: require('../assets/images/res_25_category_complete_6.png'),
-        tags: ['wishes'],
+        tags: ['whatsapp', 'trending'],
         isFullCard: true
     },
     {
@@ -450,15 +468,15 @@ const DEFAULT_NEWS_DATA = [
         title: 'Full Card 11',
         description: 'Displaying full card image 11',
         image: require('../assets/images/res_25_category_complete_7.png'),
-        tags: ['wishes'],
+        tags: ['cinema', 'trending'],
         isFullCard: true
     },
     {
         id: 'full-card-12',
-        title: 'Full Card 12',
-        description: 'Displaying full card image 12',
+        title: 'Sports News',
+        description: 'Catch up on all sports updates.',
         image: require('../assets/images/res_25_category_complete_8.png'),
-        tags: ['wishes'],
+        tags: ['sports', 'trending'],
         isFullCard: true
     },
 
@@ -477,6 +495,7 @@ const DEFAULT_NEWS_DATA = [
         image: require('../assets/images/res_whatsapp.png'), // Fixed missing image
         tags: ['whatsapp'],
         isVideo: true,
+        isFullCard: true,
         video: 'https://www.w3schools.com/html/mov_bbb.mp4'
     },
     // ✨ NEW ITEMS ADDED
@@ -493,7 +512,7 @@ const DEFAULT_NEWS_DATA = [
         title: 'కొత్త స్మార్ట్‌ఫోన్ రివ్యూ 2024',
         description: 'మార్కెట్లోకి వచ్చిన లేటెస్ట్ ఫీచర్స్ తో కూడిన స్మార్ట్‌ఫోన్ పనితీరు ఎలా ఉందో చూడండి.',
         image: require('../assets/images/res_8k_news_top_bar_video_2.png'),
-        tags: ['videos', 'trending'],
+        tags: ['trending'],
         isVideo: true
     },
     {
@@ -501,7 +520,7 @@ const DEFAULT_NEWS_DATA = [
         title: 'ప్రకృతి అందాలు: అరకు లోయ',
         description: 'విశాఖ మన్యంలో పర్యాటకులను కట్టిపడేస్తున్న ప్రకృతి రమణీయ దృశ్యాలు. తప్పక చూడాల్సిన ప్రదేశం.',
         image: require('../assets/images/res_picture3.png'),
-        tags: ['photos', 'trending', 'lifestyle'],
+        tags: ['whatsapp', 'trending'],
         isFullCard: true
     },
     {
@@ -624,6 +643,7 @@ const ALL_LOCATIONS_DATA = [
     { id: 'hind', name: 'Hindupur', telugu: 'హిందూపురం', state: 'AP' },
     { id: 'ten', name: 'Tenali', telugu: 'తెనాలి', state: 'AP' },
     { id: 'ama', name: 'Amaravati', telugu: 'అమరావతి', state: 'AP' },
+    { id: 'gud', name: 'Gudivada', telugu: 'గుడివాడ', state: 'AP' },
 ];
 
 // Helper function to get English name from Telugu location
@@ -635,6 +655,21 @@ const getEnglishLocationName = (teluguName: string): string => {
 export default function NewsFeedScreen() {
     const insets = useSafeAreaInsets();
     // 📐 Precise height calculation - matching physical screen for one-page fit
+    const getCategoryDefaultImage = (slug: string) => {
+        const s = String(slug || '').toLowerCase();
+        if (s.includes('bhakti')) return require('../assets/images/res_bhakthi.jpg');
+        if (s.includes('agri')) return require('../assets/images/res_mag_agri.png');
+        if (s.includes('sport')) return require('../assets/images/res_match_winning.jpg');
+        if (s.includes('cine')) return require('../assets/images/res_the_raja_saab_27x40.jpg');
+        if (s.includes('wish')) return require('../assets/images/res_wishes1.png');
+        if (s.includes('whatsapp')) return require('../assets/images/res_whatsapp.png');
+        if (s.includes('life')) return require('../assets/images/res_mag_life.png');
+        if (s.includes('affair')) return require('../assets/images/res_26_india_news_1.png');
+        if (s.includes('local') || s.includes('hyd') || s.includes('guntur') || s.includes('vijay')) return require('../assets/images/res_21_local_news.png');
+        if (s.includes('trending')) return require('../assets/images/res_22_trending_news.png');
+        return require('../assets/images/res_20_main_news.png');
+    };
+
     const CARD_HEIGHT = LAYOUT.windowHeight;
 
     const [newsData, setNewsData] = useState<any[]>(DEFAULT_NEWS_DATA);
@@ -655,25 +690,41 @@ export default function NewsFeedScreen() {
 
                         // Fix localhost URLs for Emulator/Device
                         if (mediaUrl && mediaUrl.includes('localhost')) {
-                            mediaUrl = mediaUrl.replace('localhost', '10.87.249.252');
+                            mediaUrl = mediaUrl.replace('localhost', '192.168.29.70');
                         }
 
                         // Map Layout Properties (DB snake_case -> App camelCase)
                         let isFullCard = item.is_full_card || localMatch?.isFullCard;
                         let isVideo = item.is_video || localMatch?.isVideo;
 
-                        // 🛠️ FORCE FIX: Ensure specific Main News items are NEVER Full Card (Yellow Card Fix)
-                        const categorySlug = item.category?.slug || '';
-                        if (categorySlug === 'main' || categorySlug === 'national' ||
+                        // 🏷️ Category Slugs Extraction
+                        const categories = Array.isArray(item.category) ? item.category : (item.category ? [item.category] : []);
+                        const categorySlugs = categories.map((c: any) => c.slug);
+                        const primarySlug = categorySlugs[0] || '';
+
+                        // 🛠️ FORCE FIX: Ensure specific Main News items are NEVER Full Card
+                        if (categorySlugs.includes('main') || categorySlugs.includes('national') ||
                             item.tags?.includes('main') || item.tags?.includes('national') ||
                             item.title?.includes('జర్మన్') || item.title?.includes('IPL') ||
-                            item.title?.includes('ఐపీల్') || item.title?.includes('ఐపీఎల్') ||
-                            item.title?.includes('ప్రధాని మోదీ')) {
+                            item.title?.includes('ఐపీఎల్') || item.title?.includes('ప్రధాని మోదీ')) {
                             isFullCard = false;
                         }
 
+                        // 📸 FORCE FULL SCREEN FOR PHOTOS & REEL VIDEOS (Hide Title/Desc)
+                        // REELS: Pure 'videos' tag (no news context)
+                        // PHOTOS: Always immersive
+                        const hasNewsContext = categorySlugs.includes('main') || categorySlugs.includes('trending') ||
+                            item.tags?.includes('main') || item.tags?.includes('trending') ||
+                            categorySlugs.includes('national') || item.tags?.includes('national');
+
+                        const isReel = (categorySlugs.includes('videos') || item.tags?.includes('videos')) && !hasNewsContext;
+
+                        if (categorySlugs.includes('photos') || item.tags?.includes('photos') || isReel) {
+                            isFullCard = true;
+                        }
+
                         // 🖼️ Image Selection Logic
-                        let finalImage = localMatch ? localMatch.image : (mediaUrl || DEFAULT_NEWS_DATA[0].image);
+                        let finalImage = localMatch ? localMatch.image : (mediaUrl || getCategoryDefaultImage(primarySlug || categorySlugs[0] || 'trending'));
 
                         // ⚾ IPL 2026 Image Fix (Broaden match and ensure correct asset)
                         if (item.title?.toLowerCase().includes('ipl') ||
@@ -681,6 +732,8 @@ export default function NewsFeedScreen() {
                             item.title?.includes('ఐపీల్ 2026')) {
                             finalImage = require('../assets/images/gettyimages-2218439512-612x612.jpg');
                         }
+
+                        const finalTags = [...new Set([...(item.tags || []), ...categorySlugs])];
 
                         return {
                             ...item,
@@ -690,14 +743,27 @@ export default function NewsFeedScreen() {
                             // Image: Prioritize Local Asset -> Media URL -> Default
                             image: finalImage,
 
-                            tags: item.tags || [item.category?.slug, 'trending', 'main'],
+                            tags: finalTags,
 
                             isFullCard,
                             isVideo,
-                            video: item.video || localMatch?.video
+                            video: item.video || localMatch?.video,
+                            created_at: item.created_at || new Date().toISOString(),
+                            type: item.type || 'news',
+                            redirect_url: item.redirect_url || null,
+                            placement: item.placement || 'trending'
                         };
                     });
-                    setNewsData(mappedData);
+
+                    // Sort: Latest news first (LIFO order) based on created_at
+                    mappedData.sort((a, b) => {
+                        const dateA = new Date(a.created_at).getTime();
+                        const dateB = new Date(b.created_at).getTime();
+                        return dateB - dateA;
+                    });
+
+                    // Merge: Put API news first, then Default news
+                    setNewsData([...mappedData, ...DEFAULT_NEWS_DATA]);
                 }
             } catch (error) {
                 console.error('Error fetching news:', error);
@@ -796,8 +862,12 @@ export default function NewsFeedScreen() {
                 }
 
                 const savedLocation = await AsyncStorage.getItem('USER_LOCATION');
+                const manualStored = await AsyncStorage.getItem('IS_MANUAL_LOCATION');
                 if (savedLocation) {
                     setUserLocation(savedLocation);
+                }
+                if (manualStored === 'true') {
+                    setIsManualLocation(true);
                 }
 
                 // 💬 CHECK IF USER HAS SEEN COMMENT HINT
@@ -1120,26 +1190,29 @@ export default function NewsFeedScreen() {
     const [hasSeenUnreadHint, setHasSeenUnreadHint] = useState(false);
     const [hasSeenLocationHint, setHasSeenLocationHint] = useState(false);
     const [hasSeenCategoryHint, setHasSeenCategoryHint] = useState(false);
-    const [unreadCount, setUnreadCount] = useState(12); // Example count
+    const [unreadCount, setUnreadCount] = useState(newsData.length);
     const [showCountPopup, setShowCountPopup] = useState(false);
     const [isCategoriesVisible, setIsCategoriesVisible] = useState(false);
 
     const CATEGORY_TABS = [
         { id: 'main', title: 'మెయిన్ న్యూస్', bg: require('../assets/images/res_20_main_news.png'), accent: '#0083B0', titleColor: '#d93025' },
         { id: 'local', title: 'లోకల్ న్యూస్', bg: require('../assets/images/res_21_local_news.png'), accent: '#2C3E50', titleColor: '#000' },
-        { id: 'wishes', title: 'విషెస్', bg: require('../assets/images/res_21_local_news.png'), accent: '#D32F2F', titleColor: '#E91E63' },
-        { id: 'trending', title: 'ట్రెండింగ్ న్యూస్', bg: require('../assets/images/res_20_main_news.png'), accent: '#FF8F00', titleColor: '#fff' },
-        { id: 'whatsapp', title: 'వాట్సాప్ స్టేటస్', bg: require('../assets/images/res_25_telangana_news.png'), accent: '#2E7D32', titleColor: '#2E7D32' },
-        { id: 'bhakti', title: 'భక్తి', bg: require('../assets/images/res_20_main_news.png'), accent: '#FBC02D', titleColor: '#6A1B9A' },
+        { id: 'wishes', title: 'విషెస్', bg: require('../assets/images/res_wishes1.png'), accent: '#D32F2F', titleColor: '#E91E63' },
+        { id: 'trending', title: 'ట్రెండింగ్ న్యూస్', bg: require('../assets/images/res_22_trending_news.png'), accent: '#FF8F00', titleColor: '#fff' },
+        { id: 'whatsapp', title: 'వాట్సాప్ స్టేటస్', bg: require('../assets/images/res_whatsapp.png'), accent: '#2E7D32', titleColor: '#2E7D32' },
+        { id: 'bhakti', title: 'భక్తి', bg: require('../assets/images/res_bhakthi.jpg'), accent: '#FBC02D', titleColor: '#6A1B9A' },
         { id: 'affairs', title: 'కరెంటు అఫైర్స్', bg: require('../assets/images/res_26_india_news_1.png'), accent: '#1976D2', titleColor: '#1565C0' },
-        { id: 'lifestyle', title: 'లైఫ్          స్టైల్', bg: require('../assets/images/res_20_main_news.png'), accent: '#C2185B', titleColor: '#C62828' },
-        { id: 'agriculture', title: 'వ్యవసాయం', bg: require('../assets/images/res_24_andhrapradesh_news.png'), accent: '#388E3C', titleColor: '#fff' },
-        { id: 'cinema', title: 'సినిమా', bg: require('../assets/images/res_20_main_news.png'), accent: '#0097A7', titleColor: '#FFf' },
-        { id: 'sports', title: 'క్రీడలు', bg: require('../assets/images/res_26_india_news.png'), accent: '#E64A19', titleColor: '#fff' },
+        { id: 'lifestyle', title: 'లైఫ్          స్టైల్', bg: require('../assets/images/res_mag_life.png'), accent: '#C2185B', titleColor: '#C62828' },
+        { id: 'agriculture', title: 'వ్యవసాయం', bg: require('../assets/images/res_mag_agri.png'), accent: '#388E3C', titleColor: '#fff' },
+        { id: 'cinema', title: 'సినిమా', bg: require('../assets/images/res_the_raja_saab_27x40.jpg'), accent: '#0097A7', titleColor: '#FFf' },
+        { id: 'sports', title: 'క్రీడలు', bg: require('../assets/images/res_match_winning.jpg'), accent: '#E64A19', titleColor: '#fff' },
+        { id: 'videos', title: 'వీడియోలు', bg: require('../assets/images/res_20_main_news.png'), accent: '#000000', titleColor: '#fff' },
+        { id: 'photos', title: 'ఫోటోలు', bg: require('../assets/images/res_20_main_news.png'), accent: '#8E44AD', titleColor: '#fff' },
     ];
 
     // 📍 LOCATION & CATEGORY LOGIC
     const [userLocation, setUserLocation] = useState<string>('హైదరాబాద్');
+    const [isManualLocation, setIsManualLocation] = useState<boolean>(false);
     const [activeCategory, setActiveCategory] = useState<string>('trending');
     const [filteredNews, setFilteredNews] = useState<any[]>([]);
     const [readNewsIds, setReadNewsIds] = useState<string[]>([]);
@@ -1244,6 +1317,16 @@ export default function NewsFeedScreen() {
         isDigitalMagazineVisible ||
         isMenuLocationVisible;
 
+    // Handle location selection
+    const handleLocationSelect = async (location: any) => {
+        setUserLocation(location.telugu);
+        setIsManualLocation(true);
+        setIsLocationSelectorVisible(false);
+        setIsLocalNewsLocationVisible(false);
+        setIsMenuLocationVisible(false);
+        await AsyncStorage.setItem('USER_LOCATION', location.telugu);
+        await AsyncStorage.setItem('IS_MANUAL_LOCATION', 'true');
+    };
     // 🔄 2. SNAP VS SLIDE LOGIC
     // We use a ref to detect when we've JUST come out of a modal.
     // If a modal is open, or was just true in the previous cycle, we snap the HUD instantly.
@@ -1271,12 +1354,49 @@ export default function NewsFeedScreen() {
         prevAnyModalVisibleRef.current = anyModalVisible;
     }, [isHUDVisible, anyModalVisible]);
 
-    // Update unread count dynamically
     useEffect(() => {
         const totalNews = newsData.length;
         const readCount = readNewsIds.length;
         setUnreadCount(totalNews - readCount);
-    }, [readNewsIds]);
+    }, [readNewsIds, newsData]);
+
+    // 📍 3. AUTOMATIC LOCATION DETECTION
+    useEffect(() => {
+        const autoDetectLocation = async () => {
+            // Only auto-detect if user hasn't set a manual preference
+            if (isManualLocation) return;
+
+            try {
+                const { status } = await Location.getForegroundPermissionsAsync();
+                if (status !== 'granted') return;
+
+                const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Low });
+                const reverseGeocode = await Location.reverseGeocodeAsync({
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude
+                });
+
+                if (reverseGeocode.length > 0) {
+                    const city = reverseGeocode[0].city || reverseGeocode[0].district || reverseGeocode[0].subregion;
+                    if (city) {
+                        const matchedLoc = ALL_LOCATIONS_DATA.find(loc =>
+                            loc.name.toLowerCase() === city.toLowerCase() ||
+                            city.toLowerCase().includes(loc.name.toLowerCase())
+                        );
+
+                        if (matchedLoc) {
+                            setUserLocation(matchedLoc.telugu);
+                            await AsyncStorage.setItem('USER_LOCATION', matchedLoc.telugu);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('Error auto-detecting location:', error);
+            }
+        };
+
+        autoDetectLocation();
+    }, [isManualLocation]);
 
     // (Rating prompt logic moved to filteredNews useEffect)
 
@@ -1347,73 +1467,48 @@ export default function NewsFeedScreen() {
 
     // 🛠️ STABILITY FIX: Memoize the base structure (Stories + Random Fillers)
     // This ensures scrolling (which updates readNewsIds) does NOT re-shuffle the list, causing shaking.
+    // 🛠️ STABILITY FIX: Memoize the base structure (Stories + Random Fillers)
+    // This ensures scrolling (which updates readNewsIds) does NOT re-shuffle the list, causing shaking.
     const stableMixedNews = React.useMemo(() => {
         let baseList = [];
-        if (activeCategory === 'local') {
+
+        // 1. STANDARD NEWS FEEDS
+        if (activeCategory === 'videos') {
+            // 🎬 REELS SECTION: Only immersive, full-screen videos
+            baseList = newsData.filter(item =>
+                (item.tags?.includes('videos') || item.isVideo) &&
+                item.isFullCard === true &&
+                item.type !== 'ad' &&
+                // Specifically exclude items with news context from the reels section
+                !(item.tags?.includes('trending') || item.tags?.includes('main') || item.tags?.includes('national'))
+            );
+        } else if (activeCategory === 'local') {
             // Convert Telugu location name to English for tag matching
             const englishLocation = getEnglishLocationName(userLocation);
             baseList = newsData.filter(item =>
-                item.tags?.some((tag: string) => tag.toLowerCase().includes(englishLocation)) ||
-                item.location?.toLowerCase().includes(englishLocation)
+            (item.tags?.some((tag: string) => String(tag).toLowerCase().includes(englishLocation)) ||
+                String(item.location || '').toLowerCase().includes(englishLocation))
             );
         } else {
-            baseList = newsData.filter(item => item.tags?.includes(activeCategory));
-        }
-
-        const stories = baseList.filter(item =>
-            !item.id.startsWith('full-card-') &&
-            !item.id.startsWith('full-ad-') &&
-            !item.id.startsWith('full-comp-')
-        );
-
-        const closers = baseList.filter(item => item.id.startsWith('full-comp-'));
-
-        const fillerPool = newsData.filter(item =>
-            item.id.startsWith('full-card-') ||
-            item.id.startsWith('full-ad-')
-        );
-
-        // Shuffle once per category/data change
-        const shuffledFillers = [...fillerPool].sort(() => 0.5 - Math.random());
-
-        let merged = [];
-        let fillerIdx = 0;
-        let nextInsertionIndex = Math.floor(Math.random() * 3) + 3;
-
-        stories.forEach((story, index) => {
-            merged.push(story);
-            if (index === nextInsertionIndex && fillerIdx < shuffledFillers.length) {
-                merged.push(shuffledFillers[fillerIdx]);
-                fillerIdx++;
-                nextInsertionIndex = index + Math.floor(Math.random() * 4) + 3;
-            }
-        });
-
-        // Append closers/fallback
-        if (activeCategory !== 'trending') {
-            merged.push({ id: 'end-card', type: 'end' });
-        } else {
-            if (closers.length > 0) merged.push(...closers);
-            else merged.push({ id: 'end-card', type: 'end' });
-        }
-
-        // Fallback for empty - show general local news if specific location matches fail
-        if (merged.length === 0 && activeCategory === 'local') {
-            const generalLocalNews = newsData.filter(item =>
-                item.tags?.includes('local') ||
-                item.category?.slug === 'local'
+            // 📰 REGULAR CATEGORIES (Trending, Main, etc.)
+            baseList = newsData.filter(item =>
+                (item.tags?.includes(activeCategory) ||
+                    (activeCategory === 'trending' && item.placement === 'trending' && item.type === 'ad')) &&
+                !(item.tags?.includes('videos') && item.isFullCard) // 🚫 Exclude Reels from News Feed
             );
-            if (generalLocalNews.length > 0) {
-                merged = generalLocalNews;
-            } else {
-                merged = newsData.filter(item => item.tags?.includes('trending'));
-            }
-        } else if (merged.length === 0) {
-            merged = newsData.filter(item => item.tags?.includes('trending'));
+
+            // Special case: If we are in 'trending', ensure any videos are NOT reels (they should have text)
+            // UNLESS there's no other way to show them. But usually, news videos have trending tag.
         }
 
-        return merged;
-    }, [activeCategory, userLocation, newsData]);
+        // Add end card if list is not empty
+        if (baseList.length > 0) {
+            baseList.push({ id: 'end-card', type: 'end' });
+        }
+
+        return baseList;
+    }, [activeCategory, newsData, userLocation]);
+
 
     // Optimization: Only listen to readNewsIds when in 'unread' filter mode to prevent list regeneration on scroll
     const effectiveReadIds = filterMode === 'unread' ? readNewsIds : null;
@@ -1424,17 +1519,10 @@ export default function NewsFeedScreen() {
 
         // 1. Filter (Unread/Location Modes)
         if (filterMode === 'unread') {
-            // Show only unread regular news items (exclude ALL videos and full cards)
+            // Show only unread news items
             final = final.filter(item =>
                 !readNewsIds.includes(item.id) &&
-                !item.isVideo &&
-                !item.video && // Double check for video URL presence
-                !item.isFullCard &&
-                !item.tags?.includes('videos') &&
-                !item.tags?.includes('whatsapp') && // Whatsapp often has videos
-                !item.id.toLowerCase().includes('video') &&
-                !item.id.startsWith('full-') &&
-                item.type !== 'rating' // Safety
+                item.type !== 'rating'
             );
         } else if (filterMode === 'location') {
             // Show only location-specific regular news items
@@ -1752,6 +1840,47 @@ export default function NewsFeedScreen() {
         setReportStep('success');
     };
 
+    const handleIncrementShare = async (id: string) => {
+        try {
+            const response = await fetch(`${API_URL}/news/${id}/share`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: user?._id || null, platform: 'general' })
+            });
+            const data = await response.json();
+            if (data.success) {
+                // Update local newsData state
+                setNewsData(prev => prev.map(item =>
+                    item.id === id ? { ...item, shareCount: data.share_count } : item
+                ));
+            }
+        } catch (error) {
+            console.error('Error incrementing share:', error);
+        }
+    };
+
+    const handleWhatsAppShare = async (id: string) => {
+        const item = newsData.find(i => i.id === id);
+        if (!item) return;
+
+        const shareUrl = `https://8knews.app/news/${item.id}`;
+        const shareText = `${item.title}\n\n${item.description}\n\nRead more at: ${shareUrl}`;
+
+        try {
+            const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(shareText)}`;
+            await Linking.openURL(whatsappUrl);
+            handleIncrementShare(id);
+        } catch (error) {
+            console.error('WhatsApp share error:', error);
+            // Fallback to general share if WhatsApp URI fails
+            await Share.share({
+                message: shareText,
+                url: shareUrl,
+            });
+            handleIncrementShare(id);
+        }
+    };
+
     const handleOpenShare = (id: string) => {
         // 💬 DISMISS SHARE HINT ON FIRST OPEN
         if (isShareHintVisible && !hasSeenShareHint) {
@@ -1761,6 +1890,7 @@ export default function NewsFeedScreen() {
         }
         setSelectedShareId(id);
         setShareModalVisible(true);
+        // Note: We'll increment only when an actual platform is chosen in handleShareAction
     };
 
     const handleShareAction = async (platform: string) => {
@@ -1776,6 +1906,7 @@ export default function NewsFeedScreen() {
                 case 'WhatsApp':
                 case 'WhatsApp Status':
                     await Linking.openURL(`whatsapp://send?text=${encodeURIComponent(shareText)}`);
+                    handleIncrementShare(selectedShareId);
                     break;
                 case 'X Share':
                     await Linking.openURL(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`);
@@ -2031,6 +2162,19 @@ export default function NewsFeedScreen() {
         }
     };
 
+    const toggleReplies = (commentId: string) => {
+        if (!currentNewsId) return;
+        setAllComments(prev => {
+            const currentList = prev[currentNewsId] || [];
+            return {
+                ...prev,
+                [currentNewsId]: currentList.map(c =>
+                    c.id === commentId ? { ...c, showReplies: !c.showReplies } : c
+                )
+            };
+        });
+    };
+
     const handleLikeComment = (commentId: string, replyId?: string) => {
         if (!currentNewsId) return;
         setAllComments(prev => {
@@ -2205,9 +2349,9 @@ export default function NewsFeedScreen() {
     ];
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, isNightModeEnabled && { backgroundColor: '#000' }]}>
             <StatusBar
-                barStyle="dark-content"
+                barStyle={isNightModeEnabled ? "light-content" : "dark-content"}
                 backgroundColor="transparent"
                 translucent={true}
                 hidden={isLocalNewsLocationVisible || isLocationSelectorVisible || isCategoriesVisible || isMenuOpen}
@@ -2223,7 +2367,9 @@ export default function NewsFeedScreen() {
                     isShareHintVisible,
                     newsInteractions,
                     allComments,
-                    showSwipeHint
+                    showSwipeHint,
+                    isAutoPlayEnabled,
+                    isNightModeEnabled
                 ]}
                 keyExtractor={(item) => item.id}
                 pagingEnabled={true} // ✅ Strict One-Card Paging
@@ -2330,7 +2476,7 @@ export default function NewsFeedScreen() {
 
                     if (item.type === 'rating') {
                         return (
-                            <View style={{ width: LAYOUT.windowWidth, height: LAYOUT.windowHeight, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' }}>
+                            <View style={{ width: LAYOUT.windowWidth, height: LAYOUT.windowHeight, backgroundColor: isNightModeEnabled ? '#000' : '#fff', justifyContent: 'center', alignItems: 'center' }}>
                                 {showThankYouPage ? (
                                     // Thank You View
                                     <View style={styles.thankYouContainer}>
@@ -2361,8 +2507,8 @@ export default function NewsFeedScreen() {
                                             style={styles.ratingLogo}
                                             contentFit="contain"
                                         />
-                                        <Text style={styles.ratingQuestion}>8K న్యూస్ ఆస్వాదిస్తున్నారా?</Text>
-                                        <Text style={styles.ratingDescription}>
+                                        <Text style={[styles.ratingQuestion, isNightModeEnabled && { color: '#fff' }]}>8K న్యూస్ ఆస్వాదిస్తున్నారా?</Text>
+                                        <Text style={[styles.ratingDescription, isNightModeEnabled && { color: '#9BA1A6' }]}>
                                             ప్లే స్టోర్ లో రేటింగ్ ఇవ్వడం ద్వారా మాకు మద్దతు ఇవ్వండి
                                         </Text>
 
@@ -2387,6 +2533,16 @@ export default function NewsFeedScreen() {
                                 )}
                             </View>
                         );
+                    }
+
+                    // Debug logging for ads
+                    if (item.type === 'ad') {
+                        console.log('Rendering Ad NewsCard:', {
+                            id: item.id,
+                            type: item.type,
+                            redirect_url: item.redirect_url,
+                            title: item.title
+                        });
                     }
 
                     return (
@@ -2423,6 +2579,13 @@ export default function NewsFeedScreen() {
                             showShareHint={isShareHintVisible && index === 0}
                             isSaved={savedIds.includes(item.id)}
                             onToggleSave={() => handleToggleSave(item.id)}
+                            type={item.type}
+                            redirectUrl={item.redirect_url}
+                            onAdRedirect={item.type === 'ad' && item.redirect_url ? () => {
+                                Linking.openURL(item.redirect_url).catch(err =>
+                                    console.error('Failed to open ad URL:', err)
+                                );
+                            } : undefined}
                             onTap={() => {
                                 const nextHUDState = !isHUDVisible;
                                 setIsHUDVisible(nextHUDState);
@@ -2437,6 +2600,15 @@ export default function NewsFeedScreen() {
                                     dismissHint(activeTutIndex);
                                 }
                             }}
+                            darkMode={isNightModeEnabled}
+                            autoPlayEnabled={isAutoPlayEnabled}
+                            shareCount={item.shareCount || 0}
+                            onDownload={() => {
+                                setCurrentNewsId(item.id);
+                                handleDownloadImage();
+                            }}
+                            onWhatsAppShare={() => handleWhatsAppShare(item.id)}
+                            onIncrementShare={() => handleIncrementShare(item.id)}
                         />
                     );
                 }}
@@ -2449,8 +2621,8 @@ export default function NewsFeedScreen() {
             {/* 🚪 EXIT CONFIRMATION MODAL */}
             {isExitModalVisible && (
                 <View style={styles.modalOverlay}>
-                    <View style={styles.exitModalContainer}>
-                        <Text style={styles.exitModalTitle}>మీరు ఖచ్చితంగా బయటకు వెళ్దాం అనుకుంటున్నారా?</Text>
+                    <View style={[styles.exitModalContainer, isNightModeEnabled && { backgroundColor: '#151718' }]}>
+                        <Text style={[styles.exitModalTitle, isNightModeEnabled && { color: '#fff' }]}>మీరు ఖచ్చితంగా బయటకు వెళ్దాం అనుకుంటున్నారా?</Text>
                         <View style={styles.exitModalButtons}>
                             <TouchableOpacity
                                 style={[styles.exitModalBtn, styles.exitModalBtnYes]}
@@ -2669,7 +2841,10 @@ export default function NewsFeedScreen() {
                                     setShowCountPopup(true);
                                     setTimeout(() => setShowCountPopup(false), 2000);
 
-                                    // Reload Action: Scroll to top
+                                    // Reload Action: Switch to Trending and Scroll to top
+                                    setActiveCategory('trending');
+                                    setFilterMode('all');
+                                    setIsTutorialMode(false);
                                     flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
                                 }}
                             >
@@ -2706,16 +2881,16 @@ export default function NewsFeedScreen() {
             {/* 📂 CATEGORIES MODAL (Grid Layout) */}
             {
                 isCategoriesVisible && (
-                    <View style={[styles.modalOverlay, { backgroundColor: '#fff', justifyContent: 'flex-start' }]}>
+                    <View style={[styles.modalOverlay, { backgroundColor: isNightModeEnabled ? '#151718' : '#fff', justifyContent: 'flex-start' }]}>
                         <SafeAreaView style={styles.fullSpace}>
-                            <View style={styles.categoriesHeader}>
+                            <View style={[styles.categoriesHeader, isNightModeEnabled && { backgroundColor: '#151718', borderBottomColor: '#333' }]}>
                                 <TouchableOpacity style={{ padding: 10 }} onPress={() => {
                                     setIsCategoriesVisible(false);
                                     setIsHUDVisible(true); // Force HUD open to show Reload hint
                                 }}>
-                                    <Ionicons name="close" size={28} color="#000" />
+                                    <Ionicons name="close" size={28} color={isNightModeEnabled ? "#fff" : "#000"} />
                                 </TouchableOpacity>
-                                <Text style={styles.categoriesHeaderTitle}>కేటగిరీలు</Text>
+                                <Text style={[styles.categoriesHeaderTitle, isNightModeEnabled && { color: '#fff' }]}>కేటగిరీలు</Text>
                                 <View style={{ width: 48 }} />
                             </View>
 
@@ -2753,7 +2928,7 @@ export default function NewsFeedScreen() {
                                                     />
                                                 </View>
                                             ) : cat.id === 'local' ? (
-                                                <View style={{ flex: 1, backgroundColor: '#fff', overflow: 'hidden' }}>
+                                                <View style={{ flex: 1, backgroundColor: isNightModeEnabled ? '#151718' : '#fff', overflow: 'hidden' }}>
                                                     <Image
                                                         source={require('../assets/images/res_vector_2.png')}
                                                         style={{ width: '100%', height: '100%' }}
@@ -3003,8 +3178,7 @@ export default function NewsFeedScreen() {
                                                 key={idx}
                                                 style={styles.locListItem}
                                                 onPress={() => {
-                                                    setUserLocation(loc.telugu);
-                                                    AsyncStorage.setItem('USER_LOCATION', loc.telugu).catch(err => console.error(err));
+                                                    handleLocationSelect(loc);
                                                     setActiveCategory('local');
                                                     setFilterMode('all');
                                                     setIsTutorialMode(false);
@@ -3034,13 +3208,13 @@ export default function NewsFeedScreen() {
             {/* 🌍 2. MENU LOCATION SELECTOR (NEW UI - Enhanced) */}
             {
                 isMenuLocationVisible && (
-                    <View style={[styles.fullModalOverlay, { backgroundColor: '#fff' }]}>
+                    <View style={[styles.fullModalOverlay, { backgroundColor: isNightModeEnabled ? '#151718' : '#fff' }]}>
                         <SafeAreaView style={styles.fullSpace}>
-                            <View style={styles.locHeaderRef}>
-                                <Text style={[styles.locHeaderLeftText, { width: 200 }]}>మీ ప్రాంతాన్ని ఎంచుకోండి</Text>
+                            <View style={[styles.locHeaderRef, isNightModeEnabled && { backgroundColor: '#151718', borderBottomColor: '#333' }]}>
+                                <Text style={[styles.locHeaderLeftText, { width: 200 }, isNightModeEnabled && { color: '#fff' }]}>మీ ప్రాంతాన్ని ఎంచుకోండి</Text>
                                 <View style={{ flex: 1 }} />
                                 <TouchableOpacity onPress={() => setIsMenuLocationVisible(false)} style={styles.locHeaderRight}>
-                                    <Ionicons name="close" size={28} color="#000" />
+                                    <Ionicons name="close" size={28} color={isNightModeEnabled ? "#fff" : "#000"} />
                                 </TouchableOpacity>
                             </View>
 
@@ -3097,8 +3271,7 @@ export default function NewsFeedScreen() {
 
                                                 return filtered.map((loc, idx) => (
                                                     <TouchableOpacity key={idx} style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#eee' }} onPress={() => {
-                                                        setUserLocation(loc.telugu);
-                                                        AsyncStorage.setItem('USER_LOCATION', loc.telugu).catch(err => console.error(err));
+                                                        handleLocationSelect(loc);
                                                         setActiveCategory('local');
                                                         setFilterMode('all');
                                                         setIsSearching(false);
@@ -3110,7 +3283,7 @@ export default function NewsFeedScreen() {
                                                         setIsMenuLocationVisible(false);
                                                         setIsHUDVisible(true);
                                                     }}>
-                                                        <Text style={{ fontSize: 16, color: '#333' }}>{loc.telugu}</Text>
+                                                        <Text style={{ fontSize: 16, color: isNightModeEnabled ? '#fff' : '#333' }}>{loc.telugu}</Text>
                                                     </TouchableOpacity>
                                                 ));
                                             })()}
@@ -3122,7 +3295,16 @@ export default function NewsFeedScreen() {
 
                                 {/* 2. Allow Location Section */}
                                 <Text style={styles.locPermTitle}>మీ చుట్టూ జరిగే వార్తలు పొందేందుకు లొకేషన్ అనుమతివ్వండి</Text>
-                                <TouchableOpacity style={styles.locPermBtn} onPress={() => { alert('Location permission requested'); }}>
+                                <TouchableOpacity style={styles.locPermBtn} onPress={async () => {
+                                    const { status } = await Location.requestForegroundPermissionsAsync();
+                                    if (status === 'granted') {
+                                        setIsManualLocation(false);
+                                        await AsyncStorage.removeItem('IS_MANUAL_LOCATION');
+                                        alert('GPS లొకేషన్ ఎనేబుల్ చేయబడింది');
+                                    } else {
+                                        alert('లొకేషన్ అనుమతి నిరాకరించబడింది');
+                                    }
+                                }}>
                                     <View style={styles.locPermIconCircle}>
                                         <Ionicons name="locate" size={18} color="#fff" />
                                     </View>
@@ -3139,8 +3321,15 @@ export default function NewsFeedScreen() {
                                 <View>
                                     {['కూకట్‌పల్లి', 'సికింద్రాబాద్', 'శ్రీకాకుళం'].map((locName, idx) => (
                                         <TouchableOpacity key={idx} style={styles.locHistoryItem} onPress={() => {
-                                            setUserLocation(locName);
-                                            AsyncStorage.setItem('USER_LOCATION', locName).catch(err => console.error(err));
+                                            const matched = ALL_LOCATIONS_DATA.find(l => l.telugu === locName);
+                                            if (matched) {
+                                                handleLocationSelect(matched);
+                                            } else {
+                                                setUserLocation(locName);
+                                                setIsManualLocation(true);
+                                                AsyncStorage.setItem('USER_LOCATION', locName);
+                                                AsyncStorage.setItem('IS_MANUAL_LOCATION', 'true');
+                                            }
                                             setActiveCategory('local');
                                             setFilterMode('all');
                                             setIsTutorialMode(false);
@@ -3167,9 +3356,9 @@ export default function NewsFeedScreen() {
                     <View style={styles.modalOverlay}>
                         <Pressable style={styles.fullSpace} onPress={() => setShareModalVisible(false)}>
                             <View style={{ flex: 1 }} />
-                            <Pressable style={styles.shareContainerSmall} onPress={(e) => e.stopPropagation()}>
-                                <View style={styles.sharePill} />
-                                <Text style={styles.shareTitleText}>Share</Text>
+                            <Pressable style={[styles.shareContainerSmall, isNightModeEnabled && { backgroundColor: '#151718' }]} onPress={(e) => e.stopPropagation()}>
+                                <View style={[styles.sharePill, isNightModeEnabled && { backgroundColor: '#333' }]} />
+                                <Text style={[styles.shareTitleText, isNightModeEnabled && { color: '#fff' }]}>Share</Text>
 
                                 <View style={styles.shareGrid}>
                                     {[
@@ -3189,7 +3378,7 @@ export default function NewsFeedScreen() {
                                             <View style={[styles.shareIconBox, { backgroundColor: item.color }]}>
                                                 <Ionicons name={item.icon as any} size={28} color="#fff" />
                                             </View>
-                                            <Text style={styles.shareItemLabel}>{item.name}</Text>
+                                            <Text style={[styles.shareItemLabel, isNightModeEnabled && { color: '#fff' }]}>{item.name}</Text>
                                         </Pressable>
                                     ))}
                                 </View>
@@ -3205,14 +3394,14 @@ export default function NewsFeedScreen() {
                 commentModalVisible && (
                     <Animated.View style={[styles.modalOverlay, overlayAnimationStyle]}>
                         <Pressable style={styles.fullSpace} onPress={closeComments} />
-                        <Animated.View style={[styles.commentContainer, commentAnimationStyle]}>
+                        <Animated.View style={[styles.commentContainer, commentAnimationStyle, isNightModeEnabled && { backgroundColor: '#000' }]}>
                             {/* 1. Header: Back | Title | Toggle */}
-                            <View style={styles.commentHeader}>
+                            <View style={[styles.commentHeader, isNightModeEnabled && { backgroundColor: '#151718', borderBottomColor: '#333' }]}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                                     <TouchableOpacity onPress={closeComments} style={{ padding: 5, marginRight: 8 }}>
-                                        <Ionicons name="arrow-back" size={24} color="#999" />
+                                        <Ionicons name="arrow-back" size={24} color={isNightModeEnabled ? "#fff" : "#999"} />
                                     </TouchableOpacity>
-                                    <Text style={styles.commentHeaderTitle} numberOfLines={1}>{currentNewsTitle}</Text>
+                                    <Text style={[styles.commentHeaderTitle, isNightModeEnabled && { color: '#fff' }]} numberOfLines={1}>{currentNewsTitle}</Text>
                                 </View>
                                 <View style={{ alignItems: 'center' }}>
                                     <Text style={{ fontSize: 10, color: '#666', marginBottom: -4 }}>నోటిఫికేషన్లు</Text>
@@ -3270,28 +3459,53 @@ export default function NewsFeedScreen() {
                                                     )}
 
                                                     <View style={styles.videoActionRow}>
-                                                        <Text style={styles.videoActionText}>Reply</Text>
+                                                        <TouchableOpacity onPress={() => setReplyTarget({ commentId: item.id, userName: item.user })}>
+                                                            <Text style={styles.videoActionText}>Reply</Text>
+                                                        </TouchableOpacity>
 
-                                                        <View style={styles.videoLikeContainer}>
+                                                        <TouchableOpacity style={styles.videoLikeContainer} onPress={() => handleLikeComment(item.id)}>
                                                             <View style={styles.videoLikeBadge}>
                                                                 <Ionicons name="thumbs-up" size={10} color="#fff" />
                                                             </View>
                                                             <Text style={styles.videoLikeCount}>{item.likeCount}</Text>
-                                                        </View>
+                                                        </TouchableOpacity>
 
                                                         <View style={styles.videoReactionIcons}>
-                                                            <Ionicons name="thumbs-up-outline" size={20} color="#65676b" />
+                                                            <TouchableOpacity onPress={() => handleLikeComment(item.id)}>
+                                                                <Ionicons name={item.likedByMe ? "thumbs-up" : "thumbs-up-outline"} size={20} color={item.likedByMe ? "#1a73e8" : "#65676b"} />
+                                                            </TouchableOpacity>
                                                             <Ionicons name="thumbs-down-outline" size={20} color="#65676b" />
                                                         </View>
                                                     </View>
 
                                                     {item.replies.length > 0 && (
-                                                        <TouchableOpacity onPress={() => { }}>
+                                                        <TouchableOpacity onPress={() => toggleReplies(item.id)}>
                                                             <Text style={styles.viewRepliesText}>
-                                                                <Ionicons name="return-down-forward" size={14} color="#65676b" /> View {item.replies.length} reply
+                                                                <Ionicons name={item.showReplies ? "chevron-up" : "return-down-forward"} size={14} color="#65676b" /> {item.showReplies ? "Hide" : `View ${item.replies.length}`} reply
                                                             </Text>
                                                         </TouchableOpacity>
                                                     )}
+
+                                                    {/* Nested Replies for Video */}
+                                                    {item.showReplies && item.replies.map(reply => (
+                                                        <View key={reply.id} style={styles.videoReplyItem}>
+                                                            <View style={[styles.videoAvatar, { width: 24, height: 24, borderRadius: 12, backgroundColor: '#8BC34A', justifyContent: 'center', alignItems: 'center' }]}>
+                                                                <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>{reply.user.charAt(0)}</Text>
+                                                            </View>
+                                                            <View style={styles.videoContent}>
+                                                                <View style={styles.videoUserRow}>
+                                                                    <Text style={[styles.videoUserName, { fontSize: 11 }]}>{reply.user}</Text>
+                                                                    <Text style={[styles.videoTime, { fontSize: 10 }]}>· {getTimeAgo(reply.timestamp).replace(' ago', '')}</Text>
+                                                                </View>
+                                                                <Text style={[styles.videoCommentText, { fontSize: 13 }]}>{reply.text}</Text>
+                                                                <View style={styles.videoActionRow}>
+                                                                    <TouchableOpacity onPress={() => handleLikeComment(item.id, reply.id)}>
+                                                                        <Ionicons name={reply.likedByMe ? "thumbs-up" : "thumbs-up-outline"} size={16} color={reply.likedByMe ? "#1a73e8" : "#65676b"} />
+                                                                    </TouchableOpacity>
+                                                                </View>
+                                                            </View>
+                                                        </View>
+                                                    ))}
                                                 </View>
                                             </View>
                                         );
@@ -3445,13 +3659,28 @@ export default function NewsFeedScreen() {
                             >
                                 {isViewingVideoComments ? (
                                     <View style={styles.videoInputContainer}>
-                                        <TextInput
-                                            style={styles.videoInput}
-                                            placeholder="Write a comment..."
-                                            placeholderTextColor="#65676b"
-                                            value={newComment}
-                                            onChangeText={setNewComment}
-                                        />
+                                        <View style={{ flex: 1 }}>
+                                            {replyTarget && (
+                                                <View style={[styles.replyIndicator, { paddingVertical: 4, paddingHorizontal: 10 }]}>
+                                                    <Text style={[styles.replyIndicatorText, { fontSize: 11 }]}>Replying to @{replyTarget.userName}</Text>
+                                                    <TouchableOpacity onPress={() => setReplyTarget(null)}>
+                                                        <Ionicons name="close-circle" size={14} color="#65676b" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            )}
+                                            <TextInput
+                                                style={styles.videoInput}
+                                                placeholder={replyTarget ? "Reply..." : "Add a comment..."}
+                                                placeholderTextColor="#65676b"
+                                                value={newComment}
+                                                onChangeText={setNewComment}
+                                            />
+                                        </View>
+                                        {newComment.trim().length > 0 && (
+                                            <TouchableOpacity style={styles.videoSendBtn} onPress={handleAddComment}>
+                                                <Ionicons name="send" size={20} color="#1a73e8" />
+                                            </TouchableOpacity>
+                                        )}
                                     </View>
                                 ) : (
                                     <View style={styles.bottomInputContainer}>
@@ -3513,9 +3742,9 @@ export default function NewsFeedScreen() {
                         {reportModalVisible && (
                             <View style={[styles.modalOverlay, { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1200 }]}>
                                 <Pressable style={styles.fullSpace} onPress={() => { setReportModalVisible(false); setReportingItem(null); }} />
-                                <View style={styles.reportSheetContainer}>
-                                    <View style={styles.reportSheetPill} />
-                                    <Text style={styles.reportSheetTitle}>కామెంట్ మీద చర్య</Text>
+                                <View style={[styles.reportSheetContainer, isNightModeEnabled && { backgroundColor: '#151718' }]}>
+                                    <View style={[styles.reportSheetPill, isNightModeEnabled && { backgroundColor: '#333' }]} />
+                                    <Text style={[styles.reportSheetTitle, isNightModeEnabled && { color: '#fff' }]}>కామెంట్ మీద చర్య</Text>
 
                                     <TouchableOpacity style={styles.reportActionItem} onPress={handleBlockComment}>
                                         <View style={[styles.reportIconBox, { backgroundColor: '#fdecea' }]}>
@@ -3564,9 +3793,9 @@ export default function NewsFeedScreen() {
             {
                 deleteTarget && (
                     <View style={[styles.modalOverlay, { zIndex: 1100, backgroundColor: 'rgba(0,0,0,0.7)' }]}>
-                        <View style={styles.deleteModalCard}>
+                        <View style={[styles.deleteModalCard, isNightModeEnabled && { backgroundColor: '#151718' }]}>
                             <Ionicons name="trash" size={40} color="#e44" style={{ marginBottom: 15 }} />
-                            <Text style={styles.deleteModalTitle}>కామెంట్‌ను తొలగించాలా?</Text>
+                            <Text style={[styles.deleteModalTitle, isNightModeEnabled && { color: '#fff' }]}>కామెంట్‌ను తొలగించాలా?</Text>
                             <TouchableOpacity style={styles.deleteModalBtn} onPress={confirmDelete}>
                                 <Text style={styles.deleteModalBtnText}>Delete Comment</Text>
                             </TouchableOpacity>
@@ -3586,7 +3815,7 @@ export default function NewsFeedScreen() {
 
                         {/* 1. INITIAL MENU */}
                         {reportStep === 'menu' && (
-                            <Pressable style={styles.optionsCard} onPress={(e) => e.stopPropagation()}>
+                            <Pressable style={[styles.optionsCard, isNightModeEnabled && { backgroundColor: '#151718' }]} onPress={(e) => e.stopPropagation()}>
                                 <Pressable style={styles.closeButton} onPress={handleOptionsClose}>
                                     <Ionicons name="close" size={20} color="#333" />
                                 </Pressable>
@@ -3594,24 +3823,24 @@ export default function NewsFeedScreen() {
                                 <Pressable style={styles.optionsItem} onPress={() => setReportStep('form')}>
                                     <Ionicons name="alert-circle-outline" size={24} color="#333" />
                                     <View style={styles.optionTextContainer}>
-                                        <Text style={styles.optionTitle}>Report Story</Text>
-                                        <Text style={styles.optionSubtitle}>Help us improve better</Text>
+                                        <Text style={[styles.optionTitle, isNightModeEnabled && { color: '#fff' }]}>Report Story</Text>
+                                        <Text style={[styles.optionSubtitle, isNightModeEnabled && { color: '#ccc' }]}>Help us improve better</Text>
                                     </View>
                                 </Pressable>
 
                                 <Pressable style={styles.optionsItem} onPress={handleDownloadImage}>
                                     <Ionicons name="download-outline" size={24} color="#333" />
                                     <View style={styles.optionTextContainer}>
-                                        <Text style={styles.optionTitle}>Download</Text>
-                                        <Text style={styles.optionSubtitle}>Save to Local Directory</Text>
+                                        <Text style={[styles.optionTitle, isNightModeEnabled && { color: '#fff' }]}>Download</Text>
+                                        <Text style={[styles.optionSubtitle, isNightModeEnabled && { color: '#ccc' }]}>Save to Local Directory</Text>
                                     </View>
                                 </Pressable>
 
                                 <Pressable style={styles.optionsItem} onPress={() => handleToggleSave(currentNewsId!)}>
                                     <Ionicons name={savedIds.includes(currentNewsId!) ? "bookmark" : "bookmark-outline"} size={24} color="#333" />
                                     <View style={styles.optionTextContainer}>
-                                        <Text style={styles.optionTitle}>{savedIds.includes(currentNewsId!) ? "Unbookmark" : "Bookmark"}</Text>
-                                        <Text style={styles.optionSubtitle}>{savedIds.includes(currentNewsId!) ? "Remove from saved" : "Save to read offline"}</Text>
+                                        <Text style={[styles.optionTitle, isNightModeEnabled && { color: '#fff' }]}>{savedIds.includes(currentNewsId!) ? "Unbookmark" : "Bookmark"}</Text>
+                                        <Text style={[styles.optionSubtitle, isNightModeEnabled && { color: '#ccc' }]}>{savedIds.includes(currentNewsId!) ? "Remove from saved" : "Save to read offline"}</Text>
                                     </View>
                                 </Pressable>
                                 <View style={{ height: 4, width: 40, backgroundColor: '#333', borderRadius: 2, alignSelf: 'center', marginTop: 15 }} />
@@ -3620,7 +3849,7 @@ export default function NewsFeedScreen() {
 
                         {/* 2. REPORT FORM */}
                         {reportStep === 'form' && (
-                            <Pressable style={styles.reportCard} onPress={(e) => e.stopPropagation()}>
+                            <Pressable style={[styles.reportCard, isNightModeEnabled && { backgroundColor: '#151718' }]} onPress={(e) => e.stopPropagation()}>
                                 <Pressable style={styles.closeButtonRound} onPress={handleOptionsClose}>
                                     <Ionicons name="close" size={20} color="#333" />
                                 </Pressable>
@@ -3653,7 +3882,7 @@ export default function NewsFeedScreen() {
 
                         {/* 3. SUCCESS MESSAGE */}
                         {reportStep === 'success' && (
-                            <Pressable style={styles.successCard} onPress={(e) => e.stopPropagation()}>
+                            <Pressable style={[styles.successCard, isNightModeEnabled && { backgroundColor: '#151718' }]} onPress={(e) => e.stopPropagation()}>
                                 <Pressable style={styles.closeButtonRoundAbsolute} onPress={handleOptionsClose}>
                                     <Ionicons name="close" size={20} color="#333" />
                                 </Pressable>
@@ -3676,10 +3905,11 @@ export default function NewsFeedScreen() {
                         <Pressable style={styles.fullSpace} onPress={() => setActiveMenuModal(null)} />
                         <View style={[
                             styles.actionModalContainer,
-                            activeMenuModal === 'settings' && styles.settingsFullModal
+                            (activeMenuModal === 'settings' || activeMenuModal === 'terms' || activeMenuModal === 'privacy') && styles.settingsFullModal,
+                            isNightModeEnabled && { backgroundColor: '#000' }
                         ]}>
-                            {activeMenuModal !== 'lang' && (
-                                <View style={styles.commentHeader}>
+                            {activeMenuModal !== 'lang' && activeMenuModal !== 'terms' && activeMenuModal !== 'privacy' && (
+                                <View style={[styles.commentHeader, isNightModeEnabled && { backgroundColor: '#151718', borderBottomColor: '#333' }]}>
                                     {activeMenuModal === 'settings' ? (
                                         <>
                                             <Pressable onPress={() => setActiveMenuModal(null)} style={{ padding: 5, marginRight: 10 }}>
@@ -3740,11 +3970,11 @@ export default function NewsFeedScreen() {
                                         />
                                     </View>
 
-                                    <TouchableOpacity style={styles.settingsItem}>
-                                        <View style={[styles.settingsIconBox, { backgroundColor: '#F0F7FF' }]}>
+                                    <TouchableOpacity style={[styles.settingsItem, isNightModeEnabled && { backgroundColor: '#151718' }]}>
+                                        <View style={[styles.settingsIconBox, { backgroundColor: isNightModeEnabled ? '#333' : '#F0F7FF' }]}>
                                             <Ionicons name="play-circle" size={20} color="#FF8F00" />
                                         </View>
-                                        <Text style={styles.settingsLabel}>Auto play</Text>
+                                        <Text style={[styles.settingsLabel, isNightModeEnabled && { color: '#fff' }]}>Auto play</Text>
                                         <Switch
                                             value={isAutoPlayEnabled}
                                             onValueChange={setIsAutoPlayEnabled}
@@ -3753,48 +3983,48 @@ export default function NewsFeedScreen() {
                                         />
                                     </TouchableOpacity>
 
-                                    <TouchableOpacity style={styles.settingsItem}>
-                                        <View style={[styles.settingsIconBox, { backgroundColor: '#F0F0F0' }]}>
+                                    <TouchableOpacity style={[styles.settingsItem, isNightModeEnabled && { backgroundColor: '#151718' }]}>
+                                        <View style={[styles.settingsIconBox, { backgroundColor: isNightModeEnabled ? '#333' : '#F0F0F0' }]}>
                                             <Ionicons name="text" size={20} color="#666" />
                                         </View>
-                                        <Text style={styles.settingsLabel}>Text Size</Text>
+                                        <Text style={[styles.settingsLabel, isNightModeEnabled && { color: '#fff' }]}>Text Size</Text>
                                         <View style={styles.settingsSelector}>
-                                            <Text style={styles.settingsSelectorText}>Small</Text>
-                                            <Ionicons name="chevron-down" size={16} color="#666" />
+                                            <Text style={[styles.settingsSelectorText, isNightModeEnabled && { color: '#ccc' }]}>Small</Text>
+                                            <Ionicons name="chevron-down" size={16} color={isNightModeEnabled ? "#ccc" : "#666"} />
                                         </View>
                                     </TouchableOpacity>
 
-                                    <TouchableOpacity style={styles.settingsItem} onPress={() => setActiveMenuModal('saved')}>
-                                        <View style={[styles.settingsIconBox, { backgroundColor: '#FFF4E6' }]}>
+                                    <TouchableOpacity style={[styles.settingsItem, isNightModeEnabled && { backgroundColor: '#151718' }]} onPress={() => setActiveMenuModal('saved')}>
+                                        <View style={[styles.settingsIconBox, { backgroundColor: isNightModeEnabled ? '#333' : '#FFF4E6' }]}>
                                             <Ionicons name="bookmark" size={20} color="#FF8C00" />
                                         </View>
-                                        <Text style={styles.settingsLabel}>Saved Bookmarks</Text>
-                                        <Ionicons name="chevron-forward" size={18} color="#999" style={{ marginLeft: 'auto' }} />
+                                        <Text style={[styles.settingsLabel, isNightModeEnabled && { color: '#fff' }]}>Saved Bookmarks</Text>
+                                        <Ionicons name="chevron-forward" size={18} color={isNightModeEnabled ? "#9BA1A6" : "#999"} style={{ marginLeft: 'auto' }} />
                                     </TouchableOpacity>
 
-                                    <View style={styles.aboutAppContainer}>
+                                    <View style={[styles.aboutAppContainer, isNightModeEnabled && { backgroundColor: '#151718' }]}>
                                         <View style={styles.aboutAppHeader}>
-                                            <Text style={styles.aboutAppHeaderText}>About App</Text>
+                                            <Text style={[styles.aboutAppHeaderText, isNightModeEnabled && { color: '#fff' }]}>About App</Text>
                                         </View>
-                                        <TouchableOpacity style={styles.aboutItem}>
-                                            <Ionicons name="information-circle-outline" size={22} color="#333" />
-                                            <Text style={styles.aboutItemLabel}>About us</Text>
-                                            <Ionicons name="chevron-forward" size={18} color="#999" />
+                                        <TouchableOpacity style={[styles.aboutItem, isNightModeEnabled && { backgroundColor: '#151718', borderBottomColor: '#333' }]}>
+                                            <Ionicons name="information-circle-outline" size={22} color={isNightModeEnabled ? "#fff" : "#333"} />
+                                            <Text style={[styles.aboutItemLabel, isNightModeEnabled && { color: '#fff' }]}>About us</Text>
+                                            <Ionicons name="chevron-forward" size={18} color={isNightModeEnabled ? "#9BA1A6" : "#999"} />
                                         </TouchableOpacity>
-                                        <TouchableOpacity style={styles.aboutItem}>
-                                            <Ionicons name="shield-checkmark-outline" size={22} color="#333" />
-                                            <Text style={styles.aboutItemLabel}>Privacy Policy</Text>
-                                            <Ionicons name="chevron-forward" size={18} color="#999" />
+                                        <TouchableOpacity style={[styles.aboutItem, isNightModeEnabled && { backgroundColor: '#151718', borderBottomColor: '#333' }]} onPress={() => setActiveMenuModal('privacy')}>
+                                            <Ionicons name="shield-checkmark-outline" size={22} color={isNightModeEnabled ? "#fff" : "#333"} />
+                                            <Text style={[styles.aboutItemLabel, isNightModeEnabled && { color: '#fff' }]}>Privacy Policy</Text>
+                                            <Ionicons name="chevron-forward" size={18} color={isNightModeEnabled ? "#9BA1A6" : "#999"} />
                                         </TouchableOpacity>
-                                        <TouchableOpacity style={styles.aboutItem}>
-                                            <Ionicons name="document-text-outline" size={22} color="#333" />
-                                            <Text style={styles.aboutItemLabel}>Regulations & Conditions</Text>
-                                            <Ionicons name="chevron-forward" size={18} color="#999" />
+                                        <TouchableOpacity style={[styles.aboutItem, isNightModeEnabled && { backgroundColor: '#151718', borderBottomColor: '#333' }]} onPress={() => setActiveMenuModal('terms')}>
+                                            <Ionicons name="document-text-outline" size={22} color={isNightModeEnabled ? "#fff" : "#333"} />
+                                            <Text style={[styles.aboutItemLabel, isNightModeEnabled && { color: '#fff' }]}>Terms and Conditions</Text>
+                                            <Ionicons name="chevron-forward" size={18} color={isNightModeEnabled ? "#9BA1A6" : "#999"} />
                                         </TouchableOpacity>
-                                        <TouchableOpacity style={[styles.aboutItem, { borderBottomWidth: 0 }]}>
-                                            <Ionicons name="chatbubble-ellipses-outline" size={22} color="#333" />
-                                            <Text style={styles.aboutItemLabel}>Feedback</Text>
-                                            <Ionicons name="chevron-forward" size={18} color="#999" />
+                                        <TouchableOpacity style={[styles.aboutItem, { borderBottomWidth: 0 }, isNightModeEnabled && { backgroundColor: '#151718' }]}>
+                                            <Ionicons name="chatbubble-ellipses-outline" size={22} color={isNightModeEnabled ? "#fff" : "#333"} />
+                                            <Text style={[styles.aboutItemLabel, isNightModeEnabled && { color: '#fff' }]}>Feedback</Text>
+                                            <Ionicons name="chevron-forward" size={18} color={isNightModeEnabled ? "#9BA1A6" : "#999"} />
                                         </TouchableOpacity>
                                     </View>
                                 </ScrollView>
@@ -3803,19 +4033,20 @@ export default function NewsFeedScreen() {
                             {/* --- Profile Content --- */}
                             {activeMenuModal === 'profile' && (
                                 <View style={styles.formContent}>
-                                    <View style={[styles.profileCircleLarge, { overflow: 'hidden' }]}>
+                                    <View style={[styles.profileCircleLarge, { overflow: 'hidden' }, isNightModeEnabled && { backgroundColor: '#333' }]}>
                                         <Image
                                             source="https://png.pngtree.com/png-vector/20231019/ourmid/pngtree-user-profile-avatar-png-image_10211469.png"
                                             style={styles.profileAvatarImg}
                                             contentFit="cover"
                                         />
                                     </View>
-                                    <Text style={styles.inputLabel}>DISPLAY NAME</Text>
+                                    <Text style={[styles.inputLabel, isNightModeEnabled && { color: '#ccc' }]}>DISPLAY NAME</Text>
                                     <TextInput
-                                        style={styles.formInput}
+                                        style={[styles.formInput, isNightModeEnabled && { backgroundColor: '#151718', color: '#fff' }]}
                                         value={tempName}
                                         onChangeText={setTempName}
                                         placeholder="Enter your name"
+                                        placeholderTextColor={isNightModeEnabled ? '#666' : '#999'}
                                     />
                                     <Pressable style={styles.submitBtn} onPress={handleUpdateName}>
                                         <Text style={styles.submitBtnText}>Save Changes</Text>
@@ -3825,13 +4056,13 @@ export default function NewsFeedScreen() {
 
                             {/* --- Language Content --- */}
                             {activeMenuModal === 'lang' && (
-                                <View style={{ flex: 1, backgroundColor: '#fff', paddingTop: 20 }}>
+                                <View style={{ flex: 1, backgroundColor: isNightModeEnabled ? '#000' : '#fff', paddingTop: 20 }}>
                                     {/* Header */}
                                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingHorizontal: 20 }}>
-                                        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#333', flex: 1, textAlign: 'center', lineHeight: 28, fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif-condensed' }}>
+                                        <Text style={{ fontSize: 20, fontWeight: 'bold', color: isNightModeEnabled ? '#fff' : '#333', flex: 1, textAlign: 'center', lineHeight: 28, fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif-condensed' }}>
                                             Choose your preferred language{'\n'}to read the news
                                         </Text>
-                                        <TouchableOpacity onPress={() => setActiveMenuModal(null)} style={{ padding: 5, backgroundColor: '#ccc', borderRadius: 15 }}>
+                                        <TouchableOpacity onPress={() => setActiveMenuModal(null)} style={{ padding: 5, backgroundColor: isNightModeEnabled ? '#333' : '#ccc', borderRadius: 15 }}>
                                             <Ionicons name="close" size={18} color="#fff" />
                                         </TouchableOpacity>
                                     </View>
@@ -3841,7 +4072,7 @@ export default function NewsFeedScreen() {
                                         {LANGUAGES.slice(0, 3).map((lang) => (
                                             <TouchableOpacity
                                                 key={lang.id}
-                                                style={[styles.langCard, { borderBottomColor: lang.color }]}
+                                                style={[styles.langCard, { borderBottomColor: lang.color }, isNightModeEnabled && { backgroundColor: '#151718', shadowColor: '#000' }]}
                                                 onPress={() => handleSelectLanguage(lang.name)}
                                             >
                                                 <View style={styles.langIconBox}>
@@ -3851,8 +4082,8 @@ export default function NewsFeedScreen() {
                                                     <View style={[styles.dot, { backgroundColor: lang.color, bottom: 5, right: 0, opacity: 0.6 }]} />
                                                 </View>
                                                 <View style={styles.langTextBox}>
-                                                    <Text style={styles.langLocalName}>{lang.localName}</Text>
-                                                    <Text style={styles.langEnglishName}>{lang.name}</Text>
+                                                    <Text style={[styles.langLocalName, isNightModeEnabled && { color: '#fff' }]}>{lang.localName}</Text>
+                                                    <Text style={[styles.langEnglishName, isNightModeEnabled && { color: '#ccc' }]}>{lang.name}</Text>
                                                 </View>
                                             </TouchableOpacity>
                                         ))}
@@ -3862,7 +4093,7 @@ export default function NewsFeedScreen() {
                                             {LANGUAGES.slice(3).map((lang) => (
                                                 <TouchableOpacity
                                                     key={lang.id}
-                                                    style={[styles.langCardGrid, { borderBottomColor: lang.color }]}
+                                                    style={[styles.langCardGrid, { borderBottomColor: lang.color }, isNightModeEnabled && { backgroundColor: '#151718', shadowColor: '#000' }]}
                                                     onPress={() => handleSelectLanguage(lang.name)}
                                                 >
                                                     <View style={styles.langIconBoxSmall}>
@@ -3870,8 +4101,8 @@ export default function NewsFeedScreen() {
                                                         <View style={[styles.dot, { backgroundColor: lang.color, top: -2, left: 8, opacity: 0.4, width: 4, height: 4 }]} />
                                                     </View>
                                                     <View>
-                                                        <Text style={styles.langLocalNameSmall}>{lang.localName}</Text>
-                                                        <Text style={styles.langEnglishNameSmall}>{lang.name}</Text>
+                                                        <Text style={[styles.langLocalNameSmall, isNightModeEnabled && { color: '#fff' }]}>{lang.localName}</Text>
+                                                        <Text style={[styles.langEnglishNameSmall, isNightModeEnabled && { color: '#ccc' }]}>{lang.name}</Text>
                                                     </View>
                                                 </TouchableOpacity>
                                             ))}
@@ -3885,11 +4116,11 @@ export default function NewsFeedScreen() {
                                 <ScrollView style={styles.savedScroll}>
                                     {savedIds.length > 0 ? (
                                         newsData.filter(item => savedIds.includes(item.id)).map(item => (
-                                            <View key={item.id} style={styles.savedItem}>
+                                            <View key={item.id} style={[styles.savedItem, isNightModeEnabled && { backgroundColor: '#151718' }]}>
                                                 <Ionicons name="bookmark" size={20} color="#fbbc04" style={{ marginRight: 10 }} />
                                                 <View style={{ flex: 1 }}>
-                                                    <Text style={styles.savedTitle} numberOfLines={1}>{item.title}</Text>
-                                                    <Text style={styles.savedDesc} numberOfLines={1}>{item.description}</Text>
+                                                    <Text style={[styles.savedTitle, isNightModeEnabled && { color: '#fff' }]} numberOfLines={1}>{item.title}</Text>
+                                                    <Text style={[styles.savedDesc, isNightModeEnabled && { color: '#ccc' }]} numberOfLines={1}>{item.description}</Text>
                                                 </View>
                                                 <Pressable onPress={() => handleToggleSave(item.id)}>
                                                     <Ionicons name="trash-outline" size={20} color="#e44" />
@@ -3908,19 +4139,261 @@ export default function NewsFeedScreen() {
                             {/* --- Feedback / Report Content --- */}
                             {(activeMenuModal === 'feedback' || activeMenuModal === 'report') && (
                                 <View style={styles.formContent}>
-                                    <Text style={styles.inputLabel}>
+                                    <Text style={[styles.inputLabel, isNightModeEnabled && { color: '#ccc' }]}>
                                         {activeMenuModal === 'feedback' ? 'TELL US WHAT YOU THINK' : 'WHAT IS THE ISSUE?'}
                                     </Text>
                                     <TextInput
-                                        style={[styles.formInput, { height: 120, textAlignVertical: 'top' }]}
+                                        style={[styles.formInput, { height: 120, textAlignVertical: 'top' }, isNightModeEnabled && { backgroundColor: '#151718', color: '#fff' }]}
                                         value={feedbackText}
                                         onChangeText={setFeedbackText}
                                         placeholder="Type your message here..."
+                                        placeholderTextColor={isNightModeEnabled ? '#666' : '#999'}
                                         multiline
                                     />
                                     <Pressable style={styles.submitBtn} onPress={handleSubmitFeedback}>
                                         <Text style={styles.submitBtnText}>Submit</Text>
                                     </Pressable>
+                                </View>
+                            )}
+
+                            {/* --- Terms and Conditions Content --- */}
+                            {activeMenuModal === 'terms' && (
+                                <View style={{ flex: 1, backgroundColor: '#EDEEF0' }}>
+                                    {/* 1. Header Navigation */}
+                                    <View style={styles.termsHeader}>
+                                        <TouchableOpacity onPress={() => setActiveMenuModal('settings')} style={styles.termsBackBtn}>
+                                            <Ionicons name="arrow-back" size={24} color="#fff" />
+                                        </TouchableOpacity>
+                                        <Text style={styles.termsHeaderText}>Terms & conditions</Text>
+                                    </View>
+
+                                    {/* 2. Banner Area */}
+                                    <View style={styles.termsBanner}>
+                                        <Text style={styles.termsBannerTitle}>Terms</Text>
+                                    </View>
+
+                                    {/* 3. Content Card */}
+                                    <View style={styles.termsContentCard}>
+                                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+                                            <Text style={styles.termsCardTitle}>Terms</Text>
+                                            <View style={styles.termsYellowDivider} />
+
+                                            <View style={styles.termsSectionHeader}>
+                                                <View style={styles.termsYellowPill} />
+                                                <Text style={styles.termsSectionTitle}>Terms and Conditions</Text>
+                                            </View>
+
+                                            <Text style={styles.termsLegalText}>
+                                                Terms and Conditions – 8K News{"\n\n"}
+                                                These Terms and Conditions (“Terms”) govern the access to and use of the website https://www.8knews.com (“Website”) and the mobile application 8K News (“App”), owned and operated by 8K News Private Limited, having its registered office at [Your Registered Address], India (“Company”, “8K News”, “we”, “us”, “our”), and are effective from [Effective Date].{"\n\n"}
+                                                ALL USERS AND VISITORS ARE REQUIRED TO READ THESE TERMS CAREFULLY BEFORE USING THE APP OR WEBSITE.{"\n"}
+                                                If you do not agree with any part of these Terms, please discontinue use immediately.{"\n\n"}
+                                                For any questions or concerns, contact us at support@8knews.com.{"\n\n"}
+                                                1. Applicability & Acceptance{"\n"}
+                                                By accessing or using the 8K News App or Website, you agree to be legally bound by these Terms, our Privacy Policy, and all applicable laws in India, including the Information Technology Act, 2000 and the IT (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021.{"\n\n"}
+                                                8K News reserves the right to modify these Terms at any time without prior notice. Continued use constitutes acceptance of the revised Terms.{"\n\n"}
+                                                2. Definitions{"\n"}
+                                                “App”: The 8K News mobile application available on Android/iOS platforms.{"\n"}
+                                                “User” / “You”: Any individual accessing or using the App or Website.{"\n"}
+                                                “Content”: News articles, videos, images, audio, text, advertisements, and other materials.{"\n"}
+                                                “Sponsored Content”: Paid or promotional content clearly marked as “Ad”, “Sponsored”, or similar.{"\n"}
+                                                “Third-Party Content”: Content sourced from external agencies, contributors, or partners.{"\n\n"}
+                                                3. Nature of Service & Disclaimer{"\n"}
+                                                8K News functions as a digital news intermediary. While we strive for accuracy, we do not guarantee the completeness, correctness, or reliability of any content displayed.{"\n"}
+                                                All content is provided on an “AS IS” and “AS AVAILABLE” basis.{"\n"}
+                                                8K News does not provide investment, legal, medical, financial, or professional advice.{"\n\n"}
+                                                4. Disclaimer of Warranties & Limitation of Liability{"\n"}
+                                                8K News makes no express or implied warranties regarding accuracy, fitness, or availability.{"\n"}
+                                                We are not liable for:{"\n"}
+                                                - Data loss{"\n"}
+                                                - Service interruptions{"\n"}
+                                                - Content inaccuracies{"\n"}
+                                                - Third-party actions{"\n"}
+                                                - User-generated content{"\n\n"}
+                                                In no event shall 8K News or its employees be liable for direct, indirect, incidental, or consequential damages.{"\n\n"}
+                                                5. Availability & Regional Use{"\n"}
+                                                The App and Website are operated from India. Users accessing from outside India are responsible for compliance with local laws.{"\n"}
+                                                Features, content, and services may vary by region.{"\n\n"}
+                                                6. Third-Party Links & Services{"\n"}
+                                                The App may contain links to third-party websites or services.{"\n"}
+                                                8K News does not control or endorse such services and is not responsible for their content, accuracy, or practices.{"\n"}
+                                                Use of third-party services is at your own risk.{"\n\n"}
+                                                7. Third-Party Content{"\n"}
+                                                Some content may be sourced from independent agencies or contributors and will be clearly identified.{"\n"}
+                                                8K News:{"\n"}
+                                                - Does not exercise editorial control over such content{"\n"}
+                                                - Disclaims all liability related to accuracy or legality{"\n"}
+                                                - Will act upon complaints through a lawful takedown process{"\n\n"}
+                                                Takedown requests may be sent to grievance@8knews.com.{"\n\n"}
+                                                8. Copyright & Intellectual Property{"\n"}
+                                                All platform design, trademarks, logos, and proprietary elements belong to 8K News unless otherwise stated.{"\n\n"}
+                                                Users may:{"\n"}
+                                                - View content for personal, non-commercial use{"\n\n"}
+                                                Users may NOT:{"\n"}
+                                                - Copy, redistribute, modify, or monetize content{"\n"}
+                                                - Remove copyright notices{"\n"}
+                                                - Reuse content without written permission{"\n\n"}
+                                                9. Advertisements{"\n"}
+                                                Advertisements may appear in various formats including banners, videos, pop-ups, and sponsored posts.{"\n"}
+                                                8K News:{"\n"}
+                                                - Does not endorse advertised products or services{"\n"}
+                                                - Is not responsible for claims made by advertisers{"\n"}
+                                                - Does not verify personal details in matrimonial or classified ads{"\n\n"}
+                                                All advertiser interactions are solely between users and advertisers.{"\n\n"}
+                                                10. User Conduct{"\n"}
+                                                Users shall not:{"\n"}
+                                                - Post defamatory, obscene, hateful, or illegal content{"\n"}
+                                                - Violate intellectual property rights{"\n"}
+                                                - Engage in harassment or abusive behavior{"\n"}
+                                                - Spread misinformation with malicious intent{"\n\n"}
+                                                8K News reserves the right to:{"\n"}
+                                                - Remove content{"\n"}
+                                                - Suspend or block users{"\n"}
+                                                - Share information with legal authorities when required{"\n\n"}
+                                                11. Contributor & Reporter Terms{"\n"}
+                                                - Contributors are responsible for the originality and legality of submitted content{"\n"}
+                                                - Plagiarism or copyright violations may result in termination{"\n"}
+                                                - Content may be reused across languages/platforms without additional payment{"\n"}
+                                                - Videos may be distributed across 8K News platforms without revenue sharing{"\n"}
+                                                - Contributors indemnify 8K News against all legal claims{"\n\n"}
+                                                12. Earnings & Payments{"\n"}
+                                                - Earnings are subject to platform rules{"\n"}
+                                                - Withdrawals may be made via UPI/NEFT{"\n"}
+                                                - Inactive balances for 9 months may be forfeited{"\n"}
+                                                - Detailed revenue terms are available in the Earnings section{"\n\n"}
+                                                13. Indemnity{"\n"}
+                                                Users and contributors agree to indemnify and hold harmless 8K News, its directors, employees, and partners against all claims, damages, losses, or liabilities arising from misuse, violations, or illegal activities.{"\n\n"}
+                                                14. Governing Law & Jurisdiction{"\n"}
+                                                These Terms are governed by the laws of India.{"\n"}
+                                                All disputes shall be subject to the exclusive jurisdiction of the courts in Hyderabad, Telangana.{"\n\n"}
+                                                15. Contact & Grievance Redressal{"\n"}
+                                                📧 support@8knews.com{"\n"}
+                                                📧 grievance@8knews.com
+                                            </Text>
+                                            <Text style={styles.termsCopyright}>©2026 8knews . All Rights Reserved</Text>
+                                        </ScrollView>
+                                    </View>
+                                </View>
+                            )}
+
+                            {/* --- Privacy Policy Content --- */}
+                            {activeMenuModal === 'privacy' && (
+                                <View style={{ flex: 1, backgroundColor: '#EDEEF0' }}>
+                                    {/* 1. Header Navigation */}
+                                    <View style={styles.termsHeader}>
+                                        <TouchableOpacity onPress={() => setActiveMenuModal('settings')} style={styles.termsBackBtn}>
+                                            <Ionicons name="arrow-back" size={24} color="#fff" />
+                                        </TouchableOpacity>
+                                        <Text style={styles.termsHeaderText}>Privacy Policy</Text>
+                                    </View>
+
+                                    {/* 2. Banner Area */}
+                                    <View style={styles.termsBanner}>
+                                        <Text style={styles.termsBannerTitle}>Privacy</Text>
+                                    </View>
+
+                                    {/* 3. Content Card */}
+                                    <View style={styles.termsContentCard}>
+                                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+                                            <Text style={styles.termsCardTitle}>Privacy</Text>
+                                            <View style={styles.termsYellowDivider} />
+
+                                            <View style={styles.termsSectionHeader}>
+                                                <View style={styles.termsYellowPill} />
+                                                <Text style={styles.termsSectionTitle}>Privacy Policy</Text>
+                                            </View>
+
+                                            <Text style={styles.termsLegalText}>
+                                                Privacy Policy – 8K News{"\n\n"}
+                                                Please read this Privacy Policy carefully. This Privacy Policy explains how 8K News Private Limited (“Company”, “8K News”, “we”, “us”, “our”) collects, uses, stores, protects, and discloses information collected from users (“You”, “Your”, “User”) of the 8K News mobile application (“App”).{"\n\n"}
+                                                By downloading, installing, registering, or using the App, You consent to the collection, storage, processing, transfer, and disclosure of Your information as described in this Privacy Policy.{"\n\n"}
+                                                If You do not agree with any part of this Privacy Policy, please do not download or use the App.{"\n\n"}
+                                                1. Applicability{"\n"}
+                                                This Privacy Policy applies only to the 8K News mobile application and website owned and operated by 8K News Private Limited.{"\n"}
+                                                This Policy does not apply to third-party websites, services, applications, or platforms that may be linked or accessible through the App (“Third-Party Services”). 8K News does not control and is not responsible for the privacy practices or content of such Third-Party Services.{"\n\n"}
+                                                2. Information Collected from Users{"\n"}
+                                                8K News may collect the following types of information:{"\n\n"}
+                                                a) Personal Information{"\n"}
+                                                - Name (if provided){"\n"}
+                                                - Email address{"\n"}
+                                                - Phone number{"\n"}
+                                                - Login identifiers (Google, Facebook, Twitter, etc.){"\n"}
+                                                - Language preferences{"\n"}
+                                                - Location (city/state-level, if enabled){"\n\n"}
+                                                b) Non-Personal Information{"\n"}
+                                                - Device information (model, OS version){"\n"}
+                                                - App usage data{"\n"}
+                                                - IP address{"\n"}
+                                                - Log files{"\n"}
+                                                - Crash reports{"\n"}
+                                                - Analytics data{"\n\n"}
+                                                c) Content-Related Information{"\n"}
+                                                - News interactions (likes, shares, bookmarks){"\n"}
+                                                - Comments or feedback{"\n"}
+                                                - Content uploaded by contributors or reporters{"\n\n"}
+                                                3. How 8K News Uses the Collected Information{"\n"}
+                                                8K News uses collected information for the following purposes:{"\n"}
+                                                - To provide and improve App functionality{"\n"}
+                                                - To personalize news content and language preferences{"\n"}
+                                                - To manage user authentication and security{"\n"}
+                                                - To enable content creation, review, and publishing workflows{"\n"}
+                                                - To communicate important updates, notifications, and alerts{"\n"}
+                                                - To comply with legal and regulatory obligations{"\n"}
+                                                - To prevent fraud, abuse, and unauthorized access{"\n"}
+                                                - To analyze usage trends and improve performance{"\n\n"}
+                                                4. How 8K News Protects User Information{"\n"}
+                                                8K News follows industry-standard security practices to safeguard user information, including:{"\n"}
+                                                - Secure servers and encrypted storage{"\n"}
+                                                - Restricted access to personal data{"\n"}
+                                                - Regular security monitoring{"\n"}
+                                                - Use of trusted third-party infrastructure providers{"\n"}
+                                                However, no method of transmission or storage is 100% secure, and 8K News does not guarantee absolute security of data.{"\n\n"}
+                                                5. Sharing of User Information{"\n"}
+                                                8K News does not sell or rent personal information to third parties.{"\n"}
+                                                User information may be shared only in the following circumstances:{"\n"}
+                                                - With trusted service providers (analytics, hosting, authentication){"\n"}
+                                                - With government or law enforcement authorities when legally required{"\n"}
+                                                - To protect the rights, safety, and property of 8K News and its users{"\n"}
+                                                - With user consent{"\n"}
+                                                All third-party partners are required to maintain confidentiality and data protection standards.{"\n\n"}
+                                                6. User Choices & Control{"\n"}
+                                                Users have the right to:{"\n"}
+                                                - Update or correct profile information{"\n"}
+                                                - Manage notification preferences{"\n"}
+                                                - Choose language and content categories{"\n"}
+                                                - Withdraw consent by uninstalling the App{"\n"}
+                                                - Request deletion of personal data (subject to legal requirements){"\n"}
+                                                Certain features may be unavailable if required permissions are denied.{"\n\n"}
+                                                7. User Privacy & Advertisements{"\n"}
+                                                8K News may display advertisements and sponsored content.{"\n"}
+                                                - Ads may be personalized based on non-sensitive usage data{"\n"}
+                                                - Advertisers do not receive personally identifiable information{"\n"}
+                                                - Sponsored content will be clearly labeled{"\n"}
+                                                8K News does not control third-party advertisers’ data collection practices.{"\n\n"}
+                                                8. Data Retention{"\n"}
+                                                User data is retained only for as long as necessary to:{"\n"}
+                                                - Provide services{"\n"}
+                                                - Comply with legal obligations{"\n"}
+                                                - Resolve disputes{"\n"}
+                                                - Enforce agreements{"\n"}
+                                                Inactive accounts or unused data may be deleted periodically.{"\n\n"}
+                                                9. Children’s Privacy{"\n"}
+                                                8K News does not knowingly collect personal information from children under 18 years of age. If such data is discovered, it will be deleted promptly.{"\n\n"}
+                                                10. Changes to This Privacy Policy{"\n"}
+                                                8K News may revise this Privacy Policy from time to time.{"\n"}
+                                                - Updates will be posted within the App or Website{"\n"}
+                                                - Continued use after changes indicates acceptance of the revised policy{"\n"}
+                                                Users are encouraged to review this policy periodically.{"\n\n"}
+                                                11. User Acceptance{"\n"}
+                                                By using the 8K News App or Website, You acknowledge that You have read, understood, and agreed to this Privacy Policy.{"\n\n"}
+                                                12. Contact Information{"\n"}
+                                                For any questions, concerns, or legal queries related to this Privacy Policy, please contact us at:{"\n"}
+                                                📧 support@8knews.com{"\n"}
+                                                📧 grievance@8knews.com
+                                            </Text>
+                                            <Text style={styles.termsCopyright}>©2026 8knews . All Rights Reserved</Text>
+                                        </ScrollView>
+                                    </View>
                                 </View>
                             )}
                         </View>
@@ -3932,10 +4405,10 @@ export default function NewsFeedScreen() {
                 <Pressable style={{ flex: 1 }} onPress={toggleMenu} />
             </Animated.View>
 
-            <Animated.View style={[styles.menuContainer, menuStyle]}>
-                <View style={styles.customMenuHeader}>
+            <Animated.View style={[styles.menuContainer, menuStyle, isNightModeEnabled && { backgroundColor: '#151718' }]}>
+                <View style={[styles.customMenuHeader, isNightModeEnabled && { backgroundColor: '#151718', borderBottomColor: '#333' }]}>
                     <TouchableOpacity style={styles.menuIconBtn} onPress={() => { toggleMenu(); setActiveMenuModal('settings'); }}>
-                        <Ionicons name="settings-outline" size={24} color="#666" />
+                        <Ionicons name="settings-outline" size={24} color={isNightModeEnabled ? "#fff" : "#666"} />
                     </TouchableOpacity>
                     <Image
                         source={require('../assets/images/res_screenshot_2026_01_06_170338.png')}
@@ -3943,18 +4416,19 @@ export default function NewsFeedScreen() {
                         contentFit="contain"
                     />
                     <TouchableOpacity style={styles.menuNewsHeader} onPress={() => { toggleMenu(); }}>
-                        <Text style={styles.menuNewsText}>న్యూస్</Text>
+                        <Text style={[styles.menuNewsText, isNightModeEnabled && { color: '#fff' }]}>న్యూస్</Text>
                         <Ionicons name="chevron-forward" size={22} color="#4A90E2" />
                     </TouchableOpacity>
                 </View>
 
-                <ScrollView style={styles.newMenuList} showsVerticalScrollIndicator={false}>
+                <ScrollView style={[styles.newMenuList, isNightModeEnabled && { backgroundColor: '#151718' }]} showsVerticalScrollIndicator={false}>
                     {/* 2. Guest Login Card */}
-                    <TouchableOpacity style={styles.guestCard} onPress={() => {
+                    {/* 2. Guest Login Card */}
+                    <TouchableOpacity style={[styles.guestCard, isNightModeEnabled && { backgroundColor: '#151718', borderColor: '#333' }]} onPress={() => {
                         toggleMenu();
                         setIsLoginModalVisible(true);
                     }}>
-                        <View style={[styles.guestIconCircle, { overflow: 'hidden' }]}>
+                        <View style={[styles.guestIconCircle, { overflow: 'hidden' }, isNightModeEnabled && { borderColor: '#555' }]}>
                             <Image
                                 source="https://png.pngtree.com/png-vector/20231019/ourmid/pngtree-user-profile-avatar-png-image_10211469.png"
                                 style={styles.profileAvatarImg}
@@ -3963,107 +4437,107 @@ export default function NewsFeedScreen() {
                         </View>
                         <Text style={styles.guestTextLogin}>Guest Login</Text>
                         <View style={{ flex: 1 }} />
-                        <Ionicons name="chevron-forward" size={20} color="#ccc" />
+                        <Ionicons name="chevron-forward" size={20} color={isNightModeEnabled ? "#fff" : "#ccc"} />
                     </TouchableOpacity>
 
                     {/* 3. States Grid (Row 1) */}
                     <View style={styles.gridRow}>
-                        <TouchableOpacity style={styles.gridItemState} onPress={() => { setActiveCategory('andhra'); toggleMenu(); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}>
+                        <TouchableOpacity style={[styles.gridItemState, isNightModeEnabled && { backgroundColor: '#151718', borderColor: '#333' }]} onPress={() => { setActiveCategory('andhra'); toggleMenu(); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}>
                             <Image source={require('../assets/images/res_ap_map_outline.png')} style={styles.stateMapIcon} contentFit="contain" />
                             <View style={{ flex: 1 }}>
-                                <Text style={styles.stateTitle}>ఆంధ్రప్రదేశ్</Text>
-                                <Text style={styles.stateSubText}>Only Andhra Pradesh News</Text>
+                                <Text style={[styles.stateTitle, isNightModeEnabled && { color: '#fff' }]}>ఆంధ్రప్రదేశ్</Text>
+                                <Text style={[styles.stateSubText, isNightModeEnabled && { color: '#ccc' }]}>Only Andhra Pradesh News</Text>
                             </View>
                         </TouchableOpacity>
                         <View style={{ width: 10 }} />
-                        <TouchableOpacity style={styles.gridItemState} onPress={() => { setActiveCategory('telangana'); toggleMenu(); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}>
+                        <TouchableOpacity style={[styles.gridItemState, isNightModeEnabled && { backgroundColor: '#151718', borderColor: '#333' }]} onPress={() => { setActiveCategory('telangana'); toggleMenu(); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}>
                             <Image source={require('../assets/images/res_telangana_map_outline.png')} style={styles.stateMapIcon} contentFit="contain" />
                             <View style={{ flex: 1 }}>
-                                <Text style={styles.stateTitle}>తెలంగాణ</Text>
-                                <Text style={styles.stateSubText}>Only Telangana News</Text>
+                                <Text style={[styles.stateTitle, isNightModeEnabled && { color: '#fff' }]}>తెలంగాణ</Text>
+                                <Text style={[styles.stateSubText, isNightModeEnabled && { color: '#ccc' }]}>Only Telangana News</Text>
                             </View>
                         </TouchableOpacity>
                     </View>
 
                     {/* 4. News Grid (Row 2) */}
                     <View style={styles.gridRow}>
-                        <TouchableOpacity style={styles.gridItemSimple} onPress={() => { setActiveCategory('national'); toggleMenu(); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}>
-                            <Text style={styles.gridTitleNational}>జాతీయం</Text>
-                            <Text style={styles.gridSubCenter}>Only National News</Text>
+                        <TouchableOpacity style={[styles.gridItemSimple, isNightModeEnabled && { backgroundColor: '#151718', borderColor: '#333' }]} onPress={() => { setActiveCategory('national'); toggleMenu(); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}>
+                            <Text style={[styles.gridTitleNational, isNightModeEnabled && { color: '#fff' }]}>జాతీయం</Text>
+                            <Text style={[styles.gridSubCenter, isNightModeEnabled && { color: '#ccc' }]}>Only National News</Text>
                         </TouchableOpacity>
                         <View style={{ width: 10 }} />
-                        <TouchableOpacity style={styles.gridItemSimple}>
+                        <TouchableOpacity style={[styles.gridItemSimple, isNightModeEnabled && { backgroundColor: '#151718', borderColor: '#333' }]}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
-                                <Ionicons name="search" size={24} color="#000" />
-                                <Text style={[styles.gridTitleMain, { marginLeft: 8 }]}>Fact Check</Text>
+                                <Ionicons name="search" size={24} color={isNightModeEnabled ? "#fff" : "#000"} />
+                                <Text style={[styles.gridTitleMain, { marginLeft: 8 }, isNightModeEnabled && { color: '#fff' }]}>Fact Check</Text>
                             </View>
-                            <Text style={styles.gridSubTeluguFact}>న్యూస్ పబ్లిష్ అయిందా.. లేదో వెరిఫై</Text>
+                            <Text style={[styles.gridSubTeluguFact, isNightModeEnabled && { color: '#ccc' }]}>న్యూస్ పబ్లిష్ అయిందా.. లేదో వెరిఫై</Text>
                         </TouchableOpacity>
                     </View>
 
                     {/* 5. Big Cards Row */}
                     <View style={styles.gridRow}>
                         <TouchableOpacity
-                            style={[styles.bigCard, { backgroundColor: '#F8F9FA' }]}
+                            style={[styles.bigCard, { backgroundColor: isNightModeEnabled ? '#151718' : '#F8F9FA', borderColor: isNightModeEnabled ? '#333' : '#E6E6E6' }]}
                             onPress={() => { toggleMenu(); setIsDigitalMagazineVisible(true); }}
                         >
                             <View style={styles.magazineIconCircle}>
                                 <MaterialCommunityIcons name="newspaper-variant-outline" size={24} color="#0F5B8B" />
                             </View>
-                            <Text style={styles.bigCardTextLarge}>డిజిటల్{"\n"}మ్యాగజిన్స్</Text>
+                            <Text style={[styles.bigCardTextLarge, isNightModeEnabled && { color: '#fff' }]}>డిజిటల్{"\n"}మ్యాగజిన్స్</Text>
                         </TouchableOpacity>
                         <View style={{ width: 10 }} />
-                        <TouchableOpacity style={[styles.bigCard, { backgroundColor: '#F8F9FA', padding: 15 }]}>
+                        <TouchableOpacity style={[styles.bigCard, { backgroundColor: '#F8F9FA', padding: 15 }, isNightModeEnabled && { backgroundColor: '#151718', borderColor: '#333' }]}>
                             <View style={styles.pollGroupIcon}>
-                                <MaterialCommunityIcons name="account-group-outline" size={32} color="#555" />
+                                <MaterialCommunityIcons name="account-group-outline" size={32} color={isNightModeEnabled ? "#fff" : "#555"} />
                             </View>
-                            <Text style={styles.bigCardTextLargeCenter}>పోల్స్</Text>
+                            <Text style={[styles.bigCardTextLargeCenter, isNightModeEnabled && { color: '#fff' }]}>పోల్స్</Text>
                         </TouchableOpacity>
                     </View>
 
                     {/* 6. List Items */}
                     <View style={styles.menuListContainerFlat}>
                         {/* Selected Location */}
-                        <TouchableOpacity style={styles.menuListItemFlat} onPress={() => {
+                        <TouchableOpacity style={[styles.menuListItemFlat, isNightModeEnabled && { backgroundColor: '#151718', borderColor: '#333' }]} onPress={() => {
                             toggleMenu();
                             setIsMenuLocationVisible(true);
                         }}>
                             <View style={styles.menuListLeftRow}>
-                                <Ionicons name="location-outline" size={26} color="#000" />
+                                <Ionicons name="location-outline" size={26} color={isNightModeEnabled ? "#fff" : "#000"} />
                                 <View style={{ marginLeft: 15 }}>
-                                    <Text style={styles.menuListLabel}>మీరు ఎంచుకున్న స్థానం</Text>
+                                    <Text style={[styles.menuListLabel, isNightModeEnabled && { color: '#fff' }]}>మీరు ఎంచుకున్న స్థానం</Text>
                                     <Text style={styles.menuListLocationBlue}>{userLocation}</Text>
                                 </View>
                             </View>
                             <Ionicons name="chevron-forward" size={20} color="#333" />
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.menuListItemFlat} onPress={toggleMenu}>
-                            <Text style={styles.menuListTitleSimpleBlack}>English News</Text>
-                            <Ionicons name="chevron-forward" size={20} color="#333" />
+                        <TouchableOpacity style={[styles.menuListItemFlat, isNightModeEnabled && { backgroundColor: '#151718', borderColor: '#333' }]} onPress={toggleMenu}>
+                            <Text style={[styles.menuListTitleSimpleBlack, isNightModeEnabled && { color: '#fff' }]}>English News</Text>
+                            <Ionicons name="chevron-forward" size={20} color={isNightModeEnabled ? "#9BA1A6" : "#333"} />
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.menuListItemFlat} onPress={toggleMenu}>
-                            <Text style={styles.menuListTitleSimpleBlack}>Job notifications</Text>
-                            <Ionicons name="chevron-forward" size={20} color="#333" />
+                        <TouchableOpacity style={[styles.menuListItemFlat, isNightModeEnabled && { backgroundColor: '#151718', borderColor: '#333' }]} onPress={toggleMenu}>
+                            <Text style={[styles.menuListTitleSimpleBlack, isNightModeEnabled && { color: '#fff' }]}>Job notifications</Text>
+                            <Ionicons name="chevron-forward" size={20} color={isNightModeEnabled ? "#9BA1A6" : "#333"} />
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.menuListItemFlat} onPress={toggleMenu}>
-                            <Text style={styles.menuListTitleSimpleBlack}>జాతకం & రాశి ఫలాలు వీడియోలు</Text>
-                            <Ionicons name="chevron-forward" size={20} color="#333" />
+                        <TouchableOpacity style={[styles.menuListItemFlat, isNightModeEnabled && { backgroundColor: '#151718', borderColor: '#333' }]} onPress={toggleMenu}>
+                            <Text style={[styles.menuListTitleSimpleBlack, isNightModeEnabled && { color: '#fff' }]}>జాతకం & రాశి ఫలాలు వీడియోలు</Text>
+                            <Ionicons name="chevron-forward" size={20} color={isNightModeEnabled ? "#9BA1A6" : "#333"} />
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.menuListItemFlat} onPress={toggleMenu}>
-                            <Text style={styles.menuListTitleSimpleBlack}>8k న్యూస్ ఎక్స్‌క్లూజివ్</Text>
-                            <Ionicons name="chevron-forward" size={20} color="#333" />
+                        <TouchableOpacity style={[styles.menuListItemFlat, isNightModeEnabled && { backgroundColor: '#151718', borderColor: '#333' }]} onPress={toggleMenu}>
+                            <Text style={[styles.menuListTitleSimpleBlack, isNightModeEnabled && { color: '#fff' }]}>8k న్యూస్ ఎక్స్‌క్లూజివ్</Text>
+                            <Ionicons name="chevron-forward" size={20} color={isNightModeEnabled ? "#9BA1A6" : "#333"} />
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.menuListItemFlat}>
+                        <TouchableOpacity style={[styles.menuListItemFlat, isNightModeEnabled && { backgroundColor: '#151718', borderColor: '#333' }]}>
                             <View style={styles.menuListLeftRow}>
-                                <Ionicons name="megaphone-outline" size={24} color="#000" />
-                                <Text style={[styles.menuListTitleSimpleBlack, { marginLeft: 15 }]}>Refer Now</Text>
+                                <Ionicons name="megaphone-outline" size={24} color={isNightModeEnabled ? "#fff" : "#000"} />
+                                <Text style={[styles.menuListTitleSimpleBlack, { marginLeft: 15 }, isNightModeEnabled && { color: '#fff' }]}>Refer Now</Text>
                             </View>
-                            <Ionicons name="chevron-forward" size={20} color="#333" />
+                            <Ionicons name="chevron-forward" size={20} color={isNightModeEnabled ? "#9BA1A6" : "#333"} />
                         </TouchableOpacity>
                     </View>
 
@@ -4093,10 +4567,10 @@ export default function NewsFeedScreen() {
             {/* 🌍 LOCATION SELECTION SCREEN (Guest Login) */}
             {
                 isLocationSelectorVisible && (
-                    <View style={[styles.fullModalOverlay, { backgroundColor: '#fff' }]}>
+                    <View style={[styles.fullModalOverlay, { backgroundColor: isNightModeEnabled ? '#000' : '#fff' }]}>
                         <SafeAreaView style={styles.fullSpace}>
-                            <View style={styles.locHeaderRef}>
-                                <Text style={styles.locHeaderLeftText}>Change location</Text>
+                            <View style={[styles.locHeaderRef, isNightModeEnabled && { backgroundColor: '#151718', borderBottomColor: '#333' }]}>
+                                <Text style={[styles.locHeaderLeftText, isNightModeEnabled && { color: '#fff' }]}>Change location</Text>
                                 <View style={styles.locHeaderCenter}>
                                     <Image
                                         source={require('../assets/images/res_8k_logo_1.png')}
@@ -4110,15 +4584,15 @@ export default function NewsFeedScreen() {
                             </View>
 
                             <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 30 }}>
-                                <Text style={styles.locRefInstruction}>మీకు కావాల్సిన నియోజకవర్గం ఎంచుకోండి</Text>
+                                <Text style={[styles.locRefInstruction, isNightModeEnabled && { color: '#fff' }]}>మీకు కావాల్సిన నియోజకవర్గం ఎంచుకోండి</Text>
 
                                 <View style={styles.locRefSearchContainer}>
-                                    <View style={styles.locRefSearchBox}>
+                                    <View style={[styles.locRefSearchBox, isNightModeEnabled && { borderColor: '#333' }]}>
                                         <Ionicons name="location-sharp" size={20} color="#777" />
                                         <TextInput
-                                            style={styles.locRefInput}
+                                            style={[styles.locRefInput, isNightModeEnabled && { color: '#fff' }]}
                                             placeholder="మీ నియోజకవర్గం పేరు శోధించండి..."
-                                            placeholderTextColor="#999"
+                                            placeholderTextColor={isNightModeEnabled ? '#666' : '#999'}
                                         />
                                         <Ionicons name="search" size={20} color="#777" />
                                     </View>
@@ -4138,7 +4612,7 @@ export default function NewsFeedScreen() {
                                     ].map((loc) => (
                                         <TouchableOpacity
                                             key={loc.id}
-                                            style={styles.locListItem}
+                                            style={[styles.locListItem, isNightModeEnabled && { backgroundColor: '#151718', borderColor: '#333' }]}
                                             onPress={() => {
                                                 setUserLocation(loc.name);
                                                 setIsLocationSelectorVisible(false);
@@ -4149,9 +4623,9 @@ export default function NewsFeedScreen() {
                                                 <View style={styles.locListIconCircle}>
                                                     <Ionicons name="location-sharp" size={18} color="#1a73e8" />
                                                 </View>
-                                                <Text style={styles.locListItemText}>{loc.name}</Text>
+                                                <Text style={[styles.locListItemText, isNightModeEnabled && { color: '#fff' }]}>{loc.name}</Text>
                                             </View>
-                                            <Ionicons name="chevron-forward" size={22} color="#999" />
+                                            <Ionicons name="chevron-forward" size={22} color={isNightModeEnabled ? "#666" : "#999"} />
                                         </TouchableOpacity>
                                     ))}
                                 </View>
@@ -4164,19 +4638,18 @@ export default function NewsFeedScreen() {
             {/* 📚 DIGITAL MAGAZINES MODAL */}
             {
                 isDigitalMagazineVisible && (
-                    <View style={styles.fullModalOverlay}>
+                    <View style={[styles.fullModalOverlay, isNightModeEnabled && { backgroundColor: '#000' }]}>
                         <SafeAreaView style={styles.fullSpace}>
-                            <View style={styles.magHeader}>
+                            <View style={[styles.magHeader, isNightModeEnabled && { backgroundColor: '#151718' }]}>
                                 <TouchableOpacity onPress={() => setIsDigitalMagazineVisible(false)} style={styles.magBackRoundBtn}>
                                     <Ionicons name="chevron-back" size={24} color="#000" />
                                 </TouchableOpacity>
-                                <Text style={styles.magHeaderText}>డిజిటల్ మ్యాగజిన్స్</Text>
+                                <Text style={[styles.magHeaderText, isNightModeEnabled && { color: '#fff' }]}>డిజిటల్ మ్యాగజిన్స్</Text>
                                 <View style={{ width: 44 }} />
                             </View>
-
                             <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.magListContent} showsVerticalScrollIndicator={false}>
                                 {MAGAZINE_DATA.map((item) => (
-                                    <View key={item.id} style={styles.magCard}>
+                                    <View key={item.id} style={[styles.magCard, isNightModeEnabled && { backgroundColor: '#151718' }]}>
                                         <Image
                                             source={item.image}
                                             style={styles.magCardImage}
@@ -4186,8 +4659,8 @@ export default function NewsFeedScreen() {
                                             <View style={styles.magBadge}>
                                                 <Text style={styles.magBadgeText}>{item.badge}</Text>
                                             </View>
-                                            <Text style={styles.magCardTitle}>{item.title}</Text>
-                                            <Text style={styles.magCardDate}>{item.date}</Text>
+                                            <Text style={[styles.magCardTitle, isNightModeEnabled && { color: '#fff' }]}>{item.title}</Text>
+                                            <Text style={[styles.magCardDate, isNightModeEnabled && { color: '#9BA1A6' }]}>{item.date}</Text>
 
                                         </View>
                                     </View>
@@ -4572,22 +5045,37 @@ const styles = StyleSheet.create({
         fontSize: 13,
         fontWeight: '600',
         color: '#65676b',
-        marginTop: 6,
+        fontWeight: 'bold',
+        color: '#65676b',
+        marginTop: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    videoReplyItem: {
+        flexDirection: 'row',
+        marginTop: 10,
         marginLeft: 0,
     },
     videoInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 10,
         borderTopWidth: 1,
         borderTopColor: '#eee',
-        padding: 10,
         backgroundColor: '#fff',
     },
     videoInput: {
+        flex: 1,
+        height: 40,
         backgroundColor: '#f0f2f5',
         borderRadius: 20,
         paddingHorizontal: 15,
-        paddingVertical: 8,
         fontSize: 14,
         color: '#000',
+    },
+    videoSendBtn: {
+        marginLeft: 10,
+        padding: 5,
     },
     footerReplyText: {
         fontSize: 11,
@@ -6574,6 +7062,87 @@ const styles = StyleSheet.create({
         width: 6,
         height: 6,
         borderRadius: 3,
+    },
+    // 📜 TERMS AND CONDITIONS STYLES (MATCHING REFERENCE)
+    termsHeader: {
+        height: 60,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 15,
+        backgroundColor: '#333',
+    },
+    termsBackBtn: {
+        padding: 5,
+        marginRight: 10,
+    },
+    termsHeaderText: {
+        fontSize: 18,
+        color: '#fff',
+        fontWeight: 'bold',
+    },
+    termsBanner: {
+        height: 140,
+        backgroundColor: '#333',
+        justifyContent: 'center',
+        paddingHorizontal: 25,
+        borderBottomWidth: 0,
+    },
+    termsBannerTitle: {
+        fontSize: 40,
+        fontWeight: 'bold',
+        color: '#fff',
+        letterSpacing: 2,
+    },
+    termsContentCard: {
+        flex: 1,
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 35,
+        borderTopRightRadius: 35,
+        marginTop: -35,
+        paddingHorizontal: 25,
+        paddingTop: 35,
+    },
+    termsCardTitle: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#000',
+        marginBottom: 8,
+    },
+    termsYellowDivider: {
+        width: 45,
+        height: 4,
+        backgroundColor: '#FFD700',
+        marginBottom: 30,
+    },
+    termsSectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 18,
+    },
+    termsYellowPill: {
+        width: 6,
+        height: 24,
+        backgroundColor: '#FFD700',
+        borderRadius: 3,
+        marginRight: 12,
+    },
+    termsSectionTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    termsLegalText: {
+        fontSize: 15,
+        lineHeight: 24,
+        color: '#444',
+        textAlign: 'justify',
+    },
+    termsCopyright: {
+        fontSize: 12,
+        color: '#999',
+        textAlign: 'center',
+        marginTop: 40,
+        fontWeight: '500',
     },
 });
 

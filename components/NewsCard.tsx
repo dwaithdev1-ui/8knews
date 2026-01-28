@@ -50,6 +50,14 @@ interface Props {
     onLike?: () => void;
     onDislike?: () => void;
     darkMode?: boolean;
+    autoPlayEnabled?: boolean;
+    type?: 'news' | 'ad';
+    redirectUrl?: string;
+    onAdRedirect?: () => void;
+    shareCount?: number;
+    onDownload?: () => void;
+    onWhatsAppShare?: () => void;
+    onIncrementShare?: () => void;
 }
 
 /**
@@ -60,15 +68,36 @@ export default function NewsCard({
     id, image, title, description, index, scrollY, totalItems,
     onComment, isSaved, onToggleSave, onOptions, onShare, onTap, isFullCard, showSwipeHint,
     isVideo, video, isMuted, onToggleMute, cardHeight, showCommentHint, showOptionsHint, showShareHint, commentCount = 0,
-    likeCount = 0, dislikeCount = 0, liked = false, disliked = false, onLike, onDislike, darkMode = false
+    likeCount = 0, dislikeCount = 0, liked = false, disliked = false, onLike, onDislike, darkMode = false, autoPlayEnabled = true,
+    type = 'news', redirectUrl, onAdRedirect, shareCount = 0, onDownload, onWhatsAppShare, onIncrementShare
 }: Props) {
     const CARD_HEIGHT_VAL = cardHeight || LAYOUT.windowHeight;
 
     // 🎨 DYNAMIC COLORS
-    const bgColor = darkMode ? '#121212' : '#fff';
-    const textColor = darkMode ? '#eee' : '#000';
-    const subTextColor = darkMode ? '#bbb' : '#333';
-    const cardBgColor = darkMode ? '#1e1e1e' : '#fff';
+    const bgColor = darkMode ? '#000000' : '#fff';
+    const textColor = darkMode ? '#FFFFFF' : '#000';
+    const subTextColor = darkMode ? '#A1A1A1' : '#333';
+    const cardBgColor = darkMode ? '#151718' : '#fff';
+
+    // Playback State
+    const [isPlaying, setIsPlaying] = React.useState(autoPlayEnabled);
+
+    // Sync state if setting changes
+    React.useEffect(() => {
+        setIsPlaying(autoPlayEnabled);
+    }, [autoPlayEnabled]);
+
+    // Debug logging for ads
+    React.useEffect(() => {
+        if (type === 'ad') {
+            console.log('Ad Card Detected:', {
+                id,
+                type,
+                redirectUrl,
+                hasOnAdRedirect: !!onAdRedirect
+            });
+        }
+    }, [type, redirectUrl, onAdRedirect, id]);
 
     // Blinking animation for comment hint
     const hintBlinkAnim = useSharedValue(1);
@@ -143,8 +172,8 @@ export default function NewsCard({
         };
     });
 
-    // If it's a full card (special image) OR a video, render fit-to-screen layout
-    if (isFullCard || isVideo) {
+    // If it's a full card (special image) OR explicitly Full Screen, render fit-to-screen layout
+    if (isFullCard) {
         return (
             <Animated.View style={[styles.container, { height: CARD_HEIGHT_VAL, backgroundColor: bgColor }, animatedStyle]}>
                 <Pressable style={{ flex: 1 }} onPress={onTap}>
@@ -155,9 +184,24 @@ export default function NewsCard({
                                 style={{ width: '100%', height: '100%' }}
                                 resizeMode={ResizeMode.COVER}
                                 isLooping
-                                shouldPlay={true}
+                                shouldPlay={isPlaying}
                                 isMuted={isMuted}
                             />
+
+                            {/* Play Button Overlay (Allows clicks through to HUD) */}
+                            {!isPlaying && (
+                                <View
+                                    pointerEvents="box-none"
+                                    style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', zIndex: 10 }}
+                                >
+                                    <TouchableOpacity
+                                        onPress={(e) => { e.stopPropagation(); setIsPlaying(true); }}
+                                        style={{ backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 50, padding: 15 }}
+                                    >
+                                        <Ionicons name="play" size={50} color="#fff" />
+                                    </TouchableOpacity>
+                                </View>
+                            )}
 
                             {/* 8K Logo Overlay */}
                             <Image
@@ -174,7 +218,7 @@ export default function NewsCard({
                             />
 
                             {/* Right Vertical Actions (Share & Mute) */}
-                            <View style={styles.videoRightActions}>
+                            <View style={[styles.videoRightActions, { zIndex: 100 }]}>
                                 <TouchableOpacity style={styles.videoSideButton} onPress={() => onShare?.(id)}>
                                     <View style={styles.videoSideIconBg}>
                                         <Ionicons name="arrow-redo" size={28} color="#00C800" />
@@ -188,7 +232,7 @@ export default function NewsCard({
                             </View>
 
                             {/* Bottom Horizontal Actions (Like, Dislike, Comment) */}
-                            <View style={styles.videoBottomActions}>
+                            <View style={[styles.videoBottomActions, { zIndex: 100 }]}>
                                 <TouchableOpacity style={styles.videoActionButton} onPress={handleLike}>
                                     <Ionicons
                                         name={liked ? "thumbs-up" : "thumbs-up-outline"}
@@ -241,6 +285,63 @@ export default function NewsCard({
                                 }}
                                 contentFit="contain"
                             />
+                            {type === 'ad' && (
+                                <View style={styles.sponsoredBadgeFull}>
+                                    <Text style={styles.sponsoredText}>Sponsored / Ad</Text>
+                                </View>
+                            )}
+                            {/* Ad Redirect Icon for Full Card */}
+                            {type === 'ad' && redirectUrl && (
+                                <TouchableOpacity
+                                    onPress={(e) => {
+                                        e.stopPropagation();
+                                        onAdRedirect?.();
+                                    }}
+                                    style={styles.adRedirectButton}
+                                >
+                                    <View style={styles.adRedirectIconBg}>
+                                        <Ionicons name="chevron-forward" size={24} color="#fff" />
+                                        <Ionicons name="chevron-forward" size={24} color="#fff" style={{ marginLeft: -12 }} />
+                                    </View>
+                                </TouchableOpacity>
+                            )}
+                            {/* Photo Action Bar (Download, WhatsApp, Share) */}
+                            {type !== 'ad' && !isVideo && (
+                                <View style={styles.photoActionBar}>
+                                    <TouchableOpacity
+                                        style={styles.photoActionButton}
+                                        onPress={(e) => {
+                                            e.stopPropagation();
+                                            onDownload?.();
+                                        }}
+                                    >
+                                        <Ionicons name="download-outline" size={28} color="#fff" />
+                                        <Text style={styles.photoActionLabel}>Download</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={styles.photoActionButton}
+                                        onPress={(e) => {
+                                            e.stopPropagation();
+                                            onWhatsAppShare?.();
+                                            onIncrementShare?.();
+                                        }}
+                                    >
+                                        <Ionicons name="logo-whatsapp" size={28} color="#25D366" />
+                                        <Text style={styles.photoActionLabel}>{shareCount} Shares</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={styles.photoActionButton}
+                                        onPress={(e) => {
+                                            e.stopPropagation();
+                                            onShare?.(id);
+                                            onIncrementShare?.();
+                                        }}
+                                    >
+                                        <Ionicons name="share-outline" size={28} color="#fff" />
+                                        <Text style={styles.photoActionLabel}>Share</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
                         </View>
                     )}
                 </Pressable>
@@ -251,13 +352,74 @@ export default function NewsCard({
     return (
         <Animated.View style={[styles.container, { height: CARD_HEIGHT_VAL, backgroundColor: bgColor }, animatedStyle]}>
             <Pressable style={{ flex: 1 }} onPress={onTap}>
-                {/* 1. Top Image Section */}
+                {/* 1. Top Image/Video Section */}
                 <View style={styles.imageContainer}>
-                    <Image
-                        source={image}
-                        style={styles.image}
-                        contentFit="cover"
-                    />
+                    {isVideo ? (
+                        <View style={{ flex: 1 }}>
+                            <Video
+                                source={video ? { uri: video } : (typeof image === 'string' ? { uri: image } : image)}
+                                style={{ width: '100%', height: '100%' }}
+                                resizeMode={ResizeMode.COVER}
+                                isLooping
+                                shouldPlay={isPlaying}
+                                isMuted={isMuted}
+                            />
+
+                            {/* Play Button Overlay (Allows clicks through) */}
+                            {!isPlaying && (
+                                <View
+                                    pointerEvents="box-none"
+                                    style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', zIndex: 10 }}
+                                >
+                                    <TouchableOpacity
+                                        onPress={(e) => { e.stopPropagation(); setIsPlaying(true); }}
+                                        style={{ backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 50, padding: 15 }}
+                                    >
+                                        <Ionicons name="play" size={50} color="#fff" />
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+
+                            {/* Tap to Toggle Play/Pause when Playing */}
+                            {isPlaying && (
+                                <Pressable
+                                    onPress={(e) => { e.stopPropagation(); setIsPlaying(false); }}
+                                    style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5 }}
+                                />
+                            )}
+
+                            {/* Mute Button for Standard Card */}
+                            <TouchableOpacity
+                                onPress={onToggleMute}
+                                style={{ position: 'absolute', top: 10, right: 10, backgroundColor: 'rgba(0,0,0,0.5)', padding: 8, borderRadius: 20, zIndex: 15 }}
+                            >
+                                <Ionicons name={isMuted ? "volume-mute" : "volume-high"} size={20} color="#fff" />
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <Image
+                            source={image}
+                            style={styles.image}
+                            contentFit="cover"
+                        />
+                    )}
+
+                    {/* Ad Redirect Icon (Top Right) */}
+                    {type === 'ad' && redirectUrl && (
+                        <TouchableOpacity
+                            onPress={(e) => {
+                                e.stopPropagation();
+                                onAdRedirect?.();
+                            }}
+                            style={styles.adRedirectButton}
+                        >
+                            <View style={styles.adRedirectIconBg}>
+                                <Ionicons name="chevron-forward" size={24} color="#fff" />
+                                <Ionicons name="chevron-forward" size={24} color="#fff" style={{ marginLeft: -12 }} />
+                            </View>
+                        </TouchableOpacity>
+                    )}
+
                     {/* Location Badge (Bottom Right of Image) */}
                     <View style={styles.locationBadgeContainer}>
                         <View style={styles.locationBadge}>
@@ -306,60 +468,72 @@ export default function NewsCard({
 
                         <View style={[styles.separator, { backgroundColor: darkMode ? '#333' : '#eee' }]} />
 
-                        <View style={styles.actionRow} onStartShouldSetResponder={() => true}>
-                            <View style={styles.leftActions}>
-                                <TouchableOpacity style={styles.actionItem} onPress={handleLike}>
-                                    <Ionicons
-                                        name={liked ? "thumbs-up" : "thumbs-up-outline"}
-                                        size={24}
-                                        color={liked ? "#1a73e8" : (darkMode ? '#ddd' : '#333')}
-                                    />
-                                    <Text style={[styles.actionText, { color: darkMode ? '#ddd' : '#666' }]}>{formatCount(likeCount)}</Text>
-                                </TouchableOpacity>
+                        {type !== 'ad' ? (
+                            <View style={styles.actionRow} onStartShouldSetResponder={() => true}>
+                                <View style={styles.leftActions}>
+                                    <TouchableOpacity style={styles.actionItem} onPress={handleLike}>
+                                        <Ionicons
+                                            name={liked ? "thumbs-up" : "thumbs-up-outline"}
+                                            size={24}
+                                            color={liked ? "#1a73e8" : (darkMode ? '#ddd' : '#333')}
+                                        />
+                                        <Text style={[styles.actionText, { color: darkMode ? '#ddd' : '#666' }]}>{formatCount(likeCount)}</Text>
+                                    </TouchableOpacity>
 
-                                <TouchableOpacity style={styles.actionItem} onPress={handleDislike}>
-                                    <Ionicons
-                                        name={disliked ? "thumbs-down" : "thumbs-down-outline"}
-                                        size={24}
-                                        color={disliked ? "#d93025" : (darkMode ? '#ddd' : '#333')}
-                                    />
-                                    <Text style={[styles.actionText, { color: darkMode ? '#ddd' : '#666' }]}>{formatCount(dislikeCount)}</Text>
-                                </TouchableOpacity>
+                                    <TouchableOpacity style={styles.actionItem} onPress={handleDislike}>
+                                        <Ionicons
+                                            name={disliked ? "thumbs-down" : "thumbs-down-outline"}
+                                            size={24}
+                                            color={disliked ? "#d93025" : (darkMode ? '#ddd' : '#333')}
+                                        />
+                                        <Text style={[styles.actionText, { color: darkMode ? '#ddd' : '#666' }]}>{formatCount(dislikeCount)}</Text>
+                                    </TouchableOpacity>
 
+                                    <TouchableOpacity
+                                        style={styles.actionItem}
+                                        onPress={() => onComment?.(id)}
+                                    >
+                                        <View style={{ position: 'relative' }}>
+                                            <Ionicons name="chatbubble-outline" size={24} color={darkMode ? '#ddd' : '#333'} />
+                                            {showCommentHint && (
+                                                <Animated.View style={[styles.commentHintDot, hintBlinkStyle]} />
+                                            )}
+                                        </View>
+                                        <Text style={[styles.actionText, { color: darkMode ? '#ddd' : '#666' }]}>{commentCount}</Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                <View style={styles.rightActions}>
+                                    <TouchableOpacity style={styles.iconButton} onPress={() => onOptions?.(id)}>
+                                        <View style={{ position: 'relative' }}>
+                                            <Ionicons name="ellipsis-vertical" size={24} color={darkMode ? '#fff' : '#000'} />
+                                            {showOptionsHint && (
+                                                <Animated.View style={[styles.commentHintDot, hintBlinkStyle]} />
+                                            )}
+                                        </View>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={styles.iconButton} onPress={() => onShare?.(id)}>
+                                        <View style={{ position: 'relative' }}>
+                                            <Ionicons name="arrow-redo" size={28} color="#00C800" />
+                                            {showShareHint && (
+                                                <Animated.View style={[styles.commentHintDot, hintBlinkStyle]} />
+                                            )}
+                                        </View>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        ) : (
+                            <View style={styles.adActionRow}>
                                 <TouchableOpacity
-                                    style={styles.actionItem}
-                                    onPress={() => onComment?.(id)}
+                                    style={styles.visitWebsiteBtn}
+                                    onPress={onTap}
                                 >
-                                    <View style={{ position: 'relative' }}>
-                                        <Ionicons name="chatbubble-outline" size={24} color={darkMode ? '#ddd' : '#333'} />
-                                        {showCommentHint && (
-                                            <Animated.View style={[styles.commentHintDot, hintBlinkStyle]} />
-                                        )}
-                                    </View>
-                                    <Text style={[styles.actionText, { color: darkMode ? '#ddd' : '#666' }]}>{commentCount}</Text>
+                                    <Text style={styles.visitWebsiteText}>Visit Website / App</Text>
+                                    <Ionicons name="open-outline" size={18} color="#fff" />
                                 </TouchableOpacity>
                             </View>
-
-                            <View style={styles.rightActions}>
-                                <TouchableOpacity style={styles.iconButton} onPress={() => onOptions?.(id)}>
-                                    <View style={{ position: 'relative' }}>
-                                        <Ionicons name="ellipsis-vertical" size={24} color={darkMode ? '#fff' : '#000'} />
-                                        {showOptionsHint && (
-                                            <Animated.View style={[styles.commentHintDot, hintBlinkStyle]} />
-                                        )}
-                                    </View>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity style={styles.iconButton} onPress={() => onShare?.(id)}>
-                                    <View style={{ position: 'relative' }}>
-                                        <Ionicons name="arrow-redo" size={28} color="#00C800" />
-                                        {showShareHint && (
-                                            <Animated.View style={[styles.commentHintDot, hintBlinkStyle]} />
-                                        )}
-                                    </View>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
+                        )}
                     </View>
                 </View>
             </Pressable>
@@ -486,6 +660,13 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 5,
     },
+    termsCopyright: {
+        fontSize: 12,
+        color: '#999',
+        textAlign: 'center',
+        marginTop: 40,
+        fontWeight: '500',
+    },
     footer: {
         paddingVertical: 0,
         paddingBottom: 0, // ⚓ Absolute zero bottom edge
@@ -556,7 +737,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 40,
         left: 20,
-        right: 80, // Leave space for side buttons if they were lower
+        right: 80, // Space for right vertical actions
         flexDirection: 'row',
         alignItems: 'center',
         gap: 25,
@@ -585,5 +766,108 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: '#fff',
         zIndex: 100,
-    }
+    },
+    sponsoredBadgeFull: {
+        position: 'absolute',
+        top: 120,
+        left: 20,
+        backgroundColor: 'rgba(255, 215, 0, 0.9)',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        zIndex: 30,
+        borderWidth: 1,
+        borderColor: '#fab005',
+    },
+    sponsoredBadgeSmall: {
+        position: 'absolute',
+        top: 15,
+        left: 15,
+        backgroundColor: 'rgba(255, 215, 0, 0.9)',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 15,
+        zIndex: 30,
+        borderWidth: 1,
+        borderColor: '#fab005',
+    },
+    sponsoredText: {
+        color: '#000',
+        fontSize: 12,
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    adActionRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 50,
+        width: '100%',
+    },
+    visitWebsiteBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#1a73e8',
+        paddingHorizontal: 25,
+        paddingVertical: 10,
+        borderRadius: 25,
+        gap: 8,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+    },
+    visitWebsiteText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    adRedirectButton: {
+        position: 'absolute',
+        top: 15,
+        right: 15,
+        zIndex: 1000,
+    },
+    adRedirectIconBg: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(26, 115, 232, 1)',
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+        borderRadius: 30,
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.4,
+        shadowRadius: 4,
+        borderWidth: 2,
+        borderColor: 'rgba(255, 255, 255, 0.3)',
+    },
+    photoActionBar: {
+        position: 'absolute',
+        bottom: 30,
+        left: 20,
+        right: 20,
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        paddingVertical: 15,
+        borderRadius: 20,
+        zIndex: 50,
+    },
+    photoActionButton: {
+        alignItems: 'center',
+        gap: 5,
+    },
+    photoActionLabel: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: 'bold',
+        marginTop: 2,
+    },
 });
