@@ -21,6 +21,10 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+
+
+
 import Animated, {
     Easing,
     Extrapolation,
@@ -60,6 +64,13 @@ const LANGUAGES = [
 ];
 
 const API_URL = 'http://192.168.29.70:3000/api';
+
+const formatCount = (count: number) => {
+    if (count >= 1000) {
+        return (count / 1000).toFixed(1) + 'K';
+    }
+    return count.toString();
+};
 
 const DEFAULT_NEWS_DATA = [
     // 🏠 MAIN NEWS & TRENDING - MODI VISIBILITY
@@ -788,8 +799,122 @@ export default function NewsFeedScreen() {
     const [isLocalNewsLocationVisible, setIsLocalNewsLocationVisible] = useState(false);
     const [isMenuLocationVisible, setIsMenuLocationVisible] = useState(false);
     const [isDigitalMagazineVisible, setIsDigitalMagazineVisible] = useState(false);
+    const [magazines, setMagazines] = useState([]);
+    const [viewingMagazine, setViewingMagazine] = useState(null);
+    const [magazinePages, setMagazinePages] = useState([]);
+    const [currentPageIndex, setCurrentPageIndex] = useState(0);
+    const [underPages, setUnderPages] = useState({ next: 1, prev: -1 });
+
+    // 📖 MAGAZINE ANIMATION SHARED VALUES
+    const magSwipeX = useSharedValue(0);
+    const magFlipProgress = useSharedValue(0); // 0 to 1 for next, 0 to -1 for prev
+    const isTurningPage = useSharedValue(false);
+    const swipeHintOpacity = useSharedValue(1);
+
+    // 📖 SWIPE HINT ANIMATION
+    useEffect(() => {
+        if (viewingMagazine) {
+            swipeHintOpacity.value = withRepeat(
+                withSequence(
+                    withTiming(1, { duration: 800 }),
+                    withTiming(0.4, { duration: 800 })
+                ),
+                -1,
+                true
+            );
+        } else {
+            swipeHintOpacity.value = 0;
+        }
+    }, [viewingMagazine]);
+
+
     const [localNewsSearchQuery, setLocalNewsSearchQuery] = useState('');
+    // 📖 MAGAZINE ANIMATION GESTURES & STYLES
+    const magPanGesture = Gesture.Pan()
+        .activeOffsetX([-5, 5])
+        .failOffsetY([-500, 500])
+        .onStart(() => {
+            if (isTurningPage.value) return;
+            isTurningPage.value = true;
+        })
+
+        .onUpdate((event) => {
+            magSwipeX.value = event.translationX;
+            magFlipProgress.value = interpolate(
+                event.translationX,
+                [-WINDOW_WIDTH, 0, WINDOW_WIDTH],
+                [1, 0, -1],
+                Extrapolation.CLAMP
+            );
+        })
+        .onEnd((event) => {
+            const threshold = WINDOW_WIDTH / 10;
+            const velocityThreshold = 300;
+
+            if ((event.translationX < -threshold || event.velocityX < -velocityThreshold) && currentPageIndex < magazinePages.length - 1) {
+                magFlipProgress.value = withTiming(1, { duration: 450, easing: Easing.bezier(0.25, 0.1, 0.25, 1) }, () => {
+                    'worklet';
+                    runOnJS(setCurrentPageIndex)((prev: number) => Math.min(prev + 1, magazinePages.length - 1));
+                });
+            } else if ((event.translationX > threshold || event.velocityX > velocityThreshold) && currentPageIndex > 0) {
+                magFlipProgress.value = withTiming(-1, { duration: 450, easing: Easing.bezier(0.25, 0.1, 0.25, 1) }, () => {
+                    'worklet';
+                    runOnJS(setCurrentPageIndex)((prev: number) => Math.max(prev - 1, 0));
+                });
+            } else {
+                magFlipProgress.value = withTiming(0, {}, () => {
+                    'worklet';
+                    magSwipeX.value = 0;
+                    isTurningPage.value = false;
+                });
+            }
+        });
+
+
+
+    const flipAnimationStyle = useAnimatedStyle(() => {
+        const rotateY = interpolate(
+            magFlipProgress.value,
+            [-1, 0, 1],
+            [120, 0, -120],
+            Extrapolation.CLAMP
+        );
+
+        return {
+            transform: [
+                { perspective: 1500 },
+                { translateX: -WINDOW_WIDTH / 2 },
+                { rotateY: `${rotateY}deg` },
+                { translateX: WINDOW_WIDTH / 2 },
+            ],
+            zIndex: 10,
+        };
+    });
+
+    const nextPageStyle = useAnimatedStyle(() => {
+        const isNext = magFlipProgress.value > 0;
+        return {
+            opacity: isNext ? interpolate(magFlipProgress.value, [0, 0.1, 1], [0, 1, 1], Extrapolation.CLAMP) : 0,
+            transform: [
+                { scale: interpolate(Math.abs(magFlipProgress.value), [0, 1], [0.95, 1]) }
+            ],
+            zIndex: isNext ? 1 : -1,
+        };
+    });
+
+    const prevPageStyle = useAnimatedStyle(() => {
+        const isPrev = magFlipProgress.value < 0;
+        return {
+            opacity: isPrev ? interpolate(Math.abs(magFlipProgress.value), [0, 0.1, 1], [0, 1, 1], Extrapolation.CLAMP) : 0,
+            transform: [
+                { scale: interpolate(Math.abs(magFlipProgress.value), [0, 1], [0.95, 1]) }
+            ],
+            zIndex: isPrev ? 1 : -1,
+        };
+    });
+
     const [isSearching, setIsSearching] = useState(false);
+
 
 
 
@@ -841,6 +966,13 @@ export default function NewsFeedScreen() {
         };
     }, [isTutorialMode]);
 
+    // 📚 FETCH MAGAZINES WHEN MODAL OPENS
+    useEffect(() => {
+        if (isDigitalMagazineVisible) {
+            fetchMagazines();
+        }
+    }, [isDigitalMagazineVisible]);
+
     // Check if menu has been opened before (for red badge)
     useEffect(() => {
         const checkStatus = async () => {
@@ -882,6 +1014,21 @@ export default function NewsFeedScreen() {
         checkStatus();
     }, []);
 
+    // 📖 SYNC ANIMATION WITH PAGE CHANGE (Eliminate Flicker)
+    useEffect(() => {
+        // Snap shared values back to idle once React has committed the source swap
+        magFlipProgress.value = 0;
+        magSwipeX.value = 0;
+        isTurningPage.value = false;
+
+        // Update under-layer sources ONLY after the turn is truly finished
+        // This prevents the "next next" page from showing during the reset frame
+        setUnderPages({
+            next: currentPageIndex + 1,
+            prev: currentPageIndex - 1
+        });
+    }, [currentPageIndex]);
+
     const [isMuted, setIsMuted] = useState(true);
     const toggleMute = () => setIsMuted(prev => !prev);
 
@@ -913,6 +1060,7 @@ export default function NewsFeedScreen() {
         text: string;
         user: string;
         userId?: string;
+        gifUrl?: string;
         timestamp: number;
         isMe: boolean;
         likedByMe: boolean;
@@ -926,6 +1074,7 @@ export default function NewsFeedScreen() {
         text: string;
         user: string;
         userId?: string;
+        gifUrl?: string;
         location?: string;
         timestamp: number;
         isMe: boolean;
@@ -938,6 +1087,8 @@ export default function NewsFeedScreen() {
     };
 
     const [allComments, setAllComments] = useState<Record<string, Comment[]>>({});
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [showGifPicker, setShowGifPicker] = useState(false);
     const comments = (currentNewsId && allComments[currentNewsId]) || [];
     const [notificationPreferences, setNotificationPreferences] = useState<Record<string, boolean>>({});
     const [newComment, setNewComment] = useState('');
@@ -1096,6 +1247,65 @@ export default function NewsFeedScreen() {
             };
         });
     };
+
+    // 📚 MAGAZINE FUNCTIONS
+    const fetchMagazines = async () => {
+        try {
+            const response = await fetch(`${API_URL}/news`);
+            const data = await response.json();
+            // Filter for digital magazines category
+            const magazineItems = data.filter((item: any) => {
+                if (!item.category_id) return false;
+                const catIds = Array.isArray(item.category_id) ? item.category_id : [item.category_id];
+                return catIds.some((cat: any) => cat.toString().includes('69776dd55ecba5f83ece50af'));
+            });
+            setMagazines(magazineItems);
+
+        } catch (error) {
+            console.error('Error fetching magazines:', error);
+        }
+    };
+
+    const openMagazine = async (magazineId: string) => {
+        try {
+            // Fetch magazine pages from news_media
+            const response = await fetch(`${API_URL}/news/${magazineId}/media`);
+            const pages = await response.json();
+            if (pages && pages.length > 0) {
+                setMagazinePages(pages.sort((a: any, b: any) => a.page_number - b.page_number));
+                setViewingMagazine(magazineId);
+                setCurrentPageIndex(0);
+                setIsDigitalMagazineVisible(false);
+            }
+        } catch (error) {
+            console.error('Error fetching magazine pages:', error);
+        }
+    };
+
+    const closeMagazineViewer = () => {
+        setViewingMagazine(null);
+        setMagazinePages([]);
+        setCurrentPageIndex(0);
+    };
+
+    const nextPage = () => {
+        if (currentPageIndex < magazinePages.length - 1 && !isTurningPage.value) {
+            isTurningPage.value = true;
+            magFlipProgress.value = withTiming(1, { duration: 600, easing: Easing.bezier(0.25, 0.1, 0.25, 1) }, () => {
+                runOnJS(setCurrentPageIndex)((prev: number) => Math.min(prev + 1, magazinePages.length - 1));
+            });
+        }
+    };
+
+    const previousPage = () => {
+        if (currentPageIndex > 0 && !isTurningPage.value) {
+            isTurningPage.value = true;
+            magFlipProgress.value = withTiming(-1, { duration: 600, easing: Easing.bezier(0.25, 0.1, 0.25, 1) }, () => {
+                runOnJS(setCurrentPageIndex)((prev: number) => Math.max(prev - 1, 0));
+            });
+        }
+    };
+
 
     const commentAnimationStyle = useAnimatedStyle(() => {
         const val = commentRevealVal.value;
@@ -2051,7 +2261,16 @@ export default function NewsFeedScreen() {
     };
 
     const handleOpenComments = (id: string) => {
-        const newsItem = newsData.find(item => item.id === id);
+        let newsItem = newsData.find(item => item.id === id);
+
+        // Fallback to magazines if not found in regular news feed
+        if (!newsItem && magazines.length > 0) {
+            const mag = magazines.find((m: any) => m._id === id);
+            if (mag) {
+                newsItem = { ...mag, id: mag._id };
+            }
+        }
+
         if (newsItem) {
             // 💬 DISMISS COMMENT HINT ON FIRST COMMENT CLICK
             if (isCommentHintVisible && !hasSeenCommentHint) {
@@ -2103,8 +2322,8 @@ export default function NewsFeedScreen() {
         });
     };
 
-    const handleAddComment = () => {
-        if (newComment.trim() && currentNewsId) {
+    const handleAddComment = (gifUrl?: string) => {
+        if ((newComment.trim() || gifUrl) && currentNewsId) {
             const isMe = true;
             const finalUser = (userName !== 'Guest User') ? userName : 'You';
 
@@ -2122,6 +2341,7 @@ export default function NewsFeedScreen() {
                                     text: newComment,
                                     user: finalUser,
                                     userId: finalUser, // ID for demo
+                                    gifUrl: gifUrl,
                                     timestamp: Date.now(),
                                     isMe: true,
                                     likedByMe: false,
@@ -2142,6 +2362,7 @@ export default function NewsFeedScreen() {
                         text: newComment,
                         user: finalUser,
                         userId: finalUser, // ID for demo
+                        gifUrl: gifUrl,
                         location: 'Ranga Reddy (D)',
                         timestamp: Date.now(),
                         isMe: true,
@@ -2159,6 +2380,8 @@ export default function NewsFeedScreen() {
 
             if (replyTarget) setReplyTarget(null);
             setNewComment('');
+            setShowGifPicker(false);
+            setShowEmojiPicker(false);
         }
     };
 
@@ -3350,444 +3573,7 @@ export default function NewsFeedScreen() {
                 )
             }
 
-            {/* 📤 CUSTOM SHARE OVERLAY (Fits inside App Layout) */}
-            {
-                isShareModalVisible && (
-                    <View style={styles.modalOverlay}>
-                        <Pressable style={styles.fullSpace} onPress={() => setShareModalVisible(false)}>
-                            <View style={{ flex: 1 }} />
-                            <Pressable style={[styles.shareContainerSmall, isNightModeEnabled && { backgroundColor: '#151718' }]} onPress={(e) => e.stopPropagation()}>
-                                <View style={[styles.sharePill, isNightModeEnabled && { backgroundColor: '#333' }]} />
-                                <Text style={[styles.shareTitleText, isNightModeEnabled && { color: '#fff' }]}>Share</Text>
 
-                                <View style={styles.shareGrid}>
-                                    {[
-                                        { name: 'WhatsApp', icon: 'logo-whatsapp', color: '#25D366' },
-                                        { name: 'WhatsApp Status', icon: 'sync-circle', color: '#25D366' },
-                                        { name: 'X Share', icon: 'logo-twitter', color: '#000' },
-                                        { name: 'Instagram', icon: 'logo-instagram', color: '#E4405F' },
-                                        { name: 'Instagram Chat', icon: 'chatbubbles', color: '#E4405F' },
-                                        { name: 'Instagram Stories', icon: 'add-circle', color: '#C13584' },
-                                        { name: 'Facebook', icon: 'logo-facebook', color: '#1877F2' },
-                                        { name: 'Facebook Stories', icon: 'book', color: '#1877F2' },
-                                        { name: 'Telegram', icon: 'paper-plane', color: '#0088CC' },
-                                        { name: 'Copy Link', icon: 'link', color: '#444' },
-                                        { name: 'More', icon: 'ellipsis-horizontal', color: '#888' },
-                                    ].map((item) => (
-                                        <Pressable key={item.name} style={styles.shareGridItem} onPress={() => handleShareAction(item.name)}>
-                                            <View style={[styles.shareIconBox, { backgroundColor: item.color }]}>
-                                                <Ionicons name={item.icon as any} size={28} color="#fff" />
-                                            </View>
-                                            <Text style={[styles.shareItemLabel, isNightModeEnabled && { color: '#fff' }]}>{item.name}</Text>
-                                        </Pressable>
-                                    ))}
-                                </View>
-                                <View style={{ height: 40 }} />
-                            </Pressable>
-                        </Pressable>
-                    </View>
-                )
-            }
-
-            {/* 💬 COMMENT OVERLAY (Morphing Reveal Expansion) */}
-            {
-                commentModalVisible && (
-                    <Animated.View style={[styles.modalOverlay, overlayAnimationStyle]}>
-                        <Pressable style={styles.fullSpace} onPress={closeComments} />
-                        <Animated.View style={[styles.commentContainer, commentAnimationStyle, isNightModeEnabled && { backgroundColor: '#000' }]}>
-                            {/* 1. Header: Back | Title | Toggle */}
-                            <View style={[styles.commentHeader, isNightModeEnabled && { backgroundColor: '#151718', borderBottomColor: '#333' }]}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                                    <TouchableOpacity onPress={closeComments} style={{ padding: 5, marginRight: 8 }}>
-                                        <Ionicons name="arrow-back" size={24} color={isNightModeEnabled ? "#fff" : "#999"} />
-                                    </TouchableOpacity>
-                                    <Text style={[styles.commentHeaderTitle, isNightModeEnabled && { color: '#fff' }]} numberOfLines={1}>{currentNewsTitle}</Text>
-                                </View>
-                                <View style={{ alignItems: 'center' }}>
-                                    <Text style={{ fontSize: 10, color: '#666', marginBottom: -4 }}>నోటిఫికేషన్లు</Text>
-                                    <Switch
-                                        value={currentNewsId ? (notificationPreferences[currentNewsId] ?? true) : true}
-                                        onValueChange={toggleNotifications}
-                                        trackColor={{ false: "#D1D1D1", true: "#4A90E2" }}
-                                        thumbColor="#fff"
-                                        style={{ transform: [{ scaleX: 0.7 }, { scaleY: 0.7 }] }}
-                                    />
-                                </View>
-                            </View>
-
-                            {/* 2. Scrollable Comment List */}
-                            <ScrollView style={styles.commentList} showsVerticalScrollIndicator={false}>
-                                {isViewingVideoComments && (
-                                    <View style={styles.relevantDropdown}>
-                                        <Text style={styles.relevantText}>Most relevant</Text>
-                                        <Ionicons name="chevron-down" size={16} color="#000" />
-                                    </View>
-                                )}
-
-                                {comments.filter(c => !blockedCommentIds.includes(c.id) && !blockedUserIds.includes(c.userId || c.user)).map((item, index) => {
-                                    const commentNumber = comments.length - index;
-                                    const isBlocked = blockedCommentIds.includes(item.id) || blockedUserIds.includes(item.userId || item.user);
-
-                                    if (isViewingVideoComments) {
-                                        return (
-                                            <View key={item.id} style={styles.videoCommentItem}>
-                                                {/* Left: Avatar */}
-                                                <View style={[styles.videoAvatar, { backgroundColor: ['#00BFA5', '#00C853', '#FFD600', '#FF4081'][index % 4], justifyContent: 'center', alignItems: 'center' }]}>
-                                                    {/* Using placeholder initials if no image */}
-                                                    <Text style={{ color: '#fff', fontSize: 14, fontWeight: 'bold' }}>{item.user.charAt(0)}</Text>
-                                                </View>
-
-                                                {/* Right: Content */}
-                                                <View style={styles.videoContent}>
-                                                    <View style={styles.videoUserRow}>
-                                                        <Text style={styles.videoUserName}>{item.user}</Text>
-                                                        <Text style={styles.videoTime}>· {getTimeAgo(item.timestamp).replace(' ago', '')}</Text>
-                                                    </View>
-
-                                                    {item.isSensitive && !revealedSensitiveIds.includes(item.id) ? (
-                                                        <TouchableOpacity style={styles.sensitiveContainer} onPress={() => revealSensitive(item.id)}>
-                                                            <View style={styles.sensitiveContentRow}>
-                                                                <Ionicons name="eye-off-outline" size={20} color="#666" />
-                                                                <Text style={styles.sensitiveText}>Sensitive content</Text>
-                                                            </View>
-                                                            <View style={styles.sensitiveTapBtn}>
-                                                                <Text style={styles.sensitiveTapText}>Tap to</Text>
-                                                            </View>
-                                                        </TouchableOpacity>
-                                                    ) : (
-                                                        <Text style={styles.videoCommentText}>{item.text}</Text>
-                                                    )}
-
-                                                    <View style={styles.videoActionRow}>
-                                                        <TouchableOpacity onPress={() => setReplyTarget({ commentId: item.id, userName: item.user })}>
-                                                            <Text style={styles.videoActionText}>Reply</Text>
-                                                        </TouchableOpacity>
-
-                                                        <TouchableOpacity style={styles.videoLikeContainer} onPress={() => handleLikeComment(item.id)}>
-                                                            <View style={styles.videoLikeBadge}>
-                                                                <Ionicons name="thumbs-up" size={10} color="#fff" />
-                                                            </View>
-                                                            <Text style={styles.videoLikeCount}>{item.likeCount}</Text>
-                                                        </TouchableOpacity>
-
-                                                        <View style={styles.videoReactionIcons}>
-                                                            <TouchableOpacity onPress={() => handleLikeComment(item.id)}>
-                                                                <Ionicons name={item.likedByMe ? "thumbs-up" : "thumbs-up-outline"} size={20} color={item.likedByMe ? "#1a73e8" : "#65676b"} />
-                                                            </TouchableOpacity>
-                                                            <Ionicons name="thumbs-down-outline" size={20} color="#65676b" />
-                                                        </View>
-                                                    </View>
-
-                                                    {item.replies.length > 0 && (
-                                                        <TouchableOpacity onPress={() => toggleReplies(item.id)}>
-                                                            <Text style={styles.viewRepliesText}>
-                                                                <Ionicons name={item.showReplies ? "chevron-up" : "return-down-forward"} size={14} color="#65676b" /> {item.showReplies ? "Hide" : `View ${item.replies.length}`} reply
-                                                            </Text>
-                                                        </TouchableOpacity>
-                                                    )}
-
-                                                    {/* Nested Replies for Video */}
-                                                    {item.showReplies && item.replies.map(reply => (
-                                                        <View key={reply.id} style={styles.videoReplyItem}>
-                                                            <View style={[styles.videoAvatar, { width: 24, height: 24, borderRadius: 12, backgroundColor: '#8BC34A', justifyContent: 'center', alignItems: 'center' }]}>
-                                                                <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>{reply.user.charAt(0)}</Text>
-                                                            </View>
-                                                            <View style={styles.videoContent}>
-                                                                <View style={styles.videoUserRow}>
-                                                                    <Text style={[styles.videoUserName, { fontSize: 11 }]}>{reply.user}</Text>
-                                                                    <Text style={[styles.videoTime, { fontSize: 10 }]}>· {getTimeAgo(reply.timestamp).replace(' ago', '')}</Text>
-                                                                </View>
-                                                                <Text style={[styles.videoCommentText, { fontSize: 13 }]}>{reply.text}</Text>
-                                                                <View style={styles.videoActionRow}>
-                                                                    <TouchableOpacity onPress={() => handleLikeComment(item.id, reply.id)}>
-                                                                        <Ionicons name={reply.likedByMe ? "thumbs-up" : "thumbs-up-outline"} size={16} color={reply.likedByMe ? "#1a73e8" : "#65676b"} />
-                                                                    </TouchableOpacity>
-                                                                </View>
-                                                            </View>
-                                                        </View>
-                                                    ))}
-                                                </View>
-                                            </View>
-                                        );
-                                    }
-
-                                    const visibleReplies = item.replies.filter(r => !blockedUserIds.includes(r.userId || r.user));
-
-                                    return (
-                                        <View key={item.id} style={styles.commentItemWrap}>
-                                            <View style={styles.commentItem}>
-                                                {/* Left: Avatar with Number */}
-                                                <View style={[styles.avatarCircle, { backgroundColor: ['#00BFA5', '#00C853', '#FFD600', '#FF4081'][index % 4] }]}>
-                                                    <Text style={styles.avatarNumber}>{commentNumber}</Text>
-                                                </View>
-
-                                                {/* Right: Content */}
-                                                <View style={styles.commentContentWrapper}>
-                                                    {/* Gray Box for Text */}
-                                                    <View style={styles.commentBubble}>
-                                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                                <Text style={styles.commentUserName}>{item.user}</Text>
-                                                                {item.isMe && (
-                                                                    <View style={styles.mePill}>
-                                                                        <Text style={styles.meText}>me</Text>
-                                                                    </View>
-                                                                )}
-                                                            </View>
-                                                            <Text style={styles.footerTimeText}>{getTimeAgo(item.timestamp)}</Text>
-                                                        </View>
-                                                        <TouchableOpacity disabled>
-                                                            <Text style={styles.commentLocation}>📍 {item.location || 'Ranga Reddy (D)'}</Text>
-                                                        </TouchableOpacity>
-
-                                                        {item.isSensitive && !revealedSensitiveIds.includes(item.id) ? (
-                                                            <TouchableOpacity style={styles.sensitiveContainer} onPress={() => revealSensitive(item.id)}>
-                                                                <View style={styles.sensitiveContentRow}>
-                                                                    <Ionicons name="eye-off-outline" size={20} color="#666" />
-                                                                    <Text style={styles.sensitiveText}>Sensitive content</Text>
-                                                                </View>
-                                                                <View style={styles.sensitiveTapBtn}>
-                                                                    <Text style={styles.sensitiveTapText}>Tap to</Text>
-                                                                </View>
-                                                            </TouchableOpacity>
-                                                        ) : (
-                                                            <Text style={styles.commentTextContent}>{item.text}</Text>
-                                                        )}
-                                                    </View>
-
-                                                    {/* Footer: Reply | Delete | Icons */}
-                                                    <View style={styles.commentFooterRow}>
-                                                        <View style={styles.footerLeft}>
-                                                            <TouchableOpacity style={styles.footerAction} onPress={() => setReplyTarget({ commentId: item.id, userName: item.user })}>
-                                                                <Ionicons name="arrow-undo" size={14} color="#666" />
-                                                                <Text style={styles.footerReplyText}>Reply</Text>
-                                                            </TouchableOpacity>
-
-                                                            <TouchableOpacity style={styles.footerAction} onPress={() => handleLikeComment(item.id)}>
-                                                                <Ionicons name={item.likedByMe ? "heart" : "heart-outline"} size={16} color={item.likedByMe ? "#e44" : "#666"} />
-                                                                <Text style={[styles.footerReplyText, item.likedByMe && { color: '#e44' }]}>{item.likeCount > 0 ? item.likeCount : 'Like'}</Text>
-                                                            </TouchableOpacity>
-
-                                                            {item.isMe && (
-                                                                <TouchableOpacity style={styles.footerAction} onPress={() => handleDeleteAction(item.id)}>
-                                                                    <Ionicons name="trash-outline" size={14} color="#666" />
-                                                                    <Text style={styles.footerReplyText}>Delete</Text>
-                                                                </TouchableOpacity>
-                                                            )}
-                                                        </View>
-
-                                                        <View style={styles.footerRight}>
-                                                            <TouchableOpacity onPress={() => handleCopyComment(item.text)}>
-                                                                <Ionicons name="copy-outline" size={16} color="#aaa" style={styles.footerIcon} />
-                                                            </TouchableOpacity>
-                                                            <TouchableOpacity onPress={() => handleReportComment(item.id)}>
-                                                                <Ionicons name="alert-circle-outline" size={18} color="#aaa" />
-                                                            </TouchableOpacity>
-                                                        </View>
-                                                    </View>
-
-                                                    {/* REPLIES SECTION */}
-                                                    {visibleReplies.length > 0 && (
-                                                        <View style={styles.repliesContainer}>
-                                                            {visibleReplies.map((reply) => (
-                                                                <View key={reply.id} style={styles.replyItem}>
-                                                                    <View style={styles.replyThreadLine} />
-                                                                    <View style={styles.replyContent}>
-                                                                        <View style={styles.replyBubble}>
-                                                                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                                                    <Text style={styles.commentUserName}># {reply.user}</Text>
-                                                                                    {reply.isMe && (
-                                                                                        <View style={styles.mePill}>
-                                                                                            <Text style={styles.meText}>me</Text>
-                                                                                        </View>
-                                                                                    )}
-                                                                                </View>
-                                                                                <Text style={styles.footerTimeText}>{getTimeAgo(reply.timestamp)}</Text>
-                                                                            </View>
-
-                                                                            {reply.isSensitive && !revealedSensitiveIds.includes(reply.id) ? (
-                                                                                <TouchableOpacity style={styles.sensitiveContainer} onPress={() => revealSensitive(reply.id)}>
-                                                                                    <View style={styles.sensitiveContentRow}>
-                                                                                        <Ionicons name="eye-off-outline" size={16} color="#666" />
-                                                                                        <Text style={[styles.sensitiveText, { fontSize: 12 }]}>Sensitive content</Text>
-                                                                                    </View>
-                                                                                    <View style={[styles.sensitiveTapBtn, { paddingHorizontal: 8, paddingVertical: 4 }]}>
-                                                                                        <Text style={[styles.sensitiveTapText, { fontSize: 11 }]}>Tap to</Text>
-                                                                                    </View>
-                                                                                </TouchableOpacity>
-                                                                            ) : (
-                                                                                <Text style={styles.commentTextContent}>{reply.text}</Text>
-                                                                            )}
-                                                                        </View>
-
-                                                                        <View style={styles.commentFooterRow}>
-                                                                            <View style={styles.footerLeft}>
-                                                                                <TouchableOpacity style={styles.footerAction} onPress={() => handleLikeComment(item.id, reply.id)}>
-                                                                                    <Ionicons name={reply.likedByMe ? "heart" : "heart-outline"} size={14} color={reply.likedByMe ? "#e44" : "#666"} />
-                                                                                    <Text style={[styles.footerReplyText, reply.likedByMe && { color: '#e44' }]}>{reply.likeCount > 0 ? reply.likeCount : 'Like'}</Text>
-                                                                                </TouchableOpacity>
-                                                                                {reply.isMe && (
-                                                                                    <TouchableOpacity style={styles.footerAction} onPress={() => handleDeleteAction(item.id, reply.id)}>
-                                                                                        <Ionicons name="trash-outline" size={12} color="#666" />
-                                                                                        <Text style={styles.footerReplyText}>Delete</Text>
-                                                                                    </TouchableOpacity>
-                                                                                )}
-                                                                            </View>
-                                                                            <View style={styles.footerRight}>
-                                                                                <TouchableOpacity onPress={() => handleReportComment(item.id, reply.id)}>
-                                                                                    <Ionicons name="alert-circle-outline" size={14} color="#aaa" />
-                                                                                </TouchableOpacity>
-                                                                            </View>
-                                                                        </View>
-                                                                    </View>
-                                                                </View>
-                                                            ))}
-                                                        </View>
-                                                    )}
-                                                </View>
-                                            </View>
-                                        </View>
-                                    );
-                                })}
-                            </ScrollView>
-
-                            {/* 3. Bottom: Reactions + Input */}
-                            <KeyboardAvoidingView
-                                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-                            >
-                                {isViewingVideoComments ? (
-                                    <View style={styles.videoInputContainer}>
-                                        <View style={{ flex: 1 }}>
-                                            {replyTarget && (
-                                                <View style={[styles.replyIndicator, { paddingVertical: 4, paddingHorizontal: 10 }]}>
-                                                    <Text style={[styles.replyIndicatorText, { fontSize: 11 }]}>Replying to @{replyTarget.userName}</Text>
-                                                    <TouchableOpacity onPress={() => setReplyTarget(null)}>
-                                                        <Ionicons name="close-circle" size={14} color="#65676b" />
-                                                    </TouchableOpacity>
-                                                </View>
-                                            )}
-                                            <TextInput
-                                                style={styles.videoInput}
-                                                placeholder={replyTarget ? "Reply..." : "Add a comment..."}
-                                                placeholderTextColor="#65676b"
-                                                value={newComment}
-                                                onChangeText={setNewComment}
-                                            />
-                                        </View>
-                                        {newComment.trim().length > 0 && (
-                                            <TouchableOpacity style={styles.videoSendBtn} onPress={handleAddComment}>
-                                                <Ionicons name="send" size={20} color="#1a73e8" />
-                                            </TouchableOpacity>
-                                        )}
-                                    </View>
-                                ) : (
-                                    <View style={styles.bottomInputContainer}>
-                                        {/* Emoji Reaction Bar */}
-                                        <View style={styles.reactionBar}>
-                                            <Pressable style={styles.reactionEmoji}><Text style={{ fontSize: 20 }}>😂</Text></Pressable>
-                                            <Pressable style={styles.reactionEmoji}><Text style={{ fontSize: 20 }}>❤️</Text></Pressable>
-                                            <Pressable style={styles.reactionEmoji}><Text style={{ fontSize: 20 }}>😍</Text></Pressable>
-                                            <Pressable style={styles.reactionEmoji}><Text style={{ fontSize: 20 }}>🤣</Text></Pressable>
-                                            <Pressable style={styles.reactionEmoji}><Text style={{ fontSize: 20 }}>😆</Text></Pressable>
-                                            <Ionicons name="chevron-forward" size={20} color="#999" />
-                                        </View>
-
-                                        <View style={styles.inputRow}>
-                                            <View style={styles.inputLeftIcons}>
-                                                <View style={styles.giftIconBox}>
-                                                    <Text style={{ fontSize: 9, fontWeight: 'bold' }}>GIF</Text>
-                                                </View>
-                                                <Ionicons name="happy-outline" size={24} color="#666" style={{ marginLeft: 15 }} />
-                                            </View>
-
-                                            <View style={{ flex: 1 }}>
-                                                {replyTarget && (
-                                                    <View style={styles.replyIndicator}>
-                                                        <Text style={styles.replyIndicatorText}>Replying to @{replyTarget.userName}</Text>
-                                                        <TouchableOpacity onPress={() => setReplyTarget(null)}>
-                                                            <Ionicons name="close-circle" size={16} color="#444" />
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                )}
-                                                <TextInput
-                                                    style={styles.newInputStyle}
-                                                    placeholder={replyTarget ? "రిప్లై ఇవ్వండి..." : "కామెంట్ చేయండి"}
-                                                    placeholderTextColor="#999"
-                                                    value={newComment}
-                                                    onChangeText={setNewComment}
-                                                />
-                                            </View>
-
-                                            {/* Action Buttons */}
-                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
-                                                <Pressable style={styles.langToggleBtn}>
-                                                    <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>అ/A</Text>
-                                                </Pressable>
-
-                                                {newComment.trim().length > 0 && (
-                                                    <Pressable style={styles.sendBtn} onPress={handleAddComment}>
-                                                        <Ionicons name="send" size={20} color="#1a73e8" />
-                                                    </Pressable>
-                                                )}
-                                            </View>
-                                        </View>
-                                    </View>
-                                )}
-                            </KeyboardAvoidingView>
-                        </Animated.View>
-
-                        {/* 🚩 REPORT / MODERATION MODAL (IN-MODAL OVERLAY) */}
-                        {reportModalVisible && (
-                            <View style={[styles.modalOverlay, { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1200 }]}>
-                                <Pressable style={styles.fullSpace} onPress={() => { setReportModalVisible(false); setReportingItem(null); }} />
-                                <View style={[styles.reportSheetContainer, isNightModeEnabled && { backgroundColor: '#151718' }]}>
-                                    <View style={[styles.reportSheetPill, isNightModeEnabled && { backgroundColor: '#333' }]} />
-                                    <Text style={[styles.reportSheetTitle, isNightModeEnabled && { color: '#fff' }]}>కామెంట్ మీద చర్య</Text>
-
-                                    <TouchableOpacity style={styles.reportActionItem} onPress={handleBlockComment}>
-                                        <View style={[styles.reportIconBox, { backgroundColor: '#fdecea' }]}>
-                                            <Ionicons name="chatbubble-outline" size={22} color="#d93025" />
-                                        </View>
-                                        <View style={styles.reportActionTextContent}>
-                                            <Text style={styles.reportActionLabel}>బ్లాక్ కామెంట్</Text>
-                                            <Text style={styles.reportActionSub}>ఈ కామెంట్‌ను మళ్లీ చూడకూడదు</Text>
-                                        </View>
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity style={styles.reportActionItem} onPress={handleBlockUser}>
-                                        <View style={[styles.reportIconBox, { backgroundColor: '#fdecea' }]}>
-                                            <Ionicons name="person-remove-outline" size={22} color="#d93025" />
-                                        </View>
-                                        <View style={styles.reportActionTextContent}>
-                                            <Text style={styles.reportActionLabel}>బ్లాక్ యూజర్</Text>
-                                            <Text style={styles.reportActionSub}>ఈ యూజర్ నుండి వచ్చే అన్ని కామెంట్స్‌ను బ్లాక్ చేయండి</Text>
-                                        </View>
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity style={styles.reportActionItem} onPress={handleSubmitModerationReport}>
-                                        <View style={[styles.reportIconBox, { backgroundColor: '#e8f0fe' }]}>
-                                            <Ionicons name="flag-outline" size={22} color="#1a73e8" />
-                                        </View>
-                                        <View style={styles.reportActionTextContent}>
-                                            <Text style={styles.reportActionLabel}>రిపోర్ట్ ఇష్యూ</Text>
-                                            <Text style={styles.reportActionSub}>ఈ కామెంట్‌పై మా టీమ్‌కు ఫిర్యాదు చేయండి</Text>
-                                        </View>
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity
-                                        style={styles.reportCancelBtn}
-                                        onPress={() => { setReportModalVisible(false); setReportingItem(null); }}
-                                    >
-                                        <Text style={styles.reportCancelText}>రద్దు చేయి</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        )}
-                    </Animated.View>
-                )
-            }
 
             {/* 🗑️ DELETE CONFIRMATION OVERLAY */}
             {
@@ -4648,8 +4434,35 @@ export default function NewsFeedScreen() {
                                 <View style={{ width: 44 }} />
                             </View>
                             <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.magListContent} showsVerticalScrollIndicator={false}>
-                                {MAGAZINE_DATA.map((item) => (
-                                    <View key={item.id} style={[styles.magCard, isNightModeEnabled && { backgroundColor: '#151718' }]}>
+                                {magazines.length > 0 ? magazines.map((item: any) => (
+                                    <TouchableOpacity key={item._id} style={[styles.magCard, isNightModeEnabled && { backgroundColor: '#151718' }]} onPress={() => openMagazine(item._id)} activeOpacity={0.7}>
+                                        <Image
+                                            source={{ uri: item.image?.includes('http') ? item.image : `${API_URL.replace('/api', '')}${item.image}` }}
+                                            style={styles.magCardImage}
+                                            contentFit="cover"
+                                        />
+                                        <View style={styles.magCardInfo}>
+                                            <View style={styles.magBadge}>
+                                                <Text style={styles.magBadgeText}>పుస్తకం</Text>
+                                            </View>
+                                            <Text style={[styles.magCardTitle, isNightModeEnabled && { color: '#fff' }]}>{item.title}</Text>
+                                            <Text style={[styles.magCardDate, isNightModeEnabled && { color: '#9BA1A6' }]}>{new Date(item.created_at).toLocaleDateString('te-IN', { day: 'numeric', month: 'long' })}</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                )) : MAGAZINE_DATA.map((item) => (
+                                    <TouchableOpacity key={item.id} style={[styles.magCard, isNightModeEnabled && { backgroundColor: '#151718' }]} onPress={() => {
+                                        // Try to find a real magazine with similar title if magazines were fetched
+                                        const realMag = magazines.find(m => m.title.toLowerCase().includes(item.title.toLowerCase()) || item.title.includes(m.title));
+                                        if (realMag) {
+                                            openMagazine(realMag._id);
+                                        } else {
+                                            console.log('Clicked hardcoded:', item.id);
+                                            // Fallback: if user clicks "వ్యవసాయం" and we have any magazine, open it for demo
+                                            if (magazines.length > 0) openMagazine(magazines[0]._id);
+                                        }
+                                    }} activeOpacity={0.7}>
+
+
                                         <Image
                                             source={item.image}
                                             style={styles.magCardImage}
@@ -4661,10 +4474,10 @@ export default function NewsFeedScreen() {
                                             </View>
                                             <Text style={[styles.magCardTitle, isNightModeEnabled && { color: '#fff' }]}>{item.title}</Text>
                                             <Text style={[styles.magCardDate, isNightModeEnabled && { color: '#9BA1A6' }]}>{item.date}</Text>
-
                                         </View>
-                                    </View>
+                                    </TouchableOpacity>
                                 ))}
+
                                 <View style={{ height: 40 }} />
                             </ScrollView>
                         </SafeAreaView>
@@ -4710,7 +4523,687 @@ export default function NewsFeedScreen() {
                     </View>
                 )
             }
+            {/* 📖 MAGAZINE VIEWER MODAL */}
+            {
+                viewingMagazine && (
+                    <GestureHandlerRootView style={styles.magViewerOverlay}>
+                        <SafeAreaView style={{ flex: 1 }}>
+                            {/* 📱 TOP BAR */}
+                            <View style={[styles.magViewerHeader, { marginTop: Platform.OS === 'ios' ? 0 : 10 }]}>
+                                <View style={styles.magHeaderLeft}>
+                                    <TouchableOpacity style={styles.magViewerCloseBtn} onPress={closeMagazineViewer}>
+                                        <Ionicons name="arrow-back" size={24} color="#fff" />
+                                    </TouchableOpacity>
+                                    <View>
+                                        <Text style={styles.magHeaderTitleTe}>మ్యాగజైన్</Text>
+                                        <Text style={styles.magHeaderPageInfo}>Page no {currentPageIndex + 1}/{magazinePages.length}</Text>
+                                    </View>
+                                </View>
+                                <Image source={require('../assets/images/res_8k_logo_1.png')} style={styles.magViewerLogo} contentFit="contain" />
+
+                            </View>
+
+                            <View style={[styles.magViewerContent, { overflow: 'hidden' }]}>
+                                {magazinePages.length > 0 && (
+                                    <GestureDetector gesture={magPanGesture}>
+                                        <View
+                                            style={{ flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}
+                                            renderToHardwareTextureAndroid={true}
+                                            shouldRasterizeIOS={true}
+                                            collapsable={false}
+                                        >
+                                            <Animated.View
+                                                style={{ flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent' }}
+                                                renderToHardwareTextureAndroid={true}
+                                                collapsable={false}
+                                            >
+                                                {/* Next Page Layer (Under) */}
+                                                <Animated.View
+                                                    style={[StyleSheet.absoluteFill, nextPageStyle, { backfaceVisibility: 'hidden' }]}
+                                                    renderToHardwareTextureAndroid={true}
+                                                    collapsable={false}
+                                                >
+                                                    {underPages.next < magazinePages.length && underPages.next >= 0 && (
+                                                        <Image
+                                                            source={{ uri: magazinePages[underPages.next].url.replace('localhost', '192.168.29.70') }}
+                                                            style={styles.magPageImage}
+                                                            contentFit="contain"
+                                                            priority="high"
+                                                            cachePolicy="memory-disk"
+                                                        />
+                                                    )}
+                                                </Animated.View>
+
+                                                {/* Previous Page Layer (Under) */}
+                                                <Animated.View
+                                                    style={[StyleSheet.absoluteFill, prevPageStyle, { backfaceVisibility: 'hidden' }]}
+                                                    renderToHardwareTextureAndroid={true}
+                                                    collapsable={false}
+                                                >
+                                                    {underPages.prev >= 0 && underPages.prev < magazinePages.length && (
+                                                        <Image
+                                                            source={{ uri: magazinePages[underPages.prev].url.replace('localhost', '192.168.29.70') }}
+                                                            style={styles.magPageImage}
+                                                            contentFit="contain"
+                                                            priority="high"
+                                                            cachePolicy="memory-disk"
+                                                        />
+                                                    )}
+                                                </Animated.View>
+
+                                                {/* Top Layer (Current Page) */}
+                                                <Animated.View
+                                                    style={[
+                                                        StyleSheet.absoluteFill,
+                                                        flipAnimationStyle,
+                                                        { zIndex: 2, backgroundColor: '#000', backfaceVisibility: 'hidden' }
+                                                    ]}
+                                                    renderToHardwareTextureAndroid={true}
+                                                    collapsable={false}
+                                                >
+                                                    <Image
+                                                        source={{ uri: magazinePages[currentPageIndex].url.replace('localhost', '192.168.29.70') }}
+                                                        style={styles.magPageImage}
+                                                        contentFit="contain"
+                                                        priority="high"
+                                                        cachePolicy="memory-disk"
+                                                    />
+                                                    {/* Edge Shadow */}
+                                                    <Animated.View style={{
+                                                        position: 'absolute',
+                                                        left: 0,
+                                                        top: 0,
+                                                        bottom: 0,
+                                                        width: 20,
+                                                        backgroundColor: 'rgba(0,0,0,0.3)',
+                                                        opacity: interpolate(Math.abs(magFlipProgress.value), [0, 1], [0, 1])
+                                                    }} />
+                                                </Animated.View>
+                                            </Animated.View>
+
+                                            {/* Navigation Buttons Overlay */}
+                                            <View style={styles.magNavOverlay} pointerEvents="box-none">
+                                                <TouchableOpacity
+                                                    style={[styles.magNavBtn, { left: 10 }]}
+                                                    onPress={previousPage}
+                                                    activeOpacity={0.6}
+                                                >
+                                                    <Ionicons name="chevron-back" size={30} color="#fff" />
+                                                </TouchableOpacity>
+
+                                                <TouchableOpacity
+                                                    style={[styles.magNavBtn, { right: 10 }]}
+                                                    onPress={nextPage}
+                                                    activeOpacity={0.6}
+                                                >
+                                                    <Ionicons name="chevron-forward" size={30} color="#fff" />
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    </GestureDetector>
+                                )}
+                            </View>
+
+                            {/* 💡 SWIPE HINT */}
+                            <Animated.View style={[styles.magSwipeHintContainer, { opacity: swipeHintOpacity }]}>
+                                <View style={styles.magSwipeHintPill}>
+                                    <Ionicons name="chevron-back" size={12} color="#fff" />
+                                    <Ionicons name="chevron-back" size={12} color="#fff" style={{ marginLeft: -8 }} />
+                                    <Text style={styles.magSwipeHintText}>SWIPE</Text>
+                                    <Ionicons name="chevron-forward" size={12} color="#fff" style={{ marginRight: -8 }} />
+                                    <Ionicons name="chevron-forward" size={12} color="#fff" />
+                                </View>
+                            </Animated.View>
+
+                            {/* 📊 INTERACTION BAR */}
+                            <View style={styles.magInteractionBar}>
+                                <View style={styles.magInteractionLeft}>
+                                    <TouchableOpacity
+                                        style={styles.magInteractionItem}
+                                        onPress={() => handleLikeNews(viewingMagazine)}
+                                    >
+                                        <Ionicons
+                                            name={newsInteractions[viewingMagazine]?.liked ? "thumbs-up" : "thumbs-up-outline"}
+                                            size={24}
+                                            color={newsInteractions[viewingMagazine]?.liked ? "#1a73e8" : "#fff"}
+                                        />
+                                        <Text style={styles.magInteractionText}>
+                                            {formatCount(newsInteractions[viewingMagazine]?.likeCount ?? (magazines.find(m => m._id === viewingMagazine)?.likeCount || 0))}
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={styles.magInteractionItem}
+                                        onPress={() => handleDislikeNews(viewingMagazine)}
+                                    >
+                                        <Ionicons
+                                            name={newsInteractions[viewingMagazine]?.disliked ? "thumbs-down" : "thumbs-down-outline"}
+                                            size={24}
+                                            color={newsInteractions[viewingMagazine]?.disliked ? "#d93025" : "#fff"}
+                                        />
+                                        <Text style={styles.magInteractionText}>
+                                            {formatCount(newsInteractions[viewingMagazine]?.dislikeCount || 0)}
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={styles.magInteractionItem}
+                                        onPress={() => handleOpenComments(viewingMagazine)}
+                                    >
+                                        <Ionicons name="chatbubble-outline" size={22} color="#fff" />
+                                        <Text style={styles.magInteractionText}>
+                                            {allComments[viewingMagazine]?.length || 0}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                <View style={styles.magBottomIndicator}>
+                                    <Text style={styles.magBottomPageNum}>{currentPageIndex + 1}/{magazinePages.length}</Text>
+                                </View>
+                            </View>
+                        </SafeAreaView>
+                    </GestureHandlerRootView>
+
+
+                )
+            }
+
+            {/* 📤 CUSTOM SHARE OVERLAY (Fits inside App Layout) */}
+            {
+                isShareModalVisible && (
+                    <View style={styles.modalOverlay}>
+                        <Pressable style={styles.fullSpace} onPress={() => setShareModalVisible(false)}>
+                            <View style={{ flex: 1 }} />
+                            <Pressable style={[styles.shareContainerSmall, isNightModeEnabled && { backgroundColor: '#151718' }]} onPress={(e) => e.stopPropagation()}>
+                                <View style={[styles.sharePill, isNightModeEnabled && { backgroundColor: '#333' }]} />
+                                <Text style={[styles.shareTitleText, isNightModeEnabled && { color: '#fff' }]}>Share</Text>
+
+                                <View style={styles.shareGrid}>
+                                    {[
+                                        { name: 'WhatsApp', icon: 'logo-whatsapp', color: '#25D366' },
+                                        { name: 'WhatsApp Status', icon: 'sync-circle', color: '#25D366' },
+                                        { name: 'X Share', icon: 'logo-twitter', color: '#000' },
+                                        { name: 'Instagram', icon: 'logo-instagram', color: '#E4405F' },
+                                        { name: 'Instagram Chat', icon: 'chatbubbles', color: '#E4405F' },
+                                        { name: 'Instagram Stories', icon: 'add-circle', color: '#C13584' },
+                                        { name: 'Facebook', icon: 'logo-facebook', color: '#1877F2' },
+                                        { name: 'Facebook Stories', icon: 'book', color: '#1877F2' },
+                                        { name: 'Telegram', icon: 'paper-plane', color: '#0088CC' },
+                                        { name: 'Copy Link', icon: 'link', color: '#444' },
+                                        { name: 'More', icon: 'ellipsis-horizontal', color: '#888' },
+                                    ].map((item) => (
+                                        <Pressable key={item.name} style={styles.shareGridItem} onPress={() => handleShareAction(item.name)}>
+                                            <View style={[styles.shareIconBox, { backgroundColor: item.color }]}>
+                                                <Ionicons name={item.icon as any} size={28} color="#fff" />
+                                            </View>
+                                            <Text style={[styles.shareItemLabel, isNightModeEnabled && { color: '#fff' }]}>{item.name}</Text>
+                                        </Pressable>
+                                    ))}
+                                </View>
+                                <View style={{ height: 40 }} />
+                            </Pressable>
+                        </Pressable>
+                    </View>
+                )
+            }
+
+            {/* 💬 COMMENT OVERLAY (Morphing Reveal Expansion) */}
+            {
+                commentModalVisible && (
+                    <Animated.View style={[styles.modalOverlay, overlayAnimationStyle]}>
+                        <Pressable style={styles.fullSpace} onPress={closeComments} />
+                        <Animated.View style={[styles.commentContainer, commentAnimationStyle, isNightModeEnabled && { backgroundColor: '#000' }]}>
+                            {/* 1. Header: Back | Title | Toggle */}
+                            <View style={[styles.commentHeader, isNightModeEnabled && { backgroundColor: '#151718', borderBottomColor: '#333' }]}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                    <TouchableOpacity onPress={closeComments} style={{ padding: 5, marginRight: 8 }}>
+                                        <Ionicons name="arrow-back" size={24} color={isNightModeEnabled ? "#fff" : "#999"} />
+                                    </TouchableOpacity>
+                                    <Text style={[styles.commentHeaderTitle, isNightModeEnabled && { color: '#fff' }]} numberOfLines={1}>{currentNewsTitle}</Text>
+                                </View>
+                                <View style={{ alignItems: 'center' }}>
+                                    <Text style={{ fontSize: 10, color: '#666', marginBottom: -4 }}>నోటిఫికేషన్లు</Text>
+                                    <Switch
+                                        value={currentNewsId ? (notificationPreferences[currentNewsId] ?? true) : true}
+                                        onValueChange={toggleNotifications}
+                                        trackColor={{ false: "#D1D1D1", true: "#4A90E2" }}
+                                        thumbColor="#fff"
+                                        style={{ transform: [{ scaleX: 0.7 }, { scaleY: 0.7 }] }}
+                                    />
+                                </View>
+                            </View>
+
+                            {/* 2. Scrollable Comment List */}
+                            <ScrollView style={styles.commentList} showsVerticalScrollIndicator={false}>
+                                {isViewingVideoComments && (
+                                    <View style={styles.relevantDropdown}>
+                                        <Text style={styles.relevantText}>Most relevant</Text>
+                                        <Ionicons name="chevron-down" size={16} color="#000" />
+                                    </View>
+                                )}
+
+                                {comments.filter(c => !blockedCommentIds.includes(c.id) && !blockedUserIds.includes(c.userId || c.user)).map((item, index) => {
+                                    const commentNumber = comments.length - index;
+                                    const isBlocked = blockedCommentIds.includes(item.id) || blockedUserIds.includes(item.userId || item.user);
+
+                                    if (isViewingVideoComments) {
+                                        return (
+                                            <View key={item.id} style={styles.videoCommentItem}>
+                                                {/* Left: Avatar */}
+                                                <View style={[styles.videoAvatar, { backgroundColor: ['#00BFA5', '#00C853', '#FFD600', '#FF4081'][index % 4], justifyContent: 'center', alignItems: 'center' }]}>
+                                                    {/* Using placeholder initials if no image */}
+                                                    <Text style={{ color: '#fff', fontSize: 14, fontWeight: 'bold' }}>{item.user.charAt(0)}</Text>
+                                                </View>
+
+                                                {/* Right: Content */}
+                                                <View style={styles.videoContent}>
+                                                    <View style={styles.videoUserRow}>
+                                                        <Text style={styles.videoUserName}>{item.user}</Text>
+                                                        <Text style={styles.videoTime}>· {getTimeAgo(item.timestamp).replace(' ago', '')}</Text>
+                                                    </View>
+
+                                                    {item.isSensitive && !revealedSensitiveIds.includes(item.id) ? (
+                                                        <TouchableOpacity style={styles.sensitiveContainer} onPress={() => revealSensitive(item.id)}>
+                                                            <View style={styles.sensitiveContentRow}>
+                                                                <Ionicons name="eye-off-outline" size={20} color="#666" />
+                                                                <Text style={styles.sensitiveText}>Sensitive content</Text>
+                                                            </View>
+                                                            <View style={styles.sensitiveTapBtn}>
+                                                                <Text style={styles.sensitiveTapText}>Tap to</Text>
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                    ) : (
+                                                        <View>
+                                                            {item.text.trim().length > 0 && <Text style={styles.videoCommentText}>{item.text}</Text>}
+                                                            {item.gifUrl && (
+                                                                <Image
+                                                                    source={{ uri: item.gifUrl }}
+                                                                    style={styles.commentGif}
+                                                                    contentFit="cover"
+                                                                />
+                                                            )}
+                                                        </View>
+                                                    )}
+
+                                                    <View style={styles.videoActionRow}>
+                                                        <TouchableOpacity onPress={() => setReplyTarget({ commentId: item.id, userName: item.user })}>
+                                                            <Text style={styles.videoActionText}>Reply</Text>
+                                                        </TouchableOpacity>
+
+                                                        <TouchableOpacity style={styles.videoLikeContainer} onPress={() => handleLikeComment(item.id)}>
+                                                            <View style={styles.videoLikeBadge}>
+                                                                <Ionicons name="thumbs-up" size={10} color="#fff" />
+                                                            </View>
+                                                            <Text style={styles.videoLikeCount}>{item.likeCount}</Text>
+                                                        </TouchableOpacity>
+
+                                                        <View style={styles.videoReactionIcons}>
+                                                            <TouchableOpacity onPress={() => handleLikeComment(item.id)}>
+                                                                <Ionicons name={item.likedByMe ? "thumbs-up" : "thumbs-up-outline"} size={20} color={item.likedByMe ? "#1a73e8" : "#65676b"} />
+                                                            </TouchableOpacity>
+                                                            <Ionicons name="thumbs-down-outline" size={20} color="#65676b" />
+                                                        </View>
+                                                    </View>
+
+                                                    {item.replies.length > 0 && (
+                                                        <TouchableOpacity onPress={() => toggleReplies(item.id)}>
+                                                            <Text style={styles.viewRepliesText}>
+                                                                <Ionicons name={item.showReplies ? "chevron-up" : "return-down-forward"} size={14} color="#65676b" /> {item.showReplies ? "Hide" : `View ${item.replies.length}`} reply
+                                                            </Text>
+                                                        </TouchableOpacity>
+                                                    )}
+
+                                                    {/* Nested Replies for Video */}
+                                                    {item.showReplies && item.replies.map(reply => (
+                                                        <View key={reply.id} style={styles.videoReplyItem}>
+                                                            <View style={[styles.videoAvatar, { width: 24, height: 24, borderRadius: 12, backgroundColor: '#8BC34A', justifyContent: 'center', alignItems: 'center' }]}>
+                                                                <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>{reply.user.charAt(0)}</Text>
+                                                            </View>
+                                                            <View style={styles.videoContent}>
+                                                                <View style={styles.videoUserRow}>
+                                                                    <Text style={[styles.videoUserName, { fontSize: 11 }]}>{reply.user}</Text>
+                                                                    <Text style={[styles.videoTime, { fontSize: 10 }]}>· {getTimeAgo(reply.timestamp).replace(' ago', '')}</Text>
+                                                                </View>
+                                                                <View>
+                                                                    {reply.text.trim().length > 0 && <Text style={[styles.videoCommentText, { fontSize: 13 }]}>{reply.text}</Text>}
+                                                                    {reply.gifUrl && (
+                                                                        <Image
+                                                                            source={{ uri: reply.gifUrl }}
+                                                                            style={[styles.commentGif, { width: 120, height: 120 }]}
+                                                                            contentFit="cover"
+                                                                        />
+                                                                    )}
+                                                                </View>
+                                                                <View style={styles.videoActionRow}>
+                                                                    <TouchableOpacity onPress={() => handleLikeComment(item.id, reply.id)}>
+                                                                        <Ionicons name={reply.likedByMe ? "thumbs-up" : "thumbs-up-outline"} size={16} color={reply.likedByMe ? "#1a73e8" : "#65676b"} />
+                                                                    </TouchableOpacity>
+                                                                </View>
+                                                            </View>
+                                                        </View>
+                                                    ))}
+                                                </View>
+                                            </View>
+                                        );
+                                    }
+
+                                    const visibleReplies = item.replies.filter(r => !blockedUserIds.includes(r.userId || r.user));
+
+                                    return (
+                                        <View key={item.id} style={styles.commentItemWrap}>
+                                            <View style={styles.commentItem}>
+                                                {/* Left: Avatar with Number */}
+                                                <View style={[styles.avatarCircle, { backgroundColor: ['#00BFA5', '#00C853', '#FFD600', '#FF4081'][index % 4] }]}>
+                                                    <Text style={styles.avatarNumber}>{commentNumber}</Text>
+                                                </View>
+
+                                                {/* Right: Content */}
+                                                <View style={styles.commentContentWrapper}>
+                                                    {/* Gray Box for Text */}
+                                                    <View style={styles.commentBubble}>
+                                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                                <Text style={styles.commentUserName}>{item.user}</Text>
+                                                                {item.isMe && (
+                                                                    <View style={styles.mePill}>
+                                                                        <Text style={styles.meText}>me</Text>
+                                                                    </View>
+                                                                )}
+                                                            </View>
+                                                            <Text style={styles.footerTimeText}>{getTimeAgo(item.timestamp)}</Text>
+                                                        </View>
+                                                        <TouchableOpacity disabled>
+                                                            <Text style={styles.commentLocation}>📍 {item.location || 'Ranga Reddy (D)'}</Text>
+                                                        </TouchableOpacity>
+
+                                                        {item.isSensitive && !revealedSensitiveIds.includes(item.id) ? (
+                                                            <TouchableOpacity style={styles.sensitiveContainer} onPress={() => revealSensitive(item.id)}>
+                                                                <View style={styles.sensitiveContentRow}>
+                                                                    <Ionicons name="eye-off-outline" size={20} color="#666" />
+                                                                    <Text style={styles.sensitiveText}>Sensitive content</Text>
+                                                                </View>
+                                                                <View style={styles.sensitiveTapBtn}>
+                                                                    <Text style={styles.sensitiveTapText}>Tap to</Text>
+                                                                </View>
+                                                            </TouchableOpacity>
+                                                        ) : (
+                                                            <View>
+                                                                {item.text.trim().length > 0 && <Text style={styles.commentTextContent}>{item.text}</Text>}
+                                                                {item.gifUrl && (
+                                                                    <Image
+                                                                        source={{ uri: item.gifUrl }}
+                                                                        style={styles.commentGif}
+                                                                        contentFit="cover"
+                                                                    />
+                                                                )}
+                                                            </View>
+                                                        )}
+                                                    </View>
+
+                                                    {/* Footer: Reply | Delete | Icons */}
+                                                    <View style={styles.commentFooterRow}>
+                                                        <View style={styles.footerLeft}>
+                                                            <TouchableOpacity style={styles.footerAction} onPress={() => setReplyTarget({ commentId: item.id, userName: item.user })}>
+                                                                <Ionicons name="arrow-undo" size={14} color="#666" />
+                                                                <Text style={styles.footerReplyText}>Reply</Text>
+                                                            </TouchableOpacity>
+
+                                                            <TouchableOpacity style={styles.footerAction} onPress={() => handleLikeComment(item.id)}>
+                                                                <Ionicons name={item.likedByMe ? "heart" : "heart-outline"} size={16} color={item.likedByMe ? "#e44" : "#666"} />
+                                                                <Text style={[styles.footerReplyText, item.likedByMe && { color: '#e44' }]}>{item.likeCount > 0 ? item.likeCount : 'Like'}</Text>
+                                                            </TouchableOpacity>
+
+                                                            {item.isMe && (
+                                                                <TouchableOpacity style={styles.footerAction} onPress={() => handleDeleteAction(item.id)}>
+                                                                    <Ionicons name="trash-outline" size={14} color="#666" />
+                                                                    <Text style={styles.footerReplyText}>Delete</Text>
+                                                                </TouchableOpacity>
+                                                            )}
+                                                        </View>
+
+                                                        <View style={styles.footerRight}>
+                                                            <TouchableOpacity onPress={() => handleCopyComment(item.text)}>
+                                                                <Ionicons name="copy-outline" size={16} color="#aaa" style={styles.footerIcon} />
+                                                            </TouchableOpacity>
+                                                            <TouchableOpacity onPress={() => handleReportComment(item.id)}>
+                                                                <Ionicons name="alert-circle-outline" size={18} color="#aaa" />
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                    </View>
+
+                                                    {/* REPLIES SECTION */}
+                                                    {visibleReplies.length > 0 && (
+                                                        <View style={styles.repliesContainer}>
+                                                            {visibleReplies.map((reply) => (
+                                                                <View key={reply.id} style={styles.replyItem}>
+                                                                    <View style={styles.replyThreadLine} />
+                                                                    <View style={styles.replyContent}>
+                                                                        <View style={styles.replyBubble}>
+                                                                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                                                    <Text style={styles.commentUserName}># {reply.user}</Text>
+                                                                                    {reply.isMe && (
+                                                                                        <View style={styles.mePill}>
+                                                                                            <Text style={styles.meText}>me</Text>
+                                                                                        </View>
+                                                                                    )}
+                                                                                </View>
+                                                                                <Text style={styles.footerTimeText}>{getTimeAgo(reply.timestamp)}</Text>
+                                                                            </View>
+
+                                                                            {reply.isSensitive && !revealedSensitiveIds.includes(reply.id) ? (
+                                                                                <TouchableOpacity style={styles.sensitiveContainer} onPress={() => revealSensitive(reply.id)}>
+                                                                                    <View style={styles.sensitiveContentRow}>
+                                                                                        <Ionicons name="eye-off-outline" size={16} color="#666" />
+                                                                                        <Text style={[styles.sensitiveText, { fontSize: 12 }]}>Sensitive content</Text>
+                                                                                    </View>
+                                                                                    <View style={[styles.sensitiveTapBtn, { paddingHorizontal: 8, paddingVertical: 4 }]}>
+                                                                                        <Text style={[styles.sensitiveTapText, { fontSize: 11 }]}>Tap to</Text>
+                                                                                    </View>
+                                                                                </TouchableOpacity>
+                                                                            ) : (
+                                                                                <View>
+                                                                                    {reply.text.trim().length > 0 && <Text style={styles.commentTextContent}>{reply.text}</Text>}
+                                                                                    {reply.gifUrl && (
+                                                                                        <Image
+                                                                                            source={{ uri: reply.gifUrl }}
+                                                                                            style={[styles.commentGif, { width: 120, height: 120 }]}
+                                                                                            contentFit="cover"
+                                                                                        />
+                                                                                    )}
+                                                                                </View>
+                                                                            )}
+                                                                        </View>
+
+                                                                        <View style={styles.commentFooterRow}>
+                                                                            <View style={styles.footerLeft}>
+                                                                                <TouchableOpacity style={styles.footerAction} onPress={() => handleLikeComment(item.id, reply.id)}>
+                                                                                    <Ionicons name={reply.likedByMe ? "heart" : "heart-outline"} size={14} color={reply.likedByMe ? "#e44" : "#666"} />
+                                                                                    <Text style={[styles.footerReplyText, reply.likedByMe && { color: '#e44' }]}>{reply.likeCount > 0 ? reply.likeCount : 'Like'}</Text>
+                                                                                </TouchableOpacity>
+                                                                                {reply.isMe && (
+                                                                                    <TouchableOpacity style={styles.footerAction} onPress={() => handleDeleteAction(item.id, reply.id)}>
+                                                                                        <Ionicons name="trash-outline" size={12} color="#666" />
+                                                                                        <Text style={styles.footerReplyText}>Delete</Text>
+                                                                                    </TouchableOpacity>
+                                                                                )}
+                                                                            </View>
+                                                                            <View style={styles.footerRight}>
+                                                                                <TouchableOpacity onPress={() => handleReportComment(item.id, reply.id)}>
+                                                                                    <Ionicons name="alert-circle-outline" size={14} color="#aaa" />
+                                                                                </TouchableOpacity>
+                                                                            </View>
+                                                                        </View>
+                                                                    </View>
+                                                                </View>
+                                                            ))}
+                                                        </View>
+                                                    )}
+                                                </View>
+                                            </View>
+                                        </View>
+                                    );
+                                })}
+                            </ScrollView>
+
+                            {/* 3. Bottom: Reactions + Input */}
+                            <KeyboardAvoidingView
+                                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+                            >
+                                {isViewingVideoComments ? (
+                                    <View style={styles.videoInputContainer}>
+                                        <View style={{ flex: 1 }}>
+                                            {replyTarget && (
+                                                <View style={[styles.replyIndicator, { paddingVertical: 4, paddingHorizontal: 10 }]}>
+                                                    <Text style={[styles.replyIndicatorText, { fontSize: 11 }]}>Replying to @{replyTarget.userName}</Text>
+                                                    <TouchableOpacity onPress={() => setReplyTarget(null)}>
+                                                        <Ionicons name="close-circle" size={14} color="#65676b" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            )}
+                                            <TextInput
+                                                style={styles.videoInput}
+                                                placeholder={replyTarget ? "Reply..." : "Add a comment..."}
+                                                placeholderTextColor="#65676b"
+                                                value={newComment}
+                                                onChangeText={setNewComment}
+                                            />
+                                        </View>
+                                        {newComment.trim().length > 0 && (
+                                            <TouchableOpacity style={styles.videoSendBtn} onPress={() => handleAddComment()}>
+                                                <Ionicons name="send" size={20} color="#1a73e8" />
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+                                ) : (
+                                    <View style={styles.bottomInputContainer}>
+                                        {/* Emoji Reaction Bar */}
+                                        <View style={styles.reactionBar}>
+                                            <Pressable style={styles.reactionEmoji} onPress={() => setNewComment(prev => prev + '😂')}><Text style={{ fontSize: 20 }}>😂</Text></Pressable>
+                                            <Pressable style={styles.reactionEmoji} onPress={() => setNewComment(prev => prev + '❤️')}><Text style={{ fontSize: 20 }}>❤️</Text></Pressable>
+                                            <Pressable style={styles.reactionEmoji} onPress={() => setNewComment(prev => prev + '😍')}><Text style={{ fontSize: 20 }}>😍</Text></Pressable>
+                                            <Pressable style={styles.reactionEmoji} onPress={() => setNewComment(prev => prev + '🤣')}><Text style={{ fontSize: 20 }}>🤣</Text></Pressable>
+                                            <Pressable style={styles.reactionEmoji} onPress={() => setNewComment(prev => prev + '😆')}><Text style={{ fontSize: 20 }}>😆</Text></Pressable>
+                                            <Ionicons name="chevron-forward" size={20} color="#999" />
+                                        </View>
+
+                                        <View style={styles.inputRow}>
+                                            <View style={styles.inputLeftIcons}>
+                                                <TouchableOpacity onPress={() => { setShowGifPicker(!showGifPicker); setShowEmojiPicker(false); }}>
+                                                    <View style={styles.giftIconBox}>
+                                                        <Text style={{ fontSize: 9, fontWeight: 'bold' }}>GIF</Text>
+                                                    </View>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity onPress={() => { setShowEmojiPicker(!showEmojiPicker); setShowGifPicker(false); }}>
+                                                    <Ionicons name="happy-outline" size={24} color="#666" style={{ marginLeft: 15 }} />
+                                                </TouchableOpacity>
+                                            </View>
+
+                                            <View style={{ flex: 1 }}>
+                                                {replyTarget && (
+                                                    <View style={styles.replyIndicator}>
+                                                        <Text style={styles.replyIndicatorText}>Replying to @{replyTarget.userName}</Text>
+                                                        <TouchableOpacity onPress={() => setReplyTarget(null)}>
+                                                            <Ionicons name="close-circle" size={16} color="#444" />
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                )}
+                                                <TextInput
+                                                    style={styles.newInputStyle}
+                                                    placeholder={replyTarget ? "రిప్లై ఇవ్వండి..." : "కామెంట్ చేయండి"}
+                                                    placeholderTextColor="#999"
+                                                    value={newComment}
+                                                    onChangeText={setNewComment}
+                                                />
+                                            </View>
+
+                                            {/* Action Buttons */}
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
+                                                <Pressable style={styles.langToggleBtn}>
+                                                    <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>అ/A</Text>
+                                                </Pressable>
+
+                                                {newComment.trim().length > 0 && (
+                                                    <Pressable style={styles.sendBtn} onPress={() => handleAddComment()}>
+                                                        <Ionicons name="send" size={20} color="#1a73e8" />
+                                                    </Pressable>
+                                                )}
+                                            </View>
+                                        </View>
+                                    </View>
+                                )}
+                                {showEmojiPicker && (
+                                    <EmojiSelector
+                                        onEmojiSelect={(emoji) => {
+                                            setNewComment(prev => prev + emoji);
+                                        }}
+                                        isNightMode={isNightModeEnabled}
+                                    />
+                                )}
+                                {showGifPicker && (
+                                    <GifSelector
+                                        onGifSelect={(gifUrl) => {
+                                            handleAddComment(gifUrl);
+                                        }}
+                                        isNightMode={isNightModeEnabled}
+                                    />
+                                )}
+                            </KeyboardAvoidingView>
+                        </Animated.View>
+
+                        {/* 🚩 REPORT / MODERATION MODAL (IN-MODAL OVERLAY) */}
+                        {reportModalVisible && (
+                            <View style={[styles.modalOverlay, { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1200 }]}>
+                                <Pressable style={styles.fullSpace} onPress={() => { setReportModalVisible(false); setReportingItem(null); }} />
+                                <View style={[styles.reportSheetContainer, isNightModeEnabled && { backgroundColor: '#151718' }]}>
+                                    <View style={[styles.reportSheetPill, isNightModeEnabled && { backgroundColor: '#333' }]} />
+                                    <Text style={[styles.reportSheetTitle, isNightModeEnabled && { color: '#fff' }]}>కామెంట్ మీద చర్య</Text>
+
+                                    <TouchableOpacity style={styles.reportActionItem} onPress={handleBlockComment}>
+                                        <View style={[styles.reportIconBox, { backgroundColor: '#fdecea' }]}>
+                                            <Ionicons name="chatbubble-outline" size={22} color="#d93025" />
+                                        </View>
+                                        <View style={styles.reportActionTextContent}>
+                                            <Text style={styles.reportActionLabel}>బ్లాక్ కామెంట్</Text>
+                                            <Text style={styles.reportActionSub}>ఈ కామెంట్‌ను మళ్లీ చూడకూడదు</Text>
+                                        </View>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={styles.reportActionItem} onPress={handleBlockUser}>
+                                        <View style={[styles.reportIconBox, { backgroundColor: '#fdecea' }]}>
+                                            <Ionicons name="person-remove-outline" size={22} color="#d93025" />
+                                        </View>
+                                        <View style={styles.reportActionTextContent}>
+                                            <Text style={styles.reportActionLabel}>బ్లాక్ యూజర్</Text>
+                                            <Text style={styles.reportActionSub}>ఈ యూజర్ నుండి వచ్చే అన్ని కామెంట్స్‌ను బ్లాక్ చేయండి</Text>
+                                        </View>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={styles.reportActionItem} onPress={handleSubmitModerationReport}>
+                                        <View style={[styles.reportIconBox, { backgroundColor: '#e8f0fe' }]}>
+                                            <Ionicons name="flag-outline" size={22} color="#1a73e8" />
+                                        </View>
+                                        <View style={styles.reportActionTextContent}>
+                                            <Text style={styles.reportActionLabel}>రిపోర్ట్ ఇష్యూ</Text>
+                                            <Text style={styles.reportActionSub}>ఈ కామెంట్‌పై మా టీమ్‌కు ఫిర్యాదు చేయండి</Text>
+                                        </View>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={styles.reportCancelBtn}
+                                        onPress={() => { setReportModalVisible(false); setReportingItem(null); }}
+                                    >
+                                        <Text style={styles.reportCancelText}>రద్దు చేయి</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
+                    </Animated.View>
+                )
+            }
         </View >
+
     );
 }
 
@@ -4719,6 +5212,13 @@ const styles = StyleSheet.create({
         flex: 1,
         width: '100%',
         backgroundColor: '#000',
+    },
+    commentGif: {
+        width: 150,
+        height: 150,
+        borderRadius: 10,
+        marginTop: 8,
+        alignSelf: 'flex-start',
     },
     header: {
         height: HEADER_HEIGHT,
@@ -4826,7 +5326,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.5)',
         justifyContent: 'flex-end',
         alignItems: 'center',
-        zIndex: 500, // Elevated to ensure it covers everything
+        zIndex: 70000, // Elevated to ensure it covers everything including magazine viewer
     },
     fullModalOverlay: {
         ...StyleSheet.absoluteFillObject,
@@ -7144,5 +7644,135 @@ const styles = StyleSheet.create({
         marginTop: 40,
         fontWeight: '500',
     },
+
+    // 📖 MAGAZINE VIEWER STYLES
+    magViewerOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: '#000',
+        zIndex: 60000,
+    },
+    magViewerHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        height: 60,
+        zIndex: 100,
+    },
+    magHeaderLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 15,
+    },
+    magHeaderTitleTe: {
+        fontSize: 18,
+        color: '#fff',
+        fontWeight: 'bold',
+    },
+    magHeaderPageInfo: {
+        fontSize: 14,
+        color: 'rgba(255,255,255,0.7)',
+        fontWeight: '500',
+    },
+    magViewerLogo: {
+        width: 45,
+        height: 45,
+    },
+    magViewerContent: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#000',
+    },
+
+    magPageImage: {
+        width: WINDOW_WIDTH,
+        height: '100%',
+    },
+    magInteractionBar: {
+        height: 70,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 25,
+        borderTopWidth: 0.5,
+        borderTopColor: 'rgba(255,255,255,0.1)',
+        backgroundColor: '#000',
+    },
+    magInteractionLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 25,
+    },
+    magInteractionItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    magInteractionText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    magBottomIndicator: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    magBottomPageNum: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: 'bold',
+        opacity: 0.6,
+    },
+    magSwipeHintContainer: {
+        position: 'absolute',
+        bottom: 100,
+        right: 20,
+        zIndex: 50,
+    },
+    magSwipeHintPill: {
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.3)',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    magSwipeHintText: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: 'bold',
+        letterSpacing: 2,
+    },
+    magViewerCloseBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    magNavOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        zIndex: 10,
+    },
+    magNavBtn: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'absolute',
+    },
 });
+
+
 
