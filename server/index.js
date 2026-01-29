@@ -8,6 +8,14 @@ const connectDB = require('./config/db.js');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { PDFDocument } = require('pdf-lib');
+const libre = require('libreoffice-convert');
+const { promisify } = require('util');
+const libreConvert = promisify(libre.convert);
+const pdfjsLib = require('pdfjs-dist/build/pdf.js');
+const { createCanvas } = require('canvas');
+
+// Multer and other imports follow...
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -62,6 +70,68 @@ const startServer = async () => {
 };
 
 startServer();
+
+// --- MAGAZINE PROCESSING HELPERS ---
+
+async function processMagazineDocument(filePath, newsId) {
+    const ext = path.extname(filePath).toLowerCase();
+    let pdfPath = filePath;
+    const magazineDir = path.join('uploads', 'magazines', newsId.toString());
+
+    if (!fs.existsSync(magazineDir)) {
+        fs.mkdirSync(magazineDir, { recursive: true });
+    }
+
+    // 1. Convert DOC/DOCX to PDF if needed
+    if (ext === '.doc' || ext === '.docx') {
+        const docBuffer = fs.readFileSync(filePath);
+        pdfPath = path.join('uploads', `${Date.now()}_converted.pdf`);
+        try {
+            const pdfBuffer = await libreConvert(docBuffer, '.pdf', undefined);
+            fs.writeFileSync(pdfPath, pdfBuffer);
+        } catch (err) {
+            console.error("DOC conversion failed. Verify LibreOffice is installed.", err);
+            throw new Error("Failed to convert document to PDF. Ensure LibreOffice is installed on server.");
+        }
+    }
+
+    // 2. Split PDF and convert pages to images
+    const imageUrls = [];
+    try {
+        const data = new Uint8Array(fs.readFileSync(pdfPath));
+        const loadingTask = pdfjsLib.getDocument({ data });
+        const pdf = await loadingTask.promise;
+        const numPages = pdf.numPages;
+
+        for (let i = 1; i <= numPages; i++) {
+            const page = await pdf.getPage(i);
+            const viewport = page.getViewport({ scale: 2.0 }); // High quality
+            const canvas = createCanvas(viewport.width, viewport.height);
+            const context = canvas.getContext('2d');
+
+            await page.render({
+                canvasContext: context,
+                viewport: viewport
+            }).promise;
+
+            const filename = `page_${i}.jpg`;
+            const outPath = path.join(magazineDir, filename);
+            const buffer = canvas.toBuffer('image/jpeg', { quality: 0.9 });
+            fs.writeFileSync(outPath, buffer);
+            imageUrls.push(`/uploads/magazines/${newsId}/${filename}`);
+        }
+
+        // Clean up temporary converted PDF if it was created
+        if (pdfPath !== filePath && ext !== '.pdf') {
+            fs.unlinkSync(pdfPath);
+        }
+    } catch (err) {
+        console.error("PDF to Image conversion failed:", err);
+        throw new Error("Failed to process PDF pages: " + err.message);
+    }
+
+    return imageUrls;
+}
 
 
 // --- NEWS ENDPOINTS (JOINED) ---
@@ -142,6 +212,16 @@ app.get('/api/news', async (req, res) => {
     }
 });
 
+app.get('/api/news/:id/media', async (req, res) => {
+    try {
+        const media = await db.collection("news_media").find({ news_id: new ObjectId(req.params.id) }).toArray();
+        res.json(media);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch news media" });
+    }
+});
+
+
 app.post('/api/news', authenticateToken, upload.single('image'), async (req, res) => {
     try {
         const {
@@ -201,14 +281,50 @@ app.post('/api/news', authenticateToken, upload.single('image'), async (req, res
         const result = await db.collection("news").insertOne(newItem);
         const newsId = result.insertedId;
 
-        if (imageUrl) {
-            await db.collection("news_media").insertOne({
-                news_id: newsId,
-                type: is_video === 'true' ? 'video' : 'image',
-                url: `http://localhost:3000${imageUrl}`,
-                is_primary: true,
-                created_at: new Date()
-            });
+        // --- HANDLE MEDIA ---
+        if (req.file) {
+            const ext = path.extname(req.file.originalname).toLowerCase();
+            const isDocument = ['.pdf', '.doc', '.docx'].includes(ext);
+
+            // Check if any category is 'digital_magazines'
+            const assignedCategories = await db.collection("categories").find({ _id: { $in: catIds.map(id => new ObjectId(id)) } }).toArray();
+            const isMagazine = assignedCategories.some(c => c.slug === 'digital_magazines');
+
+            if (isMagazine && isDocument) {
+                try {
+                    const pageUrls = await processMagazineDocument(req.file.path, newsId);
+
+                    // Add all pages to news_media
+                    const mediaDocs = pageUrls.map((url, index) => ({
+                        news_id: newsId,
+                        type: 'image',
+                        url: `http://localhost:3000${url}`,
+                        is_primary: index === 0,
+                        page_number: index + 1,
+                        created_at: new Date()
+                    }));
+                    await db.collection("news_media").insertMany(mediaDocs);
+
+                    // Update primary image in news document
+                    if (pageUrls.length > 0) {
+                        await db.collection("news").updateOne(
+                            { _id: newsId },
+                            { $set: { image: pageUrls[0] } }
+                        );
+                    }
+                } catch (procErr) {
+                    console.error("Magazine processing failed:", procErr);
+                }
+            } else if (imageUrl) {
+                // Standard image/video handling
+                await db.collection("news_media").insertOne({
+                    news_id: newsId,
+                    type: is_video === 'true' ? 'video' : 'image',
+                    url: `http://localhost:3000${imageUrl}`,
+                    is_primary: true,
+                    created_at: new Date()
+                });
+            }
         }
 
         res.json({ success: true, id: newsId });

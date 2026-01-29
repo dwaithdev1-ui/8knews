@@ -1,7 +1,7 @@
 [
   {
     "_id": "696493a4fdc03939d5059363",
-    "name": "కరెంటు అఫైర్స్",
+    "name": "Current Affairs",
     "slug": "affairs"
   },
   {
@@ -10,14 +10,34 @@
     "slug": "bhakti"
   },
   {
+    "_id": "697766a2bc54a3e8c5e01514",
+    "name": "Digital Magazines",
+    "slug": "digital_magazines"
+  },
+  {
     "_id": "69648d87a9d9a59e122e2b92",
     "name": "ట్రెండింగ్ న్యూస్",
     "slug": "trending"
   },
   {
+    "_id": "6968cb90a84e29df77b8288e",
+    "name": "విషెస్",
+    "slug": "wishes"
+  },
+  {
+    "_id": "697766a0bc54a3e8c5e01511",
+    "name": "National",
+    "slug": "national"
+  },
+  {
     "_id": "69648d87a9d9a59e122e2b8f",
-    "name": "మెయిన్ న్యూస్",
+    "name": "మొయిన న్యూస్",
     "slug": "main"
+  },
+  {
+    "_id": "6977669ebc54a3e8c5e0150f",
+    "name": "Andhra Pradesh",
+    "slug": "andhra"
   },
   {
     "_id": "696493a3fdc03939d5059361",
@@ -35,9 +55,24 @@
     "slug": "agriculture"
   },
   {
+    "_id": "697766a1bc54a3e8c5e01513",
+    "name": "Polls",
+    "slug": "polls"
+  },
+  {
+    "_id": "6977669fbc54a3e8c5e01510",
+    "name": "Telangana",
+    "slug": "telangana"
+  },
+  {
     "_id": "696493a6fdc03939d5059365",
     "name": "క్రీడలు",
     "slug": "sports"
+  },
+  {
+    "_id": "697766a0bc54a3e8c5e01512",
+    "name": "Fact Check",
+    "slug": "fact_check"
   },
   {
     "_id": "69648d87a9d9a59e122e2b90",

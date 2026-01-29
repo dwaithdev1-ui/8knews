@@ -230,10 +230,19 @@ const NewsForm = ({ onSuccess }) => {
                 </div>
 
                 <div style={styles.row}>
+                    {/* Debug Info */}
+                    {/* {console.log("Cats:", categories, "Selected:", formData.category_ids)} */}
                     <input
                         id="imageInput"
                         type="file"
-                        accept="image/*,video/*"
+                        accept={
+                            formData.category_ids.some(id => {
+                                const cat = categories.find(c => String(c._id) === String(id));
+                                return cat?.slug === 'digital_magazines';
+                            })
+                                ? ".pdf,.doc,.docx,image/*,video/*,application/pdf"
+                                : "image/*,video/*"
+                        }
                         onChange={e => {
                             const file = e.target.files[0];
                             if (file) {
@@ -341,7 +350,7 @@ const NewsForm = ({ onSuccess }) => {
                 {/* Sub Category Dropdown for Digital Magazines & Digital Marketing */}
                 {formData.category_ids.some(id => {
                     const cat = categories.find(c => c._id === id);
-                    return ['digital_magazines', 'digital_marketing'].includes(cat?.slug);
+                    return ['digital_marketing'].includes(cat?.slug);
                 }) && (
                         <div style={styles.row}>
                             <select

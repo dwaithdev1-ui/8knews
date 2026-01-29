@@ -55,8 +55,12 @@ const Sidebar = ({ role, currentView, onViewChange }) => {
     const normalizeRole = (r) => {
         if (!r) return '';
         const lower = r.toLowerCase();
-        // Alias 'ingestor' to 'content_inputter' for UI compatibility
-        if (lower === 'ingestor') return ROLES.INGESTOR;
+        if (lower === 'ingestor' || lower === 'content_inputter') return ROLES.INGESTOR;
+        if (lower === 'admin') return ROLES.ADMIN;
+        if (lower === 'publisher') return ROLES.PUBLISHER;
+        if (lower === 'sub_editor') return ROLES.SUB_EDITOR;
+        if (lower === 'senior_editor') return ROLES.SENIOR_EDITOR;
+        if (lower === 'legal') return ROLES.LEGAL;
         return lower;
     };
 

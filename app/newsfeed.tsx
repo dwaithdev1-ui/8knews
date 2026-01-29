@@ -1,8 +1,9 @@
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+﻿import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
 import * as Location from 'expo-location';
-import React, { useEffect, useState } from 'react';
+import * as Network from 'expo-network';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     BackHandler,
     KeyboardAvoidingView,
@@ -665,6 +666,24 @@ const getEnglishLocationName = (teluguName: string): string => {
 
 export default function NewsFeedScreen() {
     const insets = useSafeAreaInsets();
+
+    // 🔌 OFFLINE MODE LOGIC
+    const [isConnected, setIsConnected] = useState(true);
+
+    const checkInternetConnection = async () => {
+        try {
+            const networkState = await Network.getNetworkStateAsync();
+            setIsConnected(networkState.isConnected ?? false);
+        } catch (e) {
+            console.log("Error checking network", e);
+            setIsConnected(true);
+        }
+    };
+
+    useEffect(() => {
+        checkInternetConnection();
+    }, []);
+
     // 📐 Precise height calculation - matching physical screen for one-page fit
     const getCategoryDefaultImage = (slug: string) => {
         const s = String(slug || '').toLowerCase();
@@ -1030,7 +1049,7 @@ export default function NewsFeedScreen() {
     }, [currentPageIndex]);
 
     const [isMuted, setIsMuted] = useState(true);
-    const toggleMute = () => setIsMuted(prev => !prev);
+    const toggleMute = useCallback(() => setIsMuted(prev => !prev), []);
 
     // 🔐 AUTHENTICATION (Optional - may not be available during initial load)
     let authContext;
@@ -1196,7 +1215,7 @@ export default function NewsFeedScreen() {
         }
     }, [newsInteractions]);
 
-    const handleLikeNews = (newsId: string) => {
+    const handleLikeNews = useCallback((newsId: string) => {
         setNewsInteractions(prev => {
             const current = prev[newsId] || { liked: false, disliked: false, likeCount: 0, dislikeCount: 0 };
             const isLiked = !current.liked;
@@ -1220,9 +1239,9 @@ export default function NewsFeedScreen() {
                 }
             };
         });
-    };
+    }, []);
 
-    const handleDislikeNews = (newsId: string) => {
+    const handleDislikeNews = useCallback((newsId: string) => {
         setNewsInteractions(prev => {
             const current = prev[newsId] || { liked: false, disliked: false, likeCount: 0, dislikeCount: 0 };
             const isDisliked = !current.disliked;
@@ -1246,7 +1265,7 @@ export default function NewsFeedScreen() {
                 }
             };
         });
-    };
+    }, []);
 
     // 📚 MAGAZINE FUNCTIONS
     const fetchMagazines = async () => {
@@ -2228,18 +2247,6 @@ export default function NewsFeedScreen() {
     const onScroll = useAnimatedScrollHandler({
         onScroll: (event) => {
             scrollY.value = event.contentOffset.y;
-
-            // Mark current news as read
-            const currentIndex = Math.round(event.contentOffset.y / CARD_HEIGHT);
-            const currentItem = filteredNews[currentIndex];
-            if (currentItem && currentItem.id) {
-                runOnJS(setReadNewsIds)((prev: string[]) => {
-                    if (!prev.includes(currentItem.id)) {
-                        return [...prev, currentItem.id];
-                    }
-                    return prev;
-                });
-            }
         },
     });
 
@@ -2571,6 +2578,39 @@ export default function NewsFeedScreen() {
         // Operations removed - new items will be added later
     ];
 
+    // Offline Mode UI
+    if (!isConnected) {
+        return (
+            <SafeAreaView style={styles.offlineContainer}>
+                <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+
+                <View style={styles.offlineHeader}>
+                    <View style={styles.offlinePopupContainer}>
+                        <View style={styles.offlinePopup}>
+                            <Text style={styles.offlinePopupText}>దీని మీద క్లిక్ చేసినప్పుడు న్యూస్ పొందొచ్చు</Text>
+                        </View>
+                        <View style={styles.offlinePopupArrow} />
+                    </View>
+
+                    <TouchableOpacity onPress={checkInternetConnection} style={styles.offlineReloadBtn}>
+                        <Ionicons name="refresh" size={24} color="#000" />
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.offlineContent}>
+                    <Image
+                        source={require('../assets/images/no_internet.png')}
+                        style={styles.offlineImage}
+                        contentFit="contain"
+                    />
+                    <Text style={styles.offlineText}>
+                        మీకు ప్రస్తుతం యాక్టివ్ ఇంటర్నెట్ కనెక్షన్ లేదని కనిపిస్తుంది
+                    </Text>
+                </View>
+            </SafeAreaView>
+        );
+    }
+
     return (
         <View style={[styles.container, isNightModeEnabled && { backgroundColor: '#000' }]}>
             <StatusBar
@@ -2677,6 +2717,17 @@ export default function NewsFeedScreen() {
                             setIsTutorialMode(false);
                             AsyncStorage.setItem('HAS_SEEN_TUTORIAL_V17', 'true').catch(() => { });
                         }
+                    }
+
+                    // Mark current news as read (Stabilized: runs only when scroll stops)
+                    const currentItem = filteredNews[idx];
+                    if (currentItem && currentItem.id) {
+                        setReadNewsIds((prev: string[]) => {
+                            if (!prev.includes(currentItem.id)) {
+                                return [...prev, currentItem.id];
+                            }
+                            return prev;
+                        });
                     }
                 }}
                 renderItem={({ item, index }) => {
@@ -2796,8 +2847,8 @@ export default function NewsFeedScreen() {
                             disliked={newsInteractions[item.id]?.disliked || false}
                             likeCount={newsInteractions[item.id]?.likeCount ?? item.likeCount}
                             dislikeCount={newsInteractions[item.id]?.dislikeCount || 0}
-                            onLike={() => handleLikeNews(item.id)}
-                            onDislike={() => handleDislikeNews(item.id)}
+                            onLike={handleLikeNews}
+                            onDislike={handleDislikeNews}
                             showOptionsHint={isOptionsHintVisible && index === 0}
                             showShareHint={isShareHintVisible && index === 0}
                             isSaved={savedIds.includes(item.id)}
@@ -7771,6 +7822,84 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         position: 'absolute',
+    },
+    // 🔌 OFFLINE MODE STYLES
+    offlineContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+        paddingTop: Platform.OS === 'android' ? 30 : 0,
+    },
+    offlineHeader: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'flex-start',
+        paddingHorizontal: 20,
+        paddingTop: 20,
+        zIndex: 10,
+    },
+    offlineReloadBtn: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: '#FFD700',
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+    },
+    offlinePopupContainer: {
+        position: 'absolute',
+        top: 25,
+        right: 70,
+        alignItems: 'flex-end',
+    },
+    offlinePopup: {
+        backgroundColor: '#004d40', // Dark teal/green as in design
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderRadius: 8,
+        marginBottom: -1, // Overlap slightly with arrow
+    },
+    offlinePopupText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    offlinePopupArrow: {
+        width: 0,
+        height: 0,
+        backgroundColor: 'transparent',
+        borderStyle: 'solid',
+        borderLeftWidth: 8,
+        borderRightWidth: 8,
+        borderBottomWidth: 0,
+        borderTopWidth: 10,
+        borderLeftColor: 'transparent',
+        borderRightColor: 'transparent',
+        borderTopColor: '#004d40',
+        marginRight: 10, // Align with the button center
+    },
+    offlineContent: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 30,
+        marginTop: -50, // Move up slightly to account for visual balance
+    },
+    offlineImage: {
+        width: 250,
+        height: 250,
+        marginBottom: 30,
+    },
+    offlineText: {
+        fontSize: 22,
+        color: '#000',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        lineHeight: 32,
     },
 });
 

@@ -23,7 +23,7 @@ export default function RootLayout() {
     <AuthProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <View style={styles.container}>
-          <View style={styles.appWrapper}>
+          <View style={[styles.appWrapper, colorScheme === 'dark' && { backgroundColor: '#000' }]}>
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="index" />
               <Stack.Screen name="splash" />

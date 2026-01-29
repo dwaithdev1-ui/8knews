@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { LAYOUT } from '../constants/Layout';
 
 const CARD_HEIGHT = LAYOUT.windowHeight;
@@ -10,9 +10,12 @@ interface Props {
 }
 
 export default function CategoryEndCard({ onBack }: Props) {
+    const colorScheme = useColorScheme();
+    const isDark = colorScheme === 'dark';
+
     return (
         <TouchableOpacity
-            style={styles.container}
+            style={[styles.container, isDark && { backgroundColor: '#000' }]}
             activeOpacity={0.9}
             onPress={onBack}
         >

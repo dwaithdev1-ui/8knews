@@ -47,8 +47,8 @@ interface Props {
     dislikeCount?: number;
     liked?: boolean;
     disliked?: boolean;
-    onLike?: () => void;
-    onDislike?: () => void;
+    onLike?: (id: string) => void;
+    onDislike?: (id: string) => void;
     darkMode?: boolean;
     autoPlayEnabled?: boolean;
     type?: 'news' | 'ad';
@@ -64,13 +64,13 @@ interface Props {
  * 🍱 ZOOM-REVEAL STACKED CARD
  * Next screen reveals from underneath with a zoom-in animation.
  */
-export default function NewsCard({
+const NewsCard = React.memo(({
     id, image, title, description, index, scrollY, totalItems,
     onComment, isSaved, onToggleSave, onOptions, onShare, onTap, isFullCard, showSwipeHint,
     isVideo, video, isMuted, onToggleMute, cardHeight, showCommentHint, showOptionsHint, showShareHint, commentCount = 0,
     likeCount = 0, dislikeCount = 0, liked = false, disliked = false, onLike, onDislike, darkMode = false, autoPlayEnabled = true,
     type = 'news', redirectUrl, onAdRedirect, shareCount = 0, onDownload, onWhatsAppShare, onIncrementShare
-}: Props) {
+}: Props) => {
     const CARD_HEIGHT_VAL = cardHeight || LAYOUT.windowHeight;
 
     // 🎨 DYNAMIC COLORS
@@ -124,12 +124,12 @@ export default function NewsCard({
 
     const handleLike = (e: any) => {
         e.stopPropagation();
-        onLike?.();
+        onLike?.(id);
     };
 
     const handleDislike = (e: any) => {
         e.stopPropagation();
-        onDislike?.();
+        onDislike?.(id);
     };
 
     const animatedStyle = useAnimatedStyle(() => {
@@ -539,7 +539,9 @@ export default function NewsCard({
             </Pressable>
         </Animated.View>
     );
-}
+});
+
+export default NewsCard;
 
 const styles = StyleSheet.create({
     container: {
