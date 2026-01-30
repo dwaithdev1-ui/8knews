@@ -504,7 +504,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'whatsapp-1',
         title: 'వాట్సాప్ స్టేటస్ వీడియోలు',
         description: 'మీకు నచ్చిన వీడియోలను డౌన్లోడ్ చేసుకోండి మరియు స్టేటస్ గా పెట్టుకోండి.',
-        image: require('../assets/images/res_whatsapp.png'), // Fixed missing image
+        image: require('../assets/images/res_whatsapp.jpg'), // Fixed missing image
         tags: ['whatsapp'],
         isVideo: true,
         isFullCard: true,
@@ -692,7 +692,7 @@ export default function NewsFeedScreen() {
         if (s.includes('sport')) return require('../assets/images/res_match_winning.jpg');
         if (s.includes('cine')) return require('../assets/images/res_the_raja_saab_27x40.jpg');
         if (s.includes('wish')) return require('../assets/images/res_wishes1.png');
-        if (s.includes('whatsapp')) return require('../assets/images/res_whatsapp.png');
+        if (s.includes('whatsapp')) return require('../assets/images/res_whatsapp.jpg');
         if (s.includes('life')) return require('../assets/images/res_mag_life.png');
         if (s.includes('affair')) return require('../assets/images/res_26_india_news_1.png');
         if (s.includes('local') || s.includes('hyd') || s.includes('guntur') || s.includes('vijay')) return require('../assets/images/res_21_local_news.png');
