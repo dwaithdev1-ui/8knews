@@ -103,7 +103,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'main-2',
         title: 'జీఎస్‌ఎల్‌వీ-ఎఫ్15: నావిగేషన్ ఉపగ్రహ ప్రయోగం',
         description: 'శ్రీహరికోట నుండి జనవరి 29న సాయంత్రం 6:23 గంటలకు ఎన్‌వీఎస్-02 ఉపగ్రహాన్ని మోసుకెళ్లే జీఎస్‌ఎల్‌వీ-ఎఫ్15 రాకెట్ ప్రయోగం జరగనుంది. ఇది భారత నావిగేషన్ వ్యవస్థలో కీలకం.',
-        image: require('../assets/images/res_high.png'),
+        image: require('../assets/images/res_high.jpg'),
         tags: ['main', 'trending']
     },
     {
@@ -1384,7 +1384,7 @@ export default function NewsFeedScreen() {
     const [isBookmarksLoaded, setIsBookmarksLoaded] = useState(false);
 
     // 🛠️ MENU FUNCTIONALITY STATE
-    const [activeMenuModal, setActiveMenuModal] = useState<'profile' | 'saved' | 'lang' | 'feedback' | 'report' | 'settings' | null>(null);
+    const [activeMenuModal, setActiveMenuModal] = useState<'profile' | 'saved' | 'lang' | 'feedback' | 'report' | 'settings' | 'privacy' | 'terms' | null>(null);
     const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
     const [isNightModeEnabled, setIsNightModeEnabled] = useState(false);
     const [isAutoPlayEnabled, setIsAutoPlayEnabled] = useState(true);
@@ -1539,11 +1539,13 @@ export default function NewsFeedScreen() {
         isLocalNewsLocationVisible ||
         activeMenuModal !== null ||
         commentModalVisible ||
+        isViewingVideoComments ||
         isShareModalVisible ||
         isOptionsVisible ||
         isLoginModalVisible ||
         isExitModalVisible ||
         isDigitalMagazineVisible ||
+        isMenuLocationVisible ||
         isMenuLocationVisible;
 
     // Handle location selection
@@ -1627,18 +1629,16 @@ export default function NewsFeedScreen() {
         autoDetectLocation();
     }, [isManualLocation]);
 
-    // (Rating prompt logic moved to filteredNews useEffect)
-
     // Back Button Handler
     useEffect(() => {
         const backAction = () => {
-            // Priority 1: Close Comments
-            if (commentModalVisible) {
+            // Priority 1: Close Comments (Standard or Video)
+            if (commentModalVisible || isViewingVideoComments) {
                 closeComments();
                 return true;
             }
 
-            // Priority 2: Close other overlays/modals
+            // Priority 2: Close other overlays
             if (isCategoriesVisible) {
                 setIsCategoriesVisible(false);
                 return true;
@@ -1675,23 +1675,46 @@ export default function NewsFeedScreen() {
                 setIsDigitalMagazineVisible(false);
                 return true;
             }
+            if (viewingMagazine) {
+                closeMagazineViewer();
+                return true;
+            }
+            if (isTutorialMode) {
+                setIsTutorialMode(false);
+                return true;
+            }
+            if (isHUDVisible) {
+                setIsHUDVisible(false);
+                return true;
+            }
+            if (isExitModalVisible) {
+                setIsExitModalVisible(false);
+                return true;
+            }
+            if (isMenuLocationVisible) {
+                setIsMenuLocationVisible(false);
+                return true;
+            }
 
-            // Priority 3: Show Exit Modal if no modals are open
+            // Priority 3: Navigate back in stack if possible (e.g. back to Permissions)
+            if (router.canGoBack()) {
+                router.back();
+                return true;
+            }
+
+            // Priority 4: Show Exit Modal (Last Resort)
             setIsExitModalVisible(true);
             return true;
         };
 
-        const backHandler = BackHandler.addEventListener(
-            'hardwareBackPress',
-            backAction,
-        );
-
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
         return () => backHandler.remove();
     }, [
-        commentModalVisible, isCategoriesVisible, isMenuOpen,
-        isLocationSelectorVisible, isLocalNewsLocationVisible,
+        commentModalVisible, isViewingVideoComments, isCategoriesVisible,
+        isMenuOpen, isLocationSelectorVisible, isLocalNewsLocationVisible,
         activeMenuModal, isShareModalVisible, isOptionsVisible,
-        isLoginModalVisible, isDigitalMagazineVisible
+        isLoginModalVisible, isDigitalMagazineVisible, viewingMagazine,
+        isTutorialMode, isHUDVisible, isExitModalVisible, isMenuLocationVisible
     ]);
 
     // 🛠️ STABILITY FIX: Memoize the base structure (Stories + Random Fillers)
@@ -1880,7 +1903,7 @@ export default function NewsFeedScreen() {
     const topHudAnimStyle = useAnimatedStyle(() => {
         return {
             transform: [
-                { translateY: interpolate(hudAnimValue.value, [0, 1], [-120, 0]) }
+                { translateY: interpolate(hudAnimValue.value, [0, 1], [-130 - insets.top, 0]) }
             ],
             opacity: hudAnimValue.value,
         };
@@ -1889,7 +1912,7 @@ export default function NewsFeedScreen() {
     const bottomHudAnimStyle = useAnimatedStyle(() => {
         return {
             transform: [
-                { translateY: interpolate(hudAnimValue.value, [0, 1], [120, 0]) }
+                { translateY: interpolate(hudAnimValue.value, [0, 1], [130 + insets.bottom, 0]) }
             ],
             opacity: hudAnimValue.value,
         };
@@ -2319,6 +2342,7 @@ export default function NewsFeedScreen() {
         }, (finished) => {
             if (finished) {
                 runOnJS(setCommentModalVisible)(false);
+                runOnJS(setIsViewingVideoComments)(false);
                 // 🚩 STEP 2: SHOW OPTIONS HINT AFTER DISMISSING COMMENTS
                 // Mark comment hint as seen right here as well to double check
                 setHasSeenCommentHint(true);
@@ -2617,7 +2641,7 @@ export default function NewsFeedScreen() {
                 barStyle={isNightModeEnabled ? "light-content" : "dark-content"}
                 backgroundColor="transparent"
                 translucent={true}
-                hidden={isLocalNewsLocationVisible || isLocationSelectorVisible || isCategoriesVisible || isMenuOpen}
+                hidden={false} // Ensure status bar is always visible or handled by system
             />
 
 
@@ -2896,7 +2920,7 @@ export default function NewsFeedScreen() {
             {isExitModalVisible && (
                 <View style={styles.modalOverlay}>
                     <View style={[styles.exitModalContainer, isNightModeEnabled && { backgroundColor: '#151718' }]}>
-                        <Text style={[styles.exitModalTitle, isNightModeEnabled && { color: '#fff' }]}>మీరు ఖచ్చితంగా బయటకు వెళ్దాం అనుకుంటున్నారా?</Text>
+                        <Text style={[styles.exitModalTitle, isNightModeEnabled && { color: '#fff' }]}>మీరు ఖచ్చితంగా బయటకు వెళ్ళాలి అనుకుంటున్నారా?</Text>
                         <View style={styles.exitModalButtons}>
                             <TouchableOpacity
                                 style={[styles.exitModalBtn, styles.exitModalBtnYes]}
@@ -2921,7 +2945,7 @@ export default function NewsFeedScreen() {
             <>
                 {/* 🔝 TOP HUD BAR */}
                 <Animated.View
-                    style={[styles.topHud, topHudAnimStyle]}
+                    style={[styles.topHud, { paddingTop: insets.top, height: 75 + insets.top }, topHudAnimStyle]}
                     pointerEvents={isHUDVisible ? 'auto' : 'none'}
                 >
                     {!anyModalVisible && (
@@ -3026,7 +3050,7 @@ export default function NewsFeedScreen() {
 
                 {/* ⏬ BOTTOM HUD BAR */}
                 <Animated.View
-                    style={[styles.bottomHud, bottomHudAnimStyle]}
+                    style={[styles.bottomHud, { paddingBottom: insets.bottom, height: 85 + insets.bottom }, bottomHudAnimStyle]}
                     pointerEvents={isHUDVisible ? 'auto' : 'none'}
                 >
                     {!anyModalVisible && (
@@ -3169,7 +3193,7 @@ export default function NewsFeedScreen() {
                             </View>
 
                             <ScrollView contentContainerStyle={styles.categoryLeafList} showsVerticalScrollIndicator={false}>
-                                {CATEGORY_TABS.map((cat) => (
+                                {CATEGORY_TABS.filter(cat => cat.id !== 'videos' && cat.id !== 'photos').map((cat) => (
                                     <TouchableOpacity
                                         key={cat.id}
                                         style={[styles.categoryLeafItem, { borderColor: cat.accent || '#fff' }]}
@@ -4242,7 +4266,7 @@ export default function NewsFeedScreen() {
                 <Pressable style={{ flex: 1 }} onPress={toggleMenu} />
             </Animated.View>
 
-            <Animated.View style={[styles.menuContainer, menuStyle, isNightModeEnabled && { backgroundColor: '#151718' }]}>
+            <Animated.View style={[styles.menuContainer, { paddingTop: insets.top || (Platform.OS === 'ios' ? 50 : 10), paddingBottom: insets.bottom }, menuStyle, isNightModeEnabled && { backgroundColor: '#151718' }]}>
                 <View style={[styles.customMenuHeader, isNightModeEnabled && { backgroundColor: '#151718', borderBottomColor: '#333' }]}>
                     <TouchableOpacity style={styles.menuIconBtn} onPress={() => { toggleMenu(); setActiveMenuModal('settings'); }}>
                         <Ionicons name="settings-outline" size={24} color={isNightModeEnabled ? "#fff" : "#666"} />
@@ -5308,7 +5332,6 @@ const styles = StyleSheet.create({
         maxWidth: '100%',
         backgroundColor: '#fff',
         zIndex: 100,
-        paddingTop: Platform.OS === 'ios' ? 50 : 10,
     },
     menuHeader: {
         flexDirection: 'row',
