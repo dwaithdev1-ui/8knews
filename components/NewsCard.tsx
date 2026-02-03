@@ -13,6 +13,7 @@ import Animated, {
     withRepeat,
     withTiming
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LAYOUT } from '../constants/Layout';
 
@@ -71,6 +72,7 @@ const NewsCard = React.memo(({
     likeCount = 0, dislikeCount = 0, liked = false, disliked = false, onLike, onDislike, darkMode = false, autoPlayEnabled = true,
     type = 'news', redirectUrl, onAdRedirect, shareCount = 0, onDownload, onWhatsAppShare, onIncrementShare
 }: Props) => {
+    const insets = useSafeAreaInsets();
     const CARD_HEIGHT_VAL = cardHeight || LAYOUT.windowHeight;
 
     // 🎨 DYNAMIC COLORS
@@ -122,13 +124,11 @@ const NewsCard = React.memo(({
         return count.toString();
     };
 
-    const handleLike = (e: any) => {
-        e.stopPropagation();
+    const handleLike = () => {
         onLike?.(id);
     };
 
-    const handleDislike = (e: any) => {
-        e.stopPropagation();
+    const handleDislike = () => {
         onDislike?.(id);
     };
 
@@ -175,7 +175,7 @@ const NewsCard = React.memo(({
     // If it's a full card (special image) OR explicitly Full Screen, render fit-to-screen layout
     if (isFullCard) {
         return (
-            <Animated.View style={[styles.container, { height: CARD_HEIGHT_VAL, backgroundColor: bgColor }, animatedStyle]}>
+            <Animated.View style={[styles.container, { height: CARD_HEIGHT_VAL, backgroundColor: bgColor, paddingTop: insets.top, paddingBottom: insets.bottom }, animatedStyle]}>
                 <Pressable style={{ flex: 1 }} onPress={onTap}>
                     {isVideo ? (
                         <View style={{ flex: 1, backgroundColor: '#000' }}>
@@ -203,12 +203,11 @@ const NewsCard = React.memo(({
                                 </View>
                             )}
 
-                            {/* 8K Logo Overlay */}
                             <Image
                                 source={require('../assets/images/8K-Logo 1.png')}
                                 style={{
                                     position: 'absolute',
-                                    top: 50,
+                                    top: Math.max(insets.top, 50),
                                     right: 20,
                                     width: 60,
                                     height: 60,
@@ -218,7 +217,10 @@ const NewsCard = React.memo(({
                             />
 
                             {/* Right Vertical Actions (Share & Mute) */}
-                            <View style={[styles.videoRightActions, { zIndex: 100 }]}>
+                            <View
+                                style={[styles.videoRightActions, { bottom: 120 + insets.bottom, zIndex: 100 }]}
+                                onStartShouldSetResponder={() => true}
+                            >
                                 <TouchableOpacity style={styles.videoSideButton} onPress={() => onShare?.(id)}>
                                     <View style={styles.videoSideIconBg}>
                                         <Ionicons name="arrow-redo" size={28} color="#00C800" />
@@ -232,7 +234,10 @@ const NewsCard = React.memo(({
                             </View>
 
                             {/* Bottom Horizontal Actions (Like, Dislike, Comment) */}
-                            <View style={[styles.videoBottomActions, { zIndex: 100 }]}>
+                            <View
+                                style={[styles.videoBottomActions, { bottom: 40 + insets.bottom, zIndex: 100 }]}
+                                onStartShouldSetResponder={() => true}
+                            >
                                 <TouchableOpacity style={styles.videoActionButton} onPress={handleLike}>
                                     <Ionicons
                                         name={liked ? "thumbs-up" : "thumbs-up-outline"}
@@ -277,7 +282,7 @@ const NewsCard = React.memo(({
                                 source={require('../assets/images/8K-Logo 1.png')}
                                 style={{
                                     position: 'absolute',
-                                    top: 50,
+                                    top: Math.max(insets.top, 50),
                                     right: 20,
                                     width: 60,
                                     height: 60,
@@ -307,7 +312,7 @@ const NewsCard = React.memo(({
                             )}
                             {/* Photo Action Bar (Download, WhatsApp, Share) */}
                             {type !== 'ad' && !isVideo && (
-                                <View style={styles.photoActionBar}>
+                                <View style={[styles.photoActionBar, { bottom: 20 + insets.bottom }]}>
                                     <TouchableOpacity
                                         style={styles.photoActionButton}
                                         onPress={(e) => {
@@ -350,7 +355,7 @@ const NewsCard = React.memo(({
     }
 
     return (
-        <Animated.View style={[styles.container, { height: CARD_HEIGHT_VAL, backgroundColor: bgColor }, animatedStyle]}>
+        <Animated.View style={[styles.container, { height: CARD_HEIGHT_VAL, backgroundColor: bgColor, paddingTop: insets.top, paddingBottom: insets.bottom }, animatedStyle]}>
             <Pressable style={{ flex: 1 }} onPress={onTap}>
                 {/* 1. Top Image/Video Section */}
                 <View style={styles.imageContainer}>
@@ -671,7 +676,7 @@ const styles = StyleSheet.create({
     },
     footer: {
         paddingVertical: 0,
-        paddingBottom: 0, // ⚓ Absolute zero bottom edge
+        paddingBottom: 0,
     },
     metadataRow: {
         flexDirection: 'row',

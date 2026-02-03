@@ -1,6 +1,6 @@
 import { Dimensions } from 'react-native';
 
-const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('screen');
 
 /**
  * 📏 APP LAYOUT CONSTANTS
@@ -11,13 +11,13 @@ export const LAYOUT = {
     MAX_WIDTH: 420,
     MAX_HEIGHT: 820,
 
-    // Dynamic height that respects the max-height constraint
+    // Dynamic height and width
     get windowHeight() {
-        return Math.min(SCREEN_HEIGHT, 820);
+        return SCREEN_HEIGHT;
     },
 
     get windowWidth() {
-        return Math.min(SCREEN_WIDTH, 420);
+        return SCREEN_WIDTH;
     }
 };
 

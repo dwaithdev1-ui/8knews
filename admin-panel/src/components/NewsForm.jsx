@@ -14,6 +14,7 @@ const NewsForm = ({ onSuccess }) => {
         is_video: false,
         language: 'te',
         image: null,
+        magazine_pages: [], // New state for multiple images
         type: 'news', // 'news' or 'ad'
         redirect_url: '',
         placement: 'trending' // 'trending' or 'home'
@@ -104,6 +105,12 @@ const NewsForm = ({ onSuccess }) => {
 
         if (formData.image) {
             data.append('image', formData.image);
+        }
+
+        if (formData.magazine_pages && formData.magazine_pages.length > 0) {
+            formData.magazine_pages.forEach(file => {
+                data.append('magazine_pages', file);
+            });
         }
 
         try {
@@ -230,33 +237,63 @@ const NewsForm = ({ onSuccess }) => {
                 </div>
 
                 <div style={styles.row}>
-                    {/* Debug Info */}
-                    {/* {console.log("Cats:", categories, "Selected:", formData.category_ids)} */}
-                    <input
-                        id="imageInput"
-                        type="file"
-                        accept={
-                            formData.category_ids.some(id => {
-                                const cat = categories.find(c => String(c._id) === String(id));
-                                return cat?.slug === 'digital_magazines';
-                            })
-                                ? ".pdf,.doc,.docx,image/*,video/*,application/pdf"
-                                : "image/*,video/*"
-                        }
-                        onChange={e => {
-                            const file = e.target.files[0];
-                            if (file) {
-                                const isVideo = file.type.startsWith('video/');
+                    <div style={{ flex: 1 }}>
+                        <label style={styles.sectionLabel}>
+                            {formData.category_ids.some(id => categories.find(c => c._id === id)?.slug === 'digital_magazines')
+                                ? "Main Thumbnail / PDF Document:"
+                                : "Primary Image / Video:"}
+                        </label>
+                        <input
+                            id="imageInput"
+                            type="file"
+                            accept={
+                                formData.category_ids.some(id => {
+                                    const cat = categories.find(c => String(c._id) === String(id));
+                                    return cat?.slug === 'digital_magazines';
+                                })
+                                    ? ".pdf,.doc,.docx,image/*,video/*,application/pdf"
+                                    : "image/*,video/*"
+                            }
+                            onChange={e => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                    const isVideo = file.type.startsWith('video/');
+                                    setFormData({
+                                        ...formData,
+                                        image: file,
+                                        is_video: isVideo
+                                    });
+                                }
+                            }}
+                            style={styles.input}
+                        />
+                    </div>
+                </div>
+
+                {/* Multiple Images Upload for Magazines */}
+                {formData.category_ids.some(id => categories.find(c => c._id === id)?.slug === 'digital_magazines') && (
+                    <div style={{ ...styles.section, background: '#e7f5ff', padding: '1rem', borderRadius: '4px', border: '1px solid #339af0' }}>
+                        <label style={styles.sectionLabel}>Upload Magazine Pages (Choose Multiple Images):</label>
+                        <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={e => {
+                                const files = Array.from(e.target.files);
                                 setFormData({
                                     ...formData,
-                                    image: file,
-                                    is_video: isVideo
+                                    magazine_pages: files
                                 });
-                            }
-                        }}
-                        style={styles.input}
-                    />
-                </div>
+                            }}
+                            style={styles.input}
+                        />
+                        <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '0.5rem' }}>
+                            {formData.magazine_pages.length > 0
+                                ? `✅ ${formData.magazine_pages.length} images selected`
+                                : "Tip: You can select multiple JPG/PNG images directly instead of uploading a PDF."}
+                        </p>
+                    </div>
+                )}
 
                 <div style={styles.row}>
                     <div style={{ flex: 1, position: 'relative' }}>

@@ -22,7 +22,7 @@ export default function OnboardingScreen() {
     const router = useRouter();
 
     const handleContinue = () => {
-        router.push('/permissions');
+        router.replace('/permissions');
     };
 
     useEffect(() => {

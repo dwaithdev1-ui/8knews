@@ -78,6 +78,8 @@ async function processMagazineDocument(filePath, newsId) {
     let pdfPath = filePath;
     const magazineDir = path.join('uploads', 'magazines', newsId.toString());
 
+    console.log(`[Magazine] Starting processing for News ID: ${newsId}, file: ${filePath}`);
+
     if (!fs.existsSync(magazineDir)) {
         fs.mkdirSync(magazineDir, { recursive: true });
     }
@@ -87,23 +89,30 @@ async function processMagazineDocument(filePath, newsId) {
         const docBuffer = fs.readFileSync(filePath);
         pdfPath = path.join('uploads', `${Date.now()}_converted.pdf`);
         try {
+            console.log(`[Magazine] Converting ${ext} to PDF...`);
             const pdfBuffer = await libreConvert(docBuffer, '.pdf', undefined);
             fs.writeFileSync(pdfPath, pdfBuffer);
         } catch (err) {
-            console.error("DOC conversion failed. Verify LibreOffice is installed.", err);
-            throw new Error("Failed to convert document to PDF. Ensure LibreOffice is installed on server.");
+            console.error("DOC conversion failed.", err);
+            throw new Error("Failed to convert document to PDF.");
         }
     }
 
     // 2. Split PDF and convert pages to images
     const imageUrls = [];
     try {
+        if (!fs.existsSync(pdfPath)) {
+            throw new Error(`PDF file not found at ${pdfPath}`);
+        }
         const data = new Uint8Array(fs.readFileSync(pdfPath));
         const loadingTask = pdfjsLib.getDocument({ data });
         const pdf = await loadingTask.promise;
         const numPages = pdf.numPages;
 
+        console.log(`[Magazine] PDF Loaded. Total pages: ${numPages}`);
+
         for (let i = 1; i <= numPages; i++) {
+            console.log(`[Magazine] Processing page ${i}/${numPages}...`);
             const page = await pdf.getPage(i);
             const viewport = page.getViewport({ scale: 2.0 }); // High quality
             const canvas = createCanvas(viewport.width, viewport.height);
@@ -116,12 +125,14 @@ async function processMagazineDocument(filePath, newsId) {
 
             const filename = `page_${i}.jpg`;
             const outPath = path.join(magazineDir, filename);
-            const buffer = canvas.toBuffer('image/jpeg', { quality: 0.9 });
+            const buffer = canvas.toBuffer('image/jpeg', { quality: 0.85 });
             fs.writeFileSync(outPath, buffer);
             imageUrls.push(`/uploads/magazines/${newsId}/${filename}`);
         }
 
-        // Clean up temporary converted PDF if it was created
+        console.log(`[Magazine] Successfully processed ${imageUrls.length} pages.`);
+
+        // Clean up temporary converted PDF
         if (pdfPath !== filePath && ext !== '.pdf') {
             fs.unlinkSync(pdfPath);
         }
@@ -222,7 +233,7 @@ app.get('/api/news/:id/media', async (req, res) => {
 });
 
 
-app.post('/api/news', authenticateToken, upload.single('image'), async (req, res) => {
+app.post('/api/news', authenticateToken, upload.fields([{ name: 'image', maxCount: 1 }, { name: 'magazine_pages', maxCount: 100 }]), async (req, res) => {
     try {
         const {
             title, description, category_id, category_ids, sub_category,
@@ -281,42 +292,66 @@ app.post('/api/news', authenticateToken, upload.single('image'), async (req, res
         const result = await db.collection("news").insertOne(newItem);
         const newsId = result.insertedId;
 
-        // --- HANDLE MEDIA ---
-        if (req.file) {
-            const ext = path.extname(req.file.originalname).toLowerCase();
-            const isDocument = ['.pdf', '.doc', '.docx'].includes(ext);
+        // --- HANDLE MEDIA (Single or Multi) ---
+        const primaryFile = req.files['image'] ? req.files['image'][0] : null;
+        const magPagesFiles = req.files['magazine_pages'] || [];
 
+        if (primaryFile || magPagesFiles.length > 0) {
             // Check if any category is 'digital_magazines'
             const assignedCategories = await db.collection("categories").find({ _id: { $in: catIds.map(id => new ObjectId(id)) } }).toArray();
             const isMagazine = assignedCategories.some(c => c.slug === 'digital_magazines');
 
-            if (isMagazine && isDocument) {
-                try {
-                    const pageUrls = await processMagazineDocument(req.file.path, newsId);
+            if (isMagazine) {
+                if (primaryFile) {
+                    const ext = path.extname(primaryFile.originalname).toLowerCase();
+                    const isDocument = ['.pdf', '.doc', '.docx'].includes(ext);
 
-                    // Add all pages to news_media
-                    const mediaDocs = pageUrls.map((url, index) => ({
+                    if (isDocument) {
+                        // PDF Processing (Original way)
+                        try {
+                            const pageUrls = await processMagazineDocument(primaryFile.path, newsId);
+                            const mediaDocs = pageUrls.map((url, index) => ({
+                                news_id: newsId,
+                                type: 'image',
+                                url: `http://localhost:3000${url}`,
+                                is_primary: index === 0,
+                                page_number: index + 1,
+                                created_at: new Date()
+                            }));
+                            await db.collection("news_media").insertMany(mediaDocs);
+                            if (pageUrls.length > 0) {
+                                await db.collection("news").updateOne({ _id: newsId }, { $set: { image: pageUrls[0] } });
+                            }
+                        } catch (procErr) {
+                            console.error("Magazine PDF processing failed:", procErr);
+                        }
+                    }
+                }
+
+                // Handle Multiple Direct Image Uploads (New preferred way)
+                if (magPagesFiles.length > 0) {
+                    console.log(`[Magazine] Processing ${magPagesFiles.length} direct image uploads for News ID: ${newsId}`);
+                    const mediaDocs = magPagesFiles.map((file, index) => ({
                         news_id: newsId,
                         type: 'image',
-                        url: `http://localhost:3000${url}`,
+                        url: `http://localhost:3000/uploads/${file.filename}`,
                         is_primary: index === 0,
                         page_number: index + 1,
                         created_at: new Date()
                     }));
                     await db.collection("news_media").insertMany(mediaDocs);
 
-                    // Update primary image in news document
-                    if (pageUrls.length > 0) {
+                    // Update primary thumbnail to the first uploaded page if no primary image was provided
+                    if (!primaryFile && magPagesFiles.length > 0) {
                         await db.collection("news").updateOne(
                             { _id: newsId },
-                            { $set: { image: pageUrls[0] } }
+                            { $set: { image: `/uploads/${magPagesFiles[0].filename}` } }
                         );
                     }
-                } catch (procErr) {
-                    console.error("Magazine processing failed:", procErr);
                 }
-            } else if (imageUrl) {
-                // Standard image/video handling
+            } else if (primaryFile) {
+                // Standard single image/video handling
+                const imageUrl = `/uploads/${primaryFile.filename}`;
                 await db.collection("news_media").insertOne({
                     news_id: newsId,
                     type: is_video === 'true' ? 'video' : 'image',

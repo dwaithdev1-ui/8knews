@@ -9,6 +9,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 
 interface LoginScreenProps {
@@ -19,6 +20,7 @@ interface LoginScreenProps {
 export default function LoginScreen({ onClose, onLoginSuccess }: LoginScreenProps) {
     const { loginAsGuest, loginWithGoogle, loginWithFacebook, loginWithTwitter, loading } = useAuth();
     const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+    const insets = useSafeAreaInsets();
 
     const handleGuestLogin = async () => {
         setSelectedMethod('guest');
@@ -45,7 +47,7 @@ export default function LoginScreen({ onClose, onLoginSuccess }: LoginScreenProp
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 20) }]}>
             {/* Header */}
             <View style={styles.header}>
                 <Image
@@ -151,7 +153,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         paddingHorizontal: 30,
         paddingTop: Platform.OS === 'ios' ? 60 : 40,
-        paddingBottom: 40,
     },
     header: {
         alignItems: 'center',

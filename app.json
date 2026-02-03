@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/res_icon.png",
-    "scheme": "8knews",
+    "scheme": "xknews",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -44,6 +44,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "1e8af754-5fd8-4a14-8450-89b44befde5e"
+      }
     }
   }
 }

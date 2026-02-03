@@ -183,7 +183,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'full-bhakti-1',
         title: 'ప్రార్థన',
         description: 'ప్రశాంతమైన ఉదయం కోసం ప్రార్థన.',
-        image: require('../assets/images/res_praying_hands.png'),
+        image: require('../assets/images/res_praying_hands.jpg'),
         tags: ['bhakti'],
         isFullCard: true
     },
@@ -311,7 +311,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'cold-wave-1',
         title: 'ఉత్తర భారతంలో గజగజ వణికిస్తున్న చలి',
         description: 'ఢిల్లీతో సహా ఉత్తర భారత రాష్ట్రాల్లో ఉష్ణోగ్రతలు కనిష్ట స్థాయికి పడిపోయాయి. పొగమంచు కారణంగా జనజీవనం స్తంభించింది. ప్రజలు అప్రమత్తంగా ఉండాలని వాతావరణ శాఖ హెచ్చరిక.',
-        image: require('../assets/images/res_11delhi_cold.png'),
+        image: require('../assets/images/res_11delhi_cold.jpg'),
         tags: ['national', 'trending']
     },
     {
@@ -371,7 +371,7 @@ const DEFAULT_NEWS_DATA = [
         id: 'photo-1',
         title: 'భారతదేశ అద్భుత ప్రకృతి దృశ్యాలు',
         description: 'హిమాలయాల నుండి కన్యాకుమారి వరకు మన దేశ సౌందర్యం ఫొటోలలో.',
-        image: require('../assets/images/res_pexels_jeswinthomas_1007431.png'),
+        image: require('../assets/images/res_pexels_jeswinthomas_1007431.jpg'),
         tags: ['photos', 'trending'],
         isFullCard: true
     },
@@ -598,14 +598,14 @@ const DEFAULT_NEWS_DATA = [
 
 
 const MAGAZINE_DATA = [
-    { id: 'mag1', title: 'వ్యవసాయం', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/res_mag_agri.png') },
-    { id: 'mag2', title: 'జీవనశైలి', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/res_mag_life.png') },
-    { id: 'mag3', title: 'పరిశ్రమలు', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/res_mag_ind.png') },
-    { id: 'mag4', title: 'ఆటోమొబైల్స్', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/res_mag_auto.png') },
-    { id: 'mag5', title: 'శాస్త్రవేత్తలు', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/res_mag_sci.png') },
-    { id: 'mag6', title: 'రియల్ ఎస్టేట్', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/res_mag_real.png') },
-    { id: 'mag7', title: 'క్రికెట్', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/res_match_winning.jpg') },
-    { id: 'mag8', title: 'హైదరాబాద్', badge: 'పుస్తకం', date: '01 January', image: require('../assets/images/res_vijayawada.jpg') },
+    { id: 'mag1', title: 'వ్యవసాయం', date: '01 January', image: require('../assets/images/res_mag_agri.jpg') },
+    { id: 'mag2', title: 'జీవనశైలి', date: '01 January', image: require('../assets/images/res_mag_life.jpg') },
+    { id: 'mag3', title: 'పరిశ్రమలు', date: '01 January', image: require('../assets/images/res_mag_ind.jpg') },
+    { id: 'mag4', title: 'ఆటోమొబైల్స్', date: '01 January', image: require('../assets/images/res_mag_auto.jpg') },
+    { id: 'mag5', title: 'శాస్త్రవేత్తలు', date: '01 January', image: require('../assets/images/res_mag_sci.jpg') },
+    { id: 'mag6', title: 'రియల్ ఎస్టేట్', date: '01 January', image: require('../assets/images/res_mag_real.jpg') },
+    { id: 'mag7', title: 'క్రికెట్', date: '01 January', image: require('../assets/images/res_match_winning.jpg') },
+    { id: 'mag8', title: 'హైదరాబాద్', date: '01 January', image: require('../assets/images/res_vijayawada.jpg') },
 ];
 
 const ALL_LOCATIONS_DATA = [
@@ -688,12 +688,12 @@ export default function NewsFeedScreen() {
     const getCategoryDefaultImage = (slug: string) => {
         const s = String(slug || '').toLowerCase();
         if (s.includes('bhakti')) return require('../assets/images/res_bhakthi.jpg');
-        if (s.includes('agri')) return require('../assets/images/res_mag_agri.png');
+        if (s.includes('agri')) return require('../assets/images/res_mag_agri.jpg');
         if (s.includes('sport')) return require('../assets/images/res_match_winning.jpg');
         if (s.includes('cine')) return require('../assets/images/res_the_raja_saab_27x40.jpg');
         if (s.includes('wish')) return require('../assets/images/res_wishes1.png');
         if (s.includes('whatsapp')) return require('../assets/images/res_whatsapp.jpg');
-        if (s.includes('life')) return require('../assets/images/res_mag_life.png');
+        if (s.includes('life')) return require('../assets/images/res_mag_life.jpg');
         if (s.includes('affair')) return require('../assets/images/res_26_india_news_1.png');
         if (s.includes('local') || s.includes('hyd') || s.includes('guntur') || s.includes('vijay')) return require('../assets/images/res_21_local_news.png');
         if (s.includes('trending')) return require('../assets/images/res_22_trending_news.png');
@@ -1042,9 +1042,10 @@ export default function NewsFeedScreen() {
 
         // Update under-layer sources ONLY after the turn is truly finished
         // This prevents the "next next" page from showing during the reset frame
+        const safeIndex = Number(currentPageIndex) || 0;
         setUnderPages({
-            next: currentPageIndex + 1,
-            prev: currentPageIndex - 1
+            next: safeIndex + 1,
+            prev: safeIndex - 1
         });
     }, [currentPageIndex]);
 
@@ -1290,11 +1291,18 @@ export default function NewsFeedScreen() {
             // Fetch magazine pages from news_media
             const response = await fetch(`${API_URL}/news/${magazineId}/media`);
             const pages = await response.json();
-            if (pages && pages.length > 0) {
-                setMagazinePages(pages.sort((a: any, b: any) => a.page_number - b.page_number));
-                setViewingMagazine(magazineId);
-                setCurrentPageIndex(0);
-                setIsDigitalMagazineVisible(false);
+
+            if (Array.isArray(pages) && pages.length > 0) {
+                const sortedPages = pages
+                    .filter(p => p && p.url)
+                    .sort((a: any, b: any) => (Number(a.page_number) || 0) - (Number(b.page_number) || 0));
+
+                if (sortedPages.length > 0) {
+                    setMagazinePages(sortedPages);
+                    setViewingMagazine(magazineId);
+                    setCurrentPageIndex(0);
+                    setIsDigitalMagazineVisible(false);
+                }
             }
         } catch (error) {
             console.error('Error fetching magazine pages:', error);
@@ -1308,10 +1316,13 @@ export default function NewsFeedScreen() {
     };
 
     const nextPage = () => {
-        if (currentPageIndex < magazinePages.length - 1 && !isTurningPage.value) {
+        const totalPages = Array.isArray(magazinePages) ? magazinePages.length : 0;
+        if (currentPageIndex < totalPages - 1 && !isTurningPage.value) {
             isTurningPage.value = true;
-            magFlipProgress.value = withTiming(1, { duration: 600, easing: Easing.bezier(0.25, 0.1, 0.25, 1) }, () => {
-                runOnJS(setCurrentPageIndex)((prev: number) => Math.min(prev + 1, magazinePages.length - 1));
+            magFlipProgress.value = withTiming(1, { duration: 600, easing: Easing.bezier(0.25, 0.1, 0.25, 1) }, (finished) => {
+                if (finished) {
+                    runOnJS(setCurrentPageIndex)(Math.min(currentPageIndex + 1, totalPages - 1));
+                }
             });
         }
     };
@@ -1319,8 +1330,10 @@ export default function NewsFeedScreen() {
     const previousPage = () => {
         if (currentPageIndex > 0 && !isTurningPage.value) {
             isTurningPage.value = true;
-            magFlipProgress.value = withTiming(-1, { duration: 600, easing: Easing.bezier(0.25, 0.1, 0.25, 1) }, () => {
-                runOnJS(setCurrentPageIndex)((prev: number) => Math.max(prev - 1, 0));
+            magFlipProgress.value = withTiming(-1, { duration: 600, easing: Easing.bezier(0.25, 0.1, 0.25, 1) }, (finished) => {
+                if (finished) {
+                    runOnJS(setCurrentPageIndex)(Math.max(currentPageIndex - 1, 0));
+                }
             });
         }
     };
@@ -1428,11 +1441,11 @@ export default function NewsFeedScreen() {
         { id: 'local', title: 'లోకల్ న్యూస్', bg: require('../assets/images/res_21_local_news.png'), accent: '#2C3E50', titleColor: '#000' },
         { id: 'wishes', title: 'విషెస్', bg: require('../assets/images/res_wishes1.png'), accent: '#D32F2F', titleColor: '#E91E63' },
         { id: 'trending', title: 'ట్రెండింగ్ న్యూస్', bg: require('../assets/images/res_22_trending_news.png'), accent: '#FF8F00', titleColor: '#fff' },
-        { id: 'whatsapp', title: 'వాట్సాప్ స్టేటస్', bg: require('../assets/images/res_whatsapp.png'), accent: '#2E7D32', titleColor: '#2E7D32' },
+        { id: 'whatsapp', title: 'వాట్సాప్ స్టేటస్', bg: require('../assets/images/res_whatsapp.jpg'), accent: '#2E7D32', titleColor: '#2E7D32' },
         { id: 'bhakti', title: 'భక్తి', bg: require('../assets/images/res_bhakthi.jpg'), accent: '#FBC02D', titleColor: '#6A1B9A' },
         { id: 'affairs', title: 'కరెంటు అఫైర్స్', bg: require('../assets/images/res_26_india_news_1.png'), accent: '#1976D2', titleColor: '#1565C0' },
-        { id: 'lifestyle', title: 'లైఫ్          స్టైల్', bg: require('../assets/images/res_mag_life.png'), accent: '#C2185B', titleColor: '#C62828' },
-        { id: 'agriculture', title: 'వ్యవసాయం', bg: require('../assets/images/res_mag_agri.png'), accent: '#388E3C', titleColor: '#fff' },
+        { id: 'lifestyle', title: 'లైఫ్          స్టైల్', bg: require('../assets/images/res_mag_life.jpg'), accent: '#C2185B', titleColor: '#C62828' },
+        { id: 'agriculture', title: 'వ్యవసాయం', bg: require('../assets/images/res_mag_agri.jpg'), accent: '#388E3C', titleColor: '#fff' },
         { id: 'cinema', title: 'సినిమా', bg: require('../assets/images/res_the_raja_saab_27x40.jpg'), accent: '#0097A7', titleColor: '#FFf' },
         { id: 'sports', title: 'క్రీడలు', bg: require('../assets/images/res_match_winning.jpg'), accent: '#E64A19', titleColor: '#fff' },
         { id: 'videos', title: 'వీడియోలు', bg: require('../assets/images/res_20_main_news.png'), accent: '#000000', titleColor: '#fff' },
@@ -1629,16 +1642,18 @@ export default function NewsFeedScreen() {
         autoDetectLocation();
     }, [isManualLocation]);
 
-    // Back Button Handler
+    // 🛡️ COMPREHENSIVE BACK ACTION HANDLER
+    // This ensures any open overlay (Comments, Categories, Menu) is closed first 
+    // before the app navigates back or exits.
     useEffect(() => {
         const backAction = () => {
-            // Priority 1: Close Comments (Standard or Video)
+            // Priority 1: Close Comments (Highest Priority)
             if (commentModalVisible || isViewingVideoComments) {
                 closeComments();
                 return true;
             }
 
-            // Priority 2: Close other overlays
+            // Priority 2: Close Other Full-Screen Overlays
             if (isCategoriesVisible) {
                 setIsCategoriesVisible(false);
                 return true;
@@ -1651,34 +1666,40 @@ export default function NewsFeedScreen() {
                 setIsLocationSelectorVisible(false);
                 return true;
             }
-            if (isLocalNewsLocationVisible) {
-                setIsLocalNewsLocationVisible(false);
-                return true;
-            }
-            if (activeMenuModal) {
+            if (activeMenuModal !== null) {
                 setActiveMenuModal(null);
-                return true;
-            }
-            if (isShareModalVisible) {
-                setShareModalVisible(false);
-                return true;
-            }
-            if (isOptionsVisible) {
-                handleOptionsClose();
-                return true;
-            }
-            if (isLoginModalVisible) {
-                setIsLoginModalVisible(false);
                 return true;
             }
             if (isDigitalMagazineVisible) {
                 setIsDigitalMagazineVisible(false);
                 return true;
             }
-            if (viewingMagazine) {
+            if (viewingMagazine !== null) {
                 closeMagazineViewer();
                 return true;
             }
+            if (isOptionsVisible) {
+                handleOptionsClose();
+                return true;
+            }
+            if (isShareModalVisible) {
+                setShareModalVisible(false);
+                return true;
+            }
+            if (isLoginModalVisible) {
+                setIsLoginModalVisible(false);
+                return true;
+            }
+            if (isLocalNewsLocationVisible) {
+                setIsLocalNewsLocationVisible(false);
+                return true;
+            }
+            if (isMenuLocationVisible) {
+                setIsMenuLocationVisible(false);
+                return true;
+            }
+
+            // Priority 3: Close Secondary Overlays/States
             if (isTutorialMode) {
                 setIsTutorialMode(false);
                 return true;
@@ -1691,18 +1712,15 @@ export default function NewsFeedScreen() {
                 setIsExitModalVisible(false);
                 return true;
             }
-            if (isMenuLocationVisible) {
-                setIsMenuLocationVisible(false);
-                return true;
-            }
 
-            // Priority 3: Navigate back in stack if possible (e.g. back to Permissions)
+            // Priority 4: Standard Stack/App Navigation
+            // Only allow standard back if EVERYTHING else is closed
             if (router.canGoBack()) {
                 router.back();
                 return true;
             }
 
-            // Priority 4: Show Exit Modal (Last Resort)
+            // Priority 5: Show Exit Confirmation Modal if on Root
             setIsExitModalVisible(true);
             return true;
         };
@@ -1714,7 +1732,8 @@ export default function NewsFeedScreen() {
         isMenuOpen, isLocationSelectorVisible, isLocalNewsLocationVisible,
         activeMenuModal, isShareModalVisible, isOptionsVisible,
         isLoginModalVisible, isDigitalMagazineVisible, viewingMagazine,
-        isTutorialMode, isHUDVisible, isExitModalVisible, isMenuLocationVisible
+        isTutorialMode, isHUDVisible, isExitModalVisible, isMenuLocationVisible,
+        closeComments, closeMagazineViewer, toggleMenu, handleOptionsClose
     ]);
 
     // 🛠️ STABILITY FIX: Memoize the base structure (Stories + Random Fillers)
@@ -2335,23 +2354,22 @@ export default function NewsFeedScreen() {
         }
     };
 
-    const closeComments = () => {
+    const closeComments = useCallback(() => {
         commentRevealVal.value = withTiming(0, {
-            duration: 500,
+            duration: 400,
             easing: Easing.inOut(Easing.ease)
-        }, (finished) => {
-            if (finished) {
-                runOnJS(setCommentModalVisible)(false);
-                runOnJS(setIsViewingVideoComments)(false);
-                // 🚩 STEP 2: SHOW OPTIONS HINT AFTER DISMISSING COMMENTS
-                // Mark comment hint as seen right here as well to double check
-                setHasSeenCommentHint(true);
-                if (!hasSeenOptionsHint) {
-                    runOnJS(setIsOptionsHintVisible)(true);
-                }
+        }, () => {
+            // 🚀 INTERCEPTION FIX: Always ensure states are cleared on JS thread
+            runOnJS(setCommentModalVisible)(false);
+            runOnJS(setIsViewingVideoComments)(false);
+
+            // Trigger hints if needed
+            runOnJS(setHasSeenCommentHint)(true);
+            if (!hasSeenOptionsHint) {
+                runOnJS(setIsOptionsHintVisible)(true);
             }
         });
-    };
+    }, [commentRevealVal, hasSeenOptionsHint]);
 
     const handleAddComment = (gifUrl?: string) => {
         if ((newComment.trim() || gifUrl) && currentNewsId) {
@@ -2623,7 +2641,7 @@ export default function NewsFeedScreen() {
 
                 <View style={styles.offlineContent}>
                     <Image
-                        source={require('../assets/images/no_internet.png')}
+                        source={require('../assets/images/no_internet.jpg')}
                         style={styles.offlineImage}
                         contentFit="contain"
                     />
@@ -2779,7 +2797,7 @@ export default function NewsFeedScreen() {
                                     // Thank You View
                                     <View style={styles.thankYouContainer}>
                                         <Image
-                                            source={require('../assets/images/res_praying_hands.png')}
+                                            source={require('../assets/images/res_praying_hands.jpg')}
                                             style={styles.prayingHandsIcon}
                                             contentFit="contain"
                                         />
@@ -2918,8 +2936,8 @@ export default function NewsFeedScreen() {
 
             {/* 🚪 EXIT CONFIRMATION MODAL */}
             {isExitModalVisible && (
-                <View style={styles.modalOverlay}>
-                    <View style={[styles.exitModalContainer, isNightModeEnabled && { backgroundColor: '#151718' }]}>
+                <View style={[styles.modalOverlay, { justifyContent: 'center' }]}>
+                    <View style={[styles.exitModalContainer, isNightModeEnabled && { backgroundColor: '#151718' }, { marginBottom: insets.bottom }]}>
                         <Text style={[styles.exitModalTitle, isNightModeEnabled && { color: '#fff' }]}>మీరు ఖచ్చితంగా బయటకు వెళ్ళాలి అనుకుంటున్నారా?</Text>
                         <View style={styles.exitModalButtons}>
                             <TouchableOpacity
@@ -4304,7 +4322,7 @@ export default function NewsFeedScreen() {
                     {/* 3. States Grid (Row 1) */}
                     <View style={styles.gridRow}>
                         <TouchableOpacity style={[styles.gridItemState, isNightModeEnabled && { backgroundColor: '#151718', borderColor: '#333' }]} onPress={() => { setActiveCategory('andhra'); toggleMenu(); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}>
-                            <Image source={require('../assets/images/res_ap_map_outline.png')} style={styles.stateMapIcon} contentFit="contain" />
+                            <Image source={require('../assets/images/res_ap_map_outline.jpg')} style={styles.stateMapIcon} contentFit="contain" />
                             <View style={{ flex: 1 }}>
                                 <Text style={[styles.stateTitle, isNightModeEnabled && { color: '#fff' }]}>ఆంధ్రప్రదేశ్</Text>
                                 <Text style={[styles.stateSubText, isNightModeEnabled && { color: '#ccc' }]}>Only Andhra Pradesh News</Text>
@@ -4312,7 +4330,7 @@ export default function NewsFeedScreen() {
                         </TouchableOpacity>
                         <View style={{ width: 10 }} />
                         <TouchableOpacity style={[styles.gridItemState, isNightModeEnabled && { backgroundColor: '#151718', borderColor: '#333' }]} onPress={() => { setActiveCategory('telangana'); toggleMenu(); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}>
-                            <Image source={require('../assets/images/res_telangana_map_outline.png')} style={styles.stateMapIcon} contentFit="contain" />
+                            <Image source={require('../assets/images/res_telangana_map_outline.jpg')} style={styles.stateMapIcon} contentFit="contain" />
                             <View style={{ flex: 1 }}>
                                 <Text style={[styles.stateTitle, isNightModeEnabled && { color: '#fff' }]}>తెలంగాణ</Text>
                                 <Text style={[styles.stateSubText, isNightModeEnabled && { color: '#ccc' }]}>Only Telangana News</Text>
@@ -4517,9 +4535,6 @@ export default function NewsFeedScreen() {
                                             contentFit="cover"
                                         />
                                         <View style={styles.magCardInfo}>
-                                            <View style={styles.magBadge}>
-                                                <Text style={styles.magBadgeText}>పుస్తకం</Text>
-                                            </View>
                                             <Text style={[styles.magCardTitle, isNightModeEnabled && { color: '#fff' }]}>{item.title}</Text>
                                             <Text style={[styles.magCardDate, isNightModeEnabled && { color: '#9BA1A6' }]}>{new Date(item.created_at).toLocaleDateString('te-IN', { day: 'numeric', month: 'long' })}</Text>
                                         </View>
@@ -4544,9 +4559,6 @@ export default function NewsFeedScreen() {
                                             contentFit="cover"
                                         />
                                         <View style={styles.magCardInfo}>
-                                            <View style={styles.magBadge}>
-                                                <Text style={styles.magBadgeText}>{item.badge}</Text>
-                                            </View>
                                             <Text style={[styles.magCardTitle, isNightModeEnabled && { color: '#fff' }]}>{item.title}</Text>
                                             <Text style={[styles.magCardDate, isNightModeEnabled && { color: '#9BA1A6' }]}>{item.date}</Text>
                                         </View>
@@ -4604,14 +4616,16 @@ export default function NewsFeedScreen() {
                     <GestureHandlerRootView style={styles.magViewerOverlay}>
                         <SafeAreaView style={{ flex: 1 }}>
                             {/* 📱 TOP BAR */}
-                            <View style={[styles.magViewerHeader, { marginTop: Platform.OS === 'ios' ? 0 : 10 }]}>
+                            <View style={[styles.magViewerHeader, { paddingTop: insets.top, height: 60 + insets.top }]}>
                                 <View style={styles.magHeaderLeft}>
                                     <TouchableOpacity style={styles.magViewerCloseBtn} onPress={closeMagazineViewer}>
                                         <Ionicons name="arrow-back" size={24} color="#fff" />
                                     </TouchableOpacity>
                                     <View>
                                         <Text style={styles.magHeaderTitleTe}>మ్యాగజైన్</Text>
-                                        <Text style={styles.magHeaderPageInfo}>Page no {currentPageIndex + 1}/{magazinePages.length}</Text>
+                                        <Text style={styles.magHeaderPageInfo}>
+                                            Page no {String(Number(currentPageIndex) + 1)} / {Array.isArray(magazinePages) ? magazinePages.length : 0}
+                                        </Text>
                                     </View>
                                 </View>
                                 <Image source={require('../assets/images/res_8k_logo_1.png')} style={styles.magViewerLogo} contentFit="contain" />
@@ -4640,7 +4654,9 @@ export default function NewsFeedScreen() {
                                                 >
                                                     {underPages.next < magazinePages.length && underPages.next >= 0 && (
                                                         <Image
-                                                            source={{ uri: magazinePages[underPages.next].url.replace('localhost', '192.168.29.70') }}
+                                                            source={{
+                                                                uri: (magazinePages[underPages.next]?.url || '').replace('localhost:3000', API_URL.replace('/api', '')).replace('127.0.0.1:3000', API_URL.replace('/api', '')) || 'https://via.placeholder.com/800x1200?text=Page+Loading...'
+                                                            }}
                                                             style={styles.magPageImage}
                                                             contentFit="contain"
                                                             priority="high"
@@ -4657,7 +4673,9 @@ export default function NewsFeedScreen() {
                                                 >
                                                     {underPages.prev >= 0 && underPages.prev < magazinePages.length && (
                                                         <Image
-                                                            source={{ uri: magazinePages[underPages.prev].url.replace('localhost', '192.168.29.70') }}
+                                                            source={{
+                                                                uri: (magazinePages[underPages.prev]?.url || '').replace('localhost:3000', API_URL.replace('/api', '')).replace('127.0.0.1:3000', API_URL.replace('/api', '')) || 'https://via.placeholder.com/800x1200?text=Page+Loading...'
+                                                            }}
                                                             style={styles.magPageImage}
                                                             contentFit="contain"
                                                             priority="high"
@@ -4677,7 +4695,9 @@ export default function NewsFeedScreen() {
                                                     collapsable={false}
                                                 >
                                                     <Image
-                                                        source={{ uri: magazinePages[currentPageIndex].url.replace('localhost', '192.168.29.70') }}
+                                                        source={{
+                                                            uri: (magazinePages[currentPageIndex]?.url || '').replace('localhost:3000', API_URL.replace('/api', '')).replace('127.0.0.1:3000', API_URL.replace('/api', '')) || 'https://via.placeholder.com/800x1200?text=Page+Loading...'
+                                                        }}
                                                         style={styles.magPageImage}
                                                         contentFit="contain"
                                                         priority="high"
@@ -4731,7 +4751,7 @@ export default function NewsFeedScreen() {
                             </Animated.View>
 
                             {/* 📊 INTERACTION BAR */}
-                            <View style={styles.magInteractionBar}>
+                            <View style={[styles.magInteractionBar, { paddingBottom: insets.bottom, height: 70 + insets.bottom }]}>
                                 <View style={styles.magInteractionLeft}>
                                     <TouchableOpacity
                                         style={styles.magInteractionItem}
@@ -4773,7 +4793,9 @@ export default function NewsFeedScreen() {
                                 </View>
 
                                 <View style={styles.magBottomIndicator}>
-                                    <Text style={styles.magBottomPageNum}>{currentPageIndex + 1}/{magazinePages.length}</Text>
+                                    <Text style={styles.magBottomPageNum}>
+                                        {String(Number(currentPageIndex) + 1)} / {Array.isArray(magazinePages) ? magazinePages.length : 0}
+                                    </Text>
                                 </View>
                             </View>
                         </SafeAreaView>
@@ -4789,7 +4811,7 @@ export default function NewsFeedScreen() {
                     <View style={styles.modalOverlay}>
                         <Pressable style={styles.fullSpace} onPress={() => setShareModalVisible(false)}>
                             <View style={{ flex: 1 }} />
-                            <Pressable style={[styles.shareContainerSmall, isNightModeEnabled && { backgroundColor: '#151718' }]} onPress={(e) => e.stopPropagation()}>
+                            <Pressable style={[styles.shareContainerSmall, isNightModeEnabled && { backgroundColor: '#151718' }, { paddingBottom: Math.max(insets.bottom, 20) }]} onPress={(e) => e.stopPropagation()}>
                                 <View style={[styles.sharePill, isNightModeEnabled && { backgroundColor: '#333' }]} />
                                 <Text style={[styles.shareTitleText, isNightModeEnabled && { color: '#fff' }]}>Share</Text>
 
@@ -5127,7 +5149,7 @@ export default function NewsFeedScreen() {
                                 keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
                             >
                                 {isViewingVideoComments ? (
-                                    <View style={styles.videoInputContainer}>
+                                    <View style={[styles.videoInputContainer, { paddingBottom: Math.max(insets.bottom, 10) }]}>
                                         <View style={{ flex: 1 }}>
                                             {replyTarget && (
                                                 <View style={[styles.replyIndicator, { paddingVertical: 4, paddingHorizontal: 10 }]}>
@@ -5152,7 +5174,7 @@ export default function NewsFeedScreen() {
                                         )}
                                     </View>
                                 ) : (
-                                    <View style={styles.bottomInputContainer}>
+                                    <View style={[styles.bottomInputContainer, { paddingBottom: Math.max(insets.bottom, 10) }]}>
                                         {/* Emoji Reaction Bar */}
                                         <View style={styles.reactionBar}>
                                             <Pressable style={styles.reactionEmoji} onPress={() => setNewComment(prev => prev + '😂')}><Text style={{ fontSize: 20 }}>😂</Text></Pressable>
@@ -5231,7 +5253,7 @@ export default function NewsFeedScreen() {
                         {reportModalVisible && (
                             <View style={[styles.modalOverlay, { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1200 }]}>
                                 <Pressable style={styles.fullSpace} onPress={() => { setReportModalVisible(false); setReportingItem(null); }} />
-                                <View style={[styles.reportSheetContainer, isNightModeEnabled && { backgroundColor: '#151718' }]}>
+                                <View style={[styles.reportSheetContainer, isNightModeEnabled && { backgroundColor: '#151718' }, { paddingBottom: Math.max(insets.bottom, 30) }]}>
                                     <View style={[styles.reportSheetPill, isNightModeEnabled && { backgroundColor: '#333' }]} />
                                     <Text style={[styles.reportSheetTitle, isNightModeEnabled && { color: '#fff' }]}>కామెంట్ మీద చర్య</Text>
 

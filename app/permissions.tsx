@@ -1,8 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
+import * as Location from 'expo-location';
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Platform,
@@ -76,7 +78,23 @@ export default function PermissionsScreen() {
         };
     });
 
-    React.useEffect(() => {
+    useEffect(() => {
+        // --- 🛡️ PERMISSION SKIP LOGIC ---
+        const checkExistingPermissions = async () => {
+            try {
+                const hasAskedNotif = await AsyncStorage.getItem('hasAskedNotificationPermission');
+                const hasAskedLoc = await AsyncStorage.getItem('hasAskedLocationPermission');
+
+                // If we've already asked both, bypass this screen
+                if (hasAskedNotif === 'true' && hasAskedLoc === 'true') {
+                    router.replace('/newsfeed');
+                }
+            } catch (err) {
+                console.error("Error checking permissions state:", err);
+            }
+        };
+        checkExistingPermissions();
+
         blinkOpacity.value = withRepeat(
             withSequence(
                 withTiming(0.2, { duration: 500 }),
@@ -89,20 +107,40 @@ export default function PermissionsScreen() {
 
     const handleAction = async (action: 'allow' | 'deny') => {
         setIsProcessing(true);
-        // Simulate processing time
-        setTimeout(async () => {
-            if (step === 'notification') {
-                if (action === 'allow' && Platform.OS !== 'web') {
+
+        if (step === 'notification') {
+            // Store that we've asked for notifications
+            await AsyncStorage.setItem('hasAskedNotificationPermission', 'true');
+
+            if (action === 'allow' && Platform.OS !== 'web') {
+                try {
                     await Notifications.requestPermissionsAsync();
+                } catch (e) {
+                    console.error("Notification permission error:", e);
                 }
+            }
+            setTimeout(() => {
                 setIsProcessing(false);
                 setStep('location');
-            } else {
-                // Location step done, move to News Feed (Tutorial Mode)
+            }, 500);
+        } else {
+            // Store that we've asked for location
+            await AsyncStorage.setItem('hasAskedLocationPermission', 'true');
+            // This is the final step, so also mark the tutorial/onboarding as seen
+            await AsyncStorage.setItem('HAS_SEEN_TUTORIAL', 'true');
+
+            if (action === 'allow' && Platform.OS !== 'web') {
+                try {
+                    await Location.requestForegroundPermissionsAsync();
+                } catch (e) {
+                    console.error("Location permission error:", e);
+                }
+            }
+            setTimeout(() => {
                 setIsProcessing(false);
                 router.replace('/newsfeed?isTutorial=true');
-            }
-        }, 500);
+            }, 500);
+        }
     };
 
     return (
@@ -319,7 +357,7 @@ export default function PermissionsScreen() {
                             <View style={[styles.mapCircle, styles.mapSelected]}>
                                 <Image
                                     // Simulating map view
-                                    source={require('../assets/images/map_texture.png')} // Placeholder for map texture
+                                    source={require('../assets/images/map_texture.jpg')} // Placeholder for map texture
                                     style={styles.mapTexture}
                                     contentFit="cover"
                                 />
@@ -332,7 +370,7 @@ export default function PermissionsScreen() {
                         <View style={styles.mapOption}>
                             <View style={styles.mapCircle}>
                                 <Image
-                                    source={require('../assets/images/map_texture.png')}
+                                    source={require('../assets/images/map_texture.jpg')}
                                     style={[styles.mapTexture, { opacity: 0.5 }]}
                                     contentFit="cover"
                                 />
