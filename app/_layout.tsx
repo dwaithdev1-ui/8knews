@@ -49,18 +49,7 @@ const styles = StyleSheet.create({
   appWrapper: {
     flex: 1,
     width: '100%',
-    maxWidth: 420,
-    maxHeight: 820, // Constrain height for mobile aspect ratio
     backgroundColor: '#fff',
     overflow: 'hidden',
-    // Add a slight border and shadow for the "phone" look on web
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#333',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 20,
   },
 });
