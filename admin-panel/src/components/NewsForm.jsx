@@ -33,8 +33,8 @@ const NewsForm = ({ onSuccess }) => {
     const fetchMetadata = async () => {
         try {
             const [cats, locs] = await Promise.all([
-                axios.get('http://localhost:3000/api/categories'),
-                axios.get('http://localhost:3000/api/locations')
+                axios.get('http://192.168.29.70:3000/api/categories'),
+                axios.get('http://192.168.29.70:3000/api/locations')
             ]);
             setCategories(cats.data || []);
             setLocations(locs.data || []);
@@ -114,7 +114,7 @@ const NewsForm = ({ onSuccess }) => {
         }
 
         try {
-            await axios.post('http://localhost:3000/api/news', data, {
+            await axios.post('http://192.168.29.70:3000/api/news', data, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }

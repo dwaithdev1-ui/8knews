@@ -13,11 +13,11 @@ export const LAYOUT = {
 
     // Dynamic height and width
     get windowHeight() {
-        return SCREEN_HEIGHT;
+        return Math.round(Dimensions.get('window').height);
     },
 
     get windowWidth() {
-        return SCREEN_WIDTH;
+        return Math.round(Dimensions.get('window').width);
     }
 };
 

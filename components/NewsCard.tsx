@@ -133,6 +133,11 @@ const NewsCard = React.memo(({
     };
 
     const animatedStyle = useAnimatedStyle(() => {
+        // 🛡️ STABILIZATION: Lock to snap point when very close to eliminate rest jitter
+        const rawY = scrollY.value;
+        const nearestSnap = Math.round(rawY / CARD_HEIGHT_VAL) * CARD_HEIGHT_VAL;
+        const stabilizedY = Math.abs(rawY - nearestSnap) < 2 ? nearestSnap : rawY;
+
         const inputRange = [
             (index - 1) * CARD_HEIGHT_VAL,
             index * CARD_HEIGHT_VAL,
@@ -141,21 +146,21 @@ const NewsCard = React.memo(({
 
         // 📈 Simpler scale/transY to avoid "underneath" ghosting
         const scale = interpolate(
-            scrollY.value,
+            stabilizedY,
             inputRange,
             [0.9, 1, 1],
             Extrapolation.CLAMP
         );
 
         const translateY = interpolate(
-            scrollY.value,
+            stabilizedY,
             inputRange,
             [-CARD_HEIGHT_VAL, 0, 0],
             Extrapolation.CLAMP
         );
 
         const opacity = interpolate(
-            scrollY.value,
+            stabilizedY,
             inputRange,
             [0, 1, 1],
             Extrapolation.CLAMP
@@ -175,7 +180,10 @@ const NewsCard = React.memo(({
     // If it's a full card (special image) OR explicitly Full Screen, render fit-to-screen layout
     if (isFullCard) {
         return (
-            <Animated.View style={[styles.container, { height: CARD_HEIGHT_VAL, backgroundColor: bgColor, paddingTop: insets.top, paddingBottom: insets.bottom }, animatedStyle]}>
+            <Animated.View
+                collapsable={false}
+                style={[styles.container, { height: CARD_HEIGHT_VAL, backgroundColor: bgColor, paddingTop: insets.top, paddingBottom: 0 }, animatedStyle]}
+            >
                 <Pressable style={{ flex: 1 }} onPress={onTap}>
                     {isVideo ? (
                         <View style={{ flex: 1, backgroundColor: '#000' }}>
@@ -216,7 +224,7 @@ const NewsCard = React.memo(({
                                 contentFit="contain"
                             />
 
-                            {/* Right Vertical Actions (Share & Mute) */}
+                            {/* Right Vertical Actions (Share, Download & Mute) */}
                             <View
                                 style={[styles.videoRightActions, { bottom: 120 + insets.bottom, zIndex: 100 }]}
                                 onStartShouldSetResponder={() => true}
@@ -224,6 +232,11 @@ const NewsCard = React.memo(({
                                 <TouchableOpacity style={styles.videoSideButton} onPress={() => onShare?.(id)}>
                                     <View style={styles.videoSideIconBg}>
                                         <Ionicons name="arrow-redo" size={28} color="#00C800" />
+                                    </View>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.videoSideButton} onPress={onDownload}>
+                                    <View style={styles.videoSideIconBg}>
+                                        <Ionicons name="download-outline" size={28} color="#fff" />
                                     </View>
                                 </TouchableOpacity>
                                 <TouchableOpacity style={styles.videoSideButton} onPress={onToggleMute}>
@@ -355,7 +368,10 @@ const NewsCard = React.memo(({
     }
 
     return (
-        <Animated.View style={[styles.container, { height: CARD_HEIGHT_VAL, backgroundColor: bgColor, paddingTop: insets.top, paddingBottom: insets.bottom }, animatedStyle]}>
+        <Animated.View
+            collapsable={false}
+            style={[styles.container, { height: CARD_HEIGHT_VAL, backgroundColor: bgColor, paddingTop: insets.top, paddingBottom: 0 }, animatedStyle]}
+        >
             <Pressable style={{ flex: 1 }} onPress={onTap}>
                 {/* 1. Top Image/Video Section */}
                 <View style={styles.imageContainer}>
@@ -435,7 +451,7 @@ const NewsCard = React.memo(({
                 </View>
 
                 {/* 2. Content Card (Sloped Overlap) */}
-                <View style={[styles.contentCard, { backgroundColor: cardBgColor }]}>
+                <View collapsable={false} style={[styles.contentCard, { backgroundColor: cardBgColor, paddingBottom: Math.max(10, insets.bottom - 20) }]}>
                     {/* Slope Effect View */}
                     <View style={[styles.slopeEdge, { backgroundColor: cardBgColor }]} />
 

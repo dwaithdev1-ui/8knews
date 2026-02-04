@@ -1,7 +1,9 @@
 ﻿import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { File, Paths } from 'expo-file-system';
 import { Image } from 'expo-image';
 import * as Location from 'expo-location';
+import * as MediaLibrary from 'expo-media-library';
 import * as Network from 'expo-network';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -10,6 +12,7 @@ import {
     Linking,
     Platform,
     Pressable,
+    Image as RNImage,
     SafeAreaView,
     ScrollView,
     Share,
@@ -65,12 +68,32 @@ const LANGUAGES = [
 ];
 
 const API_URL = 'http://192.168.29.70:3000/api';
+const CACHE_BUSTER = Date.now(); // Initial session buster
 
 const formatCount = (count: number) => {
     if (count >= 1000) {
         return (count / 1000).toFixed(1) + 'K';
     }
     return count.toString();
+};
+
+const ensureAbsoluteUrl = (url: string) => {
+    if (!url) return '';
+    let processed = url;
+    const serverRoot = API_URL.replace('/api', '');
+
+    if (!url.startsWith('http')) {
+        processed = `${serverRoot}${url.startsWith('/') ? '' : '/'}${url}`;
+    }
+
+    // Fix localhost / 127.0.0.1 for physical devices
+    if (processed.includes('localhost:3000') || processed.includes('127.0.0.1:3000')) {
+        processed = processed.replace('http://localhost:3000', serverRoot)
+            .replace('https://localhost:3000', serverRoot)
+            .replace('http://127.0.0.1:3000', serverRoot)
+            .replace('https://127.0.0.1:3000', serverRoot);
+    }
+    return processed;
 };
 
 const DEFAULT_NEWS_DATA = [
@@ -707,7 +730,8 @@ export default function NewsFeedScreen() {
     useEffect(() => {
         const fetchNews = async () => {
             try {
-                const response = await fetch(`${API_URL}/news`);
+                console.log('Fetching news from:', `${API_URL}/news`);
+                const response = await fetch(`${API_URL}/news?t=${Date.now()}`); // Force fresh data
                 const data = await response.json();
                 if (data && data.length > 0) {
                     const mappedData = data.map((item: any) => {
@@ -763,7 +787,7 @@ export default function NewsFeedScreen() {
                             finalImage = require('../assets/images/gettyimages-2218439512-612x612.jpg');
                         }
 
-                        const finalTags = [...new Set([...(item.tags || []), ...categorySlugs])];
+                        const finalTags = [...new Set([...(item.tags || []), ...categorySlugs, item.placement])];
 
                         return {
                             ...item,
@@ -797,6 +821,9 @@ export default function NewsFeedScreen() {
                 }
             } catch (error) {
                 console.error('Error fetching news:', error);
+                if (Platform.OS === 'android') {
+                    ToastAndroid.show(`News Fetch Failed: ${error.message}`, ToastAndroid.LONG);
+                }
             }
         };
         fetchNews();
@@ -973,7 +1000,7 @@ export default function NewsFeedScreen() {
             AsyncStorage.setItem('HAS_SEEN_TUTORIAL_V17', 'true').catch(() => { });
 
             // Show comment hint after tutorial if not seen before
-            if (!hasSeenCommentHint) {
+            if (!hasSeenCommentHint && isTutorialMode) {
                 setIsCommentHintVisible(true);
             }
         }, 9000);
@@ -1060,7 +1087,7 @@ export default function NewsFeedScreen() {
         // Auth not available yet, will be undefined
         authContext = { user: null, isGuest: false, logout: async () => { } };
     }
-    const { user, isGuest, logout } = authContext;
+    const { user, isGuest, logout } = authContext as any;
 
 
 
@@ -1130,6 +1157,10 @@ export default function NewsFeedScreen() {
 
     // 🎓 AUTO-TRIGGER NEXT HINT IN SEQUENCE
     useEffect(() => {
+        // Only trigger sequence if it's the first install run (isTutorialMode or !hasSeenTutorial)
+        const isOnboardingRun = isTutorialMode || !hasSeenOptionsHint || !hasSeenShareHint;
+        if (!isOnboardingRun) return;
+
         // If they've seen comments but NOT options hint yet -> Show options hint
         if (hasSeenCommentHint && !hasSeenOptionsHint && !isOptionsHintVisible) {
             setIsOptionsHintVisible(true);
@@ -1138,13 +1169,13 @@ export default function NewsFeedScreen() {
         if (hasSeenOptionsHint && !hasSeenShareHint && !isShareHintVisible) {
             setIsShareHintVisible(true);
         }
-    }, [hasSeenCommentHint, hasSeenOptionsHint, hasSeenShareHint]);
+    }, [hasSeenCommentHint, hasSeenOptionsHint, hasSeenShareHint, isTutorialMode]);
 
     // 💾 LOAD PERSISTED DATA ON MOUNT
     useEffect(() => {
         const loadPersistedData = async () => {
             try {
-                const [savedComments, savedBlockedUsers, savedBlockedComments, savedInteractions, savedOptionsHint, savedCommentHint, savedShareHint, savedNotifications, savedNightMode] = await Promise.all([
+                const [savedComments, savedBlockedUsers, savedBlockedComments, savedInteractions, savedOptionsHint, savedCommentHint, savedShareHint, savedNotifications, savedNightMode, savedSwipeHint] = await Promise.all([
                     AsyncStorage.getItem('ALL_COMMENTS_V1'),
                     AsyncStorage.getItem('BLOCKED_USER_IDS_V1'),
                     AsyncStorage.getItem('BLOCKED_COMMENT_IDS_V1'),
@@ -1153,15 +1184,42 @@ export default function NewsFeedScreen() {
                     AsyncStorage.getItem('HAS_SEEN_COMMENT_HINT'),
                     AsyncStorage.getItem('HAS_SEEN_SHARE_HINT'),
                     AsyncStorage.getItem('NOTIFICATIONS_ENABLED'),
-                    AsyncStorage.getItem('NIGHT_MODE_ENABLED')
+                    AsyncStorage.getItem('NIGHT_MODE_ENABLED'),
+                    AsyncStorage.getItem('HAS_TRIGGERED_SWIPE_HINT')
                 ]);
 
                 if (savedComments) setAllComments(JSON.parse(savedComments));
                 if (savedBlockedUsers) setBlockedUserIds(JSON.parse(savedBlockedUsers));
                 if (savedBlockedComments) setBlockedCommentIds(JSON.parse(savedBlockedComments));
                 if (savedInteractions) setNewsInteractions(JSON.parse(savedInteractions));
-                if (savedOptionsHint) setHasSeenOptionsHint(true);
-                if (savedShareHint) setHasSeenShareHint(true);
+                if (savedSwipeHint === 'true') setHasTriggeredSwipeHint(true);
+                // 🎓 TUTORIAL & HINTS PERSISTENCE CHECK
+                const hasSeenTutorial = await AsyncStorage.getItem('HAS_SEEN_TUTORIAL_V17');
+
+                if (hasSeenTutorial === 'true') {
+                    // Returning User: Suppress all onboarding hints
+                    setHasSeenOptionsHint(true);
+                    setHasSeenCommentHint(true);
+                    setHasSeenShareHint(true);
+                    setHasSeenTrendingHint(true);
+                    setHasSeenPhotosHint(true);
+                    setHasSeenVideosHint(true);
+                    setHasSeenLocationHint(true);
+                    setHasSeenCategoryHint(true);
+                    setHasTriggeredSwipeHint(true);
+                    setIsCommentHintVisible(false);
+                } else {
+                    // 1st Run or Session: Load existing progress
+                    if (savedOptionsHint) setHasSeenOptionsHint(true);
+                    if (savedShareHint) setHasSeenShareHint(true);
+                    if (savedCommentHint) {
+                        setHasSeenCommentHint(true);
+                    } else {
+                        // Show comment hint eventually if we are in onboarding mode
+                        // This will be triggered after swipe tutorial by the timer above
+                    }
+                }
+
                 if (savedNotifications !== null) setIsNotificationEnabled(JSON.parse(savedNotifications));
                 if (savedNightMode !== null) setIsNightModeEnabled(JSON.parse(savedNightMode));
 
@@ -1171,13 +1229,6 @@ export default function NewsFeedScreen() {
                     setSavedIds(JSON.parse(savedBookmarks));
                 }
                 setIsBookmarksLoaded(true);
-
-                // 💬 INITIALIZE COMMENT HINT VISIBILITY
-                if (!savedCommentHint) {
-                    setIsCommentHintVisible(true);
-                } else {
-                    setHasSeenCommentHint(true);
-                }
             } catch (err) {
                 console.error('Error loading persisted moderation data:', err);
             }
@@ -1295,6 +1346,7 @@ export default function NewsFeedScreen() {
             if (Array.isArray(pages) && pages.length > 0) {
                 const sortedPages = pages
                     .filter(p => p && p.url)
+                    .map(p => ({ ...p, url: ensureAbsoluteUrl(p.url) }))
                     .sort((a: any, b: any) => (Number(a.page_number) || 0) - (Number(b.page_number) || 0));
 
                 if (sortedPages.length > 0) {
@@ -1341,19 +1393,17 @@ export default function NewsFeedScreen() {
 
     const commentAnimationStyle = useAnimatedStyle(() => {
         const val = commentRevealVal.value;
-        // Morph from small circle to full panel
-        const width = interpolate(val, [0, 1], [30, WINDOW_WIDTH], Extrapolation.CLAMP);
-        const height = interpolate(val, [0, 1], [30, LAYOUT.windowHeight], Extrapolation.CLAMP);
-        const borderRadius = interpolate(val, [0, 0.5, 1], [30, 40, 0], Extrapolation.CLAMP);
-        const opacity = interpolate(val, [0, 0.05, 1], [0, 1, 1]);
+        // Native-like Slide Up from bottom
+        const translateY = interpolate(val, [0, 1], [LAYOUT.windowHeight, 0], Extrapolation.CLAMP);
+        const opacity = interpolate(val, [0, 0.1, 1], [0, 1, 1]);
 
         return {
-            width,
-            height,
-            borderRadius,
+            width: WINDOW_WIDTH,
+            height: LAYOUT.windowHeight,
+            borderRadius: 0,
             opacity,
             transform: [
-                { translateY: interpolate(val, [0, 1], [10, 0], Extrapolation.CLAMP) }
+                { translateY }
             ]
         };
     });
@@ -1854,11 +1904,14 @@ export default function NewsFeedScreen() {
 
     // SWIPE HINT TRIGGER LOGIC
     useEffect(() => {
+        // Only show if it's the very first time (hasSeenTutorial check is implicit through hasTriggeredSwipeHint if we persist it)
         if (!hasTriggeredSwipeHint && filteredNews.length > activeTutIndex) {
             const currentItem = filteredNews[activeTutIndex];
             if (currentItem && currentItem.id === 'main-2') {
                 setShowSwipeHint(true);
                 setHasTriggeredSwipeHint(true);
+                // Persist this so it never shows again
+                AsyncStorage.setItem('HAS_TRIGGERED_SWIPE_HINT', 'true').catch(() => { });
                 setTimeout(() => {
                     setShowSwipeHint(false);
                 }, 4000);
@@ -1952,78 +2005,169 @@ export default function NewsFeedScreen() {
 
     const handleDownloadImage = async () => {
         if (!currentNewsId) return;
-        // Use filteredNews which contains the data including images
         const item = filteredNews.find(i => i.id === currentNewsId);
         if (!item) return;
 
         try {
-            let imgUri = '';
-            if (typeof item.image === 'number') {
-                // Local asset (require)
+            let mediaUri = '';
+            if (item.isVideo && item.video) {
+                mediaUri = item.video;
+            } else if (typeof item.image === 'number') {
                 const asset = RNImage.resolveAssetSource(item.image);
-                imgUri = asset.uri;
+                mediaUri = asset.uri;
             } else if (typeof item.image === 'string') {
-                imgUri = item.image;
+                mediaUri = item.image;
             } else if (item.image && item.image.uri) {
-                imgUri = item.image.uri;
+                mediaUri = item.image.uri;
             }
 
-            if (!imgUri) {
-                alert('Could not identify image source.');
+            if (!mediaUri) {
+                alert('Could not identify media source.');
                 return;
             }
 
+            // 🌐 Fix localhost / 127.0.0.1 issues for network requests
+            mediaUri = ensureAbsoluteUrl(mediaUri);
+
             // 🌐 WEB IMPLEMENTATION
             if (Platform.OS === 'web') {
-                // Standard web download
                 const link = document.createElement('a');
-                link.href = imgUri;
-                link.download = `8knews_${item.id}.jpg`;
-                link.target = '_blank'; // Fail-safe for some browsers
+                link.href = mediaUri;
+                link.download = `8knews_${item.id}.${item.isVideo ? 'mp4' : 'jpg'}`;
+                link.target = '_blank';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-
                 handleOptionsClose();
                 return;
             }
 
-            // 📱 NATIVE IMPLEMENTATION (Android/iOS)
-            // 1. Request Media Library Permissions
-            const { status } = await MediaLibrary.requestPermissionsAsync();
-            if (status !== 'granted') {
-                alert('Gallery permission is required to save images.');
+            // 🌐 NETWORK CHECK
+            const netInfo = await Network.getNetworkStateAsync();
+            if (!netInfo.isConnected) {
+                alert('ఇంటర్నెట్ కనెక్షన్ లేదు. దయచేసి నెట్‌వర్క్‌ను తనిఖీ చేయండి.');
                 return;
             }
 
-            // 2. Prepare Cache Path
-            const ext = imgUri.split('.').pop()?.split('?')[0] || 'jpg';
-            const fileName = `8knews_${item.id}_${Date.now()}.${ext}`;
-            const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
-
-            // 3. Download/Copy to Cache
-            let localUri = '';
-            if (imgUri.startsWith('http')) {
-                const downloadResult = await FileSystem.downloadAsync(imgUri, fileUri);
-                localUri = downloadResult.uri;
-            } else {
-                await FileSystem.copyAsync({ from: imgUri, to: fileUri });
-                localUri = fileUri;
+            // 📱 PERMISSION & SAVING
+            const { status } = await MediaLibrary.requestPermissionsAsync();
+            if (status !== 'granted') {
+                alert('Gallery permission is required to save media.');
+                return;
             }
 
-            // 4. Save to Media Library
+            const ext = mediaUri.split('.').pop()?.split('?')[0] || (item.isVideo ? 'mp4' : 'jpg');
+            const fileName = `8knews_${item.id}_${Date.now()}.${ext}`;
+            const destFile = new File(Paths.cache, fileName);
+            let localUri = '';
+
+            if (mediaUri.startsWith('http')) {
+                const downloadResult = await File.downloadFileAsync(mediaUri, destFile, { idempotent: true });
+                localUri = downloadResult.uri;
+            } else {
+                const srcFile = new File(mediaUri);
+                await srcFile.copy(destFile);
+                localUri = destFile.uri;
+            }
+
             await MediaLibrary.createAssetAsync(localUri);
 
             if (Platform.OS === 'android') {
-                ToastAndroid.show('Image saved to gallery!', ToastAndroid.SHORT);
+                ToastAndroid.show(`${item.isVideo ? 'Video' : 'Image'} saved to gallery!`, ToastAndroid.SHORT);
             } else {
-                alert('Image saved to gallery!');
+                alert(`${item.isVideo ? 'Video' : 'Image'} saved to gallery!`);
             }
-
             handleOptionsClose();
         } catch (err) {
             console.error('Download error:', err);
-            alert('Download failed. Please try again.');
+            alert(`డౌన్‌లోడ్ విఫలమైంది: ${err instanceof Error ? err.message : 'దయచేసి నెట్‌వర్క్ తనిఖీ చేసి మళ్ళీ ప్రయత్నించండి.'}`);
+        }
+    };
+
+    const [isMagDownloadVisible, setIsMagDownloadVisible] = useState(false);
+
+    const handleDownloadMagPage = async (pageUrl: string) => {
+        if (!pageUrl) return;
+        try {
+            const netInfo = await Network.getNetworkStateAsync();
+            if (!netInfo.isConnected) {
+                alert('నెట్‌వర్క్ అందుబాటులో లేదు. దయచేసి కనెక్షన్‌ని తనిఖీ చేయండి.');
+                return;
+            }
+
+            const { status } = await MediaLibrary.requestPermissionsAsync();
+            if (status !== 'granted') {
+                alert('Gallery permission is required to save pages.');
+                return;
+            }
+
+            const finalUrl = ensureAbsoluteUrl(pageUrl);
+            const ext = finalUrl.split('.').pop()?.split('?')[0] || 'jpg';
+            const fileName = `8knews_mag_page_${Date.now()}.${ext}`;
+            const destFile = new File(Paths.cache, fileName);
+            const downloadResult = await File.downloadFileAsync(finalUrl, destFile, { idempotent: true });
+            await MediaLibrary.createAssetAsync(downloadResult.uri);
+
+            if (Platform.OS === 'android') {
+                ToastAndroid.show('Page saved to gallery!', ToastAndroid.SHORT);
+            } else {
+                alert('Page saved to gallery!');
+            }
+        } catch (err) {
+            console.error('Mag page download error:', err);
+            alert(`పేజీ డౌన్‌లోడ్ కాలేదు: ${err instanceof Error ? err.message : 'మళ్ళీ ప్రయత్నించండి.'}`);
+        }
+    };
+
+    const handleDownloadFullMag = async () => {
+        if (!magazinePages || magazinePages.length === 0) {
+            alert('No pages found in this magazine.');
+            return;
+        }
+
+        try {
+            const netInfo = await Network.getNetworkStateAsync();
+            if (!netInfo.isConnected) {
+                alert('మ్యాగజైన్ డౌన్‌లోడ్ ప్రారంభించడానికి ఇంటర్నెట్ అవసరం.');
+                return;
+            }
+
+            const { status } = await MediaLibrary.requestPermissionsAsync();
+            if (status !== 'granted') {
+                alert('Gallery permission is required to save the magazine.');
+                return;
+            }
+
+            if (Platform.OS === 'android') {
+                ToastAndroid.show(`Starting download of ${magazinePages.length} pages...`, ToastAndroid.LONG);
+            }
+
+            let successCount = 0;
+            for (let i = 0; i < magazinePages.length; i++) {
+                const page = magazinePages[i];
+                const finalUrl = ensureAbsoluteUrl(page.url);
+                const ext = finalUrl.split('.').pop()?.split('?')[0] || 'jpg';
+                const fileName = `8knews_mag_${viewingMagazine}_page_${i + 1}.${ext}`;
+                const destFile = new File(Paths.cache, fileName);
+
+                try {
+                    const downloadResult = await File.downloadFileAsync(finalUrl, destFile, { idempotent: true });
+                    await MediaLibrary.createAssetAsync(downloadResult.uri);
+                    successCount++;
+                } catch (e) {
+                    console.error(`Failed to download page ${i + 1}:`, e);
+                }
+            }
+
+            if (Platform.OS === 'android') {
+                ToastAndroid.show(`Magazine download complete: ${successCount}/${magazinePages.length} pages saved.`, ToastAndroid.LONG);
+            } else {
+                alert(`Magazine download complete: ${successCount}/${magazinePages.length} pages saved.`);
+            }
+            setIsMagDownloadVisible(false);
+        } catch (err) {
+            console.error('Full magazine download error:', err);
+            alert('మ్యాగజైన్ డౌన్‌లోడ్ చేసేటప్పుడు పొరపాటు జరిగింది. నెట్‌వర్క్ తనిఖీ చేయండి.');
         }
     };
 
@@ -2263,18 +2407,19 @@ export default function NewsFeedScreen() {
         // Direct Play Store Link (Only reliable method in Development Mode)
         // Note: The "In-App Review" bottom sheet requires the app to be published/internal-test-track.
         // We use direct linking here to ensure functionality during testing.
-        const playStoreUrl = 'market://details?id=com.eightknews.app';
-        const webUrl = 'https://play.google.com/store/apps/details?id=com.eightknews.app';
+        const playStoreUrl = 'market://details?id=com.sandhyadwaith.x8knews';
+        const webUrl = 'https://play.google.com/store/apps/details?id=com.sandhyadwaith.x8knews';
 
         try {
-            const canOpen = await Linking.canOpenURL(playStoreUrl);
-            if (canOpen) {
-                await Linking.openURL(playStoreUrl);
-            } else {
+            // Try opening with market scheme first
+            await Linking.openURL(playStoreUrl).catch(async () => {
+                // Fallback to web URL if market scheme fails
                 await Linking.openURL(webUrl);
-            }
+            });
         } catch (error) {
             console.error('Error opening Play Store:', error);
+            // Last resort: try web URL again if something went wrong
+            try { await Linking.openURL(webUrl); } catch (inner) { }
         }
     };
 
@@ -2288,7 +2433,15 @@ export default function NewsFeedScreen() {
 
     const onScroll = useAnimatedScrollHandler({
         onScroll: (event) => {
-            scrollY.value = event.contentOffset.y;
+            'worklet';
+            const y = event.contentOffset.y;
+            // 🔒 Stabilizer: Lock to snap point when very close to eliminate rest jitter
+            const snap = Math.round(y / CARD_HEIGHT) * CARD_HEIGHT;
+            if (Math.abs(y - snap) < 2) {
+                scrollY.value = snap;
+            } else {
+                scrollY.value = y;
+            }
         },
     });
 
@@ -2364,73 +2517,97 @@ export default function NewsFeedScreen() {
             runOnJS(setIsViewingVideoComments)(false);
 
             // Trigger hints if needed
-            runOnJS(setHasSeenCommentHint)(true);
-            if (!hasSeenOptionsHint) {
-                runOnJS(setIsOptionsHintVisible)(true);
-            }
+            runOnJS(setIsOptionsHintVisible)(true);
         });
     }, [commentRevealVal, hasSeenOptionsHint]);
 
-    const handleAddComment = (gifUrl?: string) => {
+    // 🔄 FETCH COMMENTS FROM BACKEND
+    const fetchComments = async (newsId: string) => {
+        try {
+            const response = await fetch(`${API_URL}/news/${newsId}/comments`);
+            const data = await response.json();
+            if (Array.isArray(data)) {
+                const currentUserId = user?._id || "guest_Device_ID";
+                const mapped = data.map((c: any) => ({
+                    id: c._id,
+                    text: c.text,
+                    user: c.user,
+                    userId: c.userId,
+                    gifUrl: c.gifUrl,
+                    timestamp: c.timestamp || (c.created_at ? new Date(c.created_at).getTime() : Date.now()),
+                    likeCount: c.like_count || 0,
+                    likedByMe: (c.liked_user_ids || []).some((uid: any) => String(uid) === String(currentUserId)),
+                    isMe: (currentUserId && c.userId === currentUserId) || (userName !== 'Guest User' && c.user === userName),
+                    replies: (c.replies || []).map((r: any) => ({
+                        id: r._id,
+                        text: r.text,
+                        user: r.user,
+                        userId: r.userId,
+                        likeCount: r.like_count || 0,
+                        likedByMe: (r.liked_user_ids || []).some((uid: any) => String(uid) === String(currentUserId)),
+                        isMe: (currentUserId && r.userId === currentUserId) || (userName !== 'Guest User' && r.user === userName),
+                        timestamp: r.timestamp || (r.created_at ? new Date(r.created_at).getTime() : Date.now()),
+                        gifUrl: r.gifUrl
+                    })),
+                    isSensitive: false, // Can implement client-side check if needed or rely on server flag
+                    showReplies: false
+                }));
+                setAllComments(prev => ({ ...prev, [newsId]: mapped }));
+            }
+        } catch (e) {
+            console.error('Error fetching comments:', e);
+        }
+    };
+
+    // 🔄 TRIGGER FETCH ON MODAL OPEN
+    useEffect(() => {
+        if (currentNewsId && commentModalVisible) {
+            fetchComments(currentNewsId);
+        }
+    }, [currentNewsId, commentModalVisible]);
+
+    const handleAddComment = async (gifUrl?: string) => {
         if ((newComment.trim() || gifUrl) && currentNewsId) {
-            const isMe = true;
-            const finalUser = (userName !== 'Guest User') ? userName : 'You';
+            const finalUser = (userName && userName !== 'Guest User') ? userName : 'Guest User';
+            const userIdToUse = user?._id || null;
 
-            setAllComments(prev => {
-                const currentList = prev[currentNewsId] || [];
+            const payload = {
+                user_id: userIdToUse,
+                user_name: finalUser,
+                text: newComment,
+                gif_url: gifUrl
+            };
+
+            try {
+                let response;
                 if (replyTarget) {
-                    // Add as reply
-                    return {
-                        ...prev,
-                        [currentNewsId]: currentList.map(c => {
-                            if (c.id === replyTarget.commentId) {
-                                const isSensitive = containsSensitiveContent(newComment);
-                                const newReply: Reply = {
-                                    id: Date.now().toString(),
-                                    text: newComment,
-                                    user: finalUser,
-                                    userId: finalUser, // ID for demo
-                                    gifUrl: gifUrl,
-                                    timestamp: Date.now(),
-                                    isMe: true,
-                                    likedByMe: false,
-                                    likeCount: 0,
-                                    parentCommentId: c.id,
-                                    isSensitive: isSensitive
-                                };
-                                return { ...c, replies: [...c.replies, newReply], showReplies: true };
-                            }
-                            return c;
-                        })
-                    };
+                    response = await fetch(`${API_URL}/comments/${replyTarget.commentId}/reply`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
                 } else {
-                    // Add as main comment
-                    const isSensitive = containsSensitiveContent(newComment);
-                    const comment: Comment = {
-                        id: Date.now().toString(),
-                        text: newComment,
-                        user: finalUser,
-                        userId: finalUser, // ID for demo
-                        gifUrl: gifUrl,
-                        location: 'Ranga Reddy (D)',
-                        timestamp: Date.now(),
-                        isMe: true,
-                        likedByMe: false,
-                        likeCount: 0,
-                        replies: [],
-                        isSensitive: isSensitive
-                    };
-                    return {
-                        ...prev,
-                        [currentNewsId]: [comment, ...currentList]
-                    };
+                    response = await fetch(`${API_URL}/news/${currentNewsId}/comments`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
                 }
-            });
 
-            if (replyTarget) setReplyTarget(null);
-            setNewComment('');
-            setShowGifPicker(false);
-            setShowEmojiPicker(false);
+                const data = await response.json();
+                if (data.success) {
+                    await fetchComments(currentNewsId); // Refresh list
+                    if (replyTarget) setReplyTarget(null);
+                    setNewComment('');
+                    setShowGifPicker(false);
+                    setShowEmojiPicker(false);
+                } else {
+                    if (Platform.OS === 'android') ToastAndroid.show('Error posting comment', ToastAndroid.SHORT);
+                }
+            } catch (err) {
+                console.error('Error posting comment:', err);
+                if (Platform.OS === 'android') ToastAndroid.show('Network error', ToastAndroid.SHORT);
+            }
         }
     };
 
@@ -2447,47 +2624,51 @@ export default function NewsFeedScreen() {
         });
     };
 
-    const handleLikeComment = (commentId: string, replyId?: string) => {
+    const handleLikeComment = async (commentId: string, replyId?: string) => {
         if (!currentNewsId) return;
-        setAllComments(prev => {
-            const currentList = prev[currentNewsId] || [];
-            return {
-                ...prev,
-                [currentNewsId]: currentList.map(c => {
-                    if (c.id === commentId) {
-                        if (replyId) {
-                            return {
-                                ...c,
-                                replies: c.replies.map(r => {
-                                    if (r.id === replyId) {
-                                        return {
-                                            ...r,
-                                            likedByMe: !r.likedByMe,
-                                            likeCount: r.likedByMe ? Math.max(0, r.likeCount - 1) : r.likeCount + 1
-                                        };
-                                    }
-                                    return r;
-                                })
-                            };
-                        } else {
-                            return {
-                                ...c,
-                                likedByMe: !c.likedByMe,
-                                likeCount: c.likedByMe ? Math.max(0, c.likeCount - 1) : c.likeCount + 1
-                            };
-                        }
-                    }
-                    return c;
-                })
-            };
-        });
+
+        try {
+            const userIdToUse = user?._id || "guest_Device_ID"; // Replace with actual persistent guest ID if available
+            const payload = { user_id: userIdToUse };
+
+            if (replyId) {
+                await fetch(`${API_URL}/replies/${replyId}/like`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                await fetch(`${API_URL}/comments/${commentId}/like`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            }
+            // Refresh counts (Note: this resets 'likedByMe' locally because GET doesn't return it yet, 
+            // but ensures counts are accurate for everyone)
+            fetchComments(currentNewsId);
+        } catch (err) {
+            console.error('Error liking comment:', err);
+        }
     };
 
-    const handleDeleteAction = (commentId: string, replyId?: string) => {
-        setDeleteTarget({ commentId, replyId });
+    const handleDeleteAction = async (commentId: string, replyId?: string) => {
+        // Directly delete without confirmation dialog for speed, or add alert if preferred
+        try {
+            if (replyId) {
+                await fetch(`${API_URL}/replies/${replyId}`, { method: 'DELETE' });
+            } else {
+                await fetch(`${API_URL}/comments/${commentId}`, { method: 'DELETE' });
+            }
+            if (currentNewsId) fetchComments(currentNewsId);
+        } catch (err) {
+            console.error('Error deleting comment:', err);
+            if (Platform.OS === 'android') ToastAndroid.show('Failed to delete', ToastAndroid.SHORT);
+        }
     };
 
     const confirmDelete = () => {
+        // This function is no longer needed but kept for backward compatibility
         if (!deleteTarget || !currentNewsId) return;
         const { commentId, replyId } = deleteTarget;
         setAllComments(prev => {
@@ -2550,10 +2731,25 @@ export default function NewsFeedScreen() {
         }
     };
 
-    const handleSubmitModerationReport = () => {
+    const handleSubmitModerationReport = async () => {
+        if (!reportingItem) return;
+        try {
+            const { commentId, replyId } = reportingItem;
+            const userIdToUse = user?._id || "guest_Device_ID";
+            const payload = { user_id: userIdToUse, reason: "Inappropriate content" };
+
+            if (replyId) {
+                await fetch(`${API_URL}/replies/${replyId}/report`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            } else {
+                await fetch(`${API_URL}/comments/${commentId}/report`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            }
+            if (Platform.OS === 'android') ToastAndroid.show('Report submitted. Our team will review it.', ToastAndroid.SHORT);
+            else alert('Report submitted. Our team will review it.');
+        } catch (e) {
+            console.error(e);
+        }
         setReportModalVisible(false);
         setReportingItem(null);
-        alert('Report submitted. Our team will review it.');
     };
 
     const revealSensitive = (id: string) => {
@@ -2677,33 +2873,26 @@ export default function NewsFeedScreen() {
                     isNightModeEnabled
                 ]}
                 keyExtractor={(item) => item.id}
-                pagingEnabled={true} // ✅ Strict One-Card Paging
                 snapToInterval={CARD_HEIGHT}
+                snapToOffsets={Platform.OS === 'android' ? filteredNews.map((_, i) => i * CARD_HEIGHT) : undefined}
                 snapToAlignment="start"
                 decelerationRate="fast"
                 showsVerticalScrollIndicator={false}
                 onScroll={onScroll}
                 onScrollBeginDrag={() => {
-                    // if (isTutorialMode) setShowHint(false);
+                    // Start of gesture
                 }}
-                onScrollEndDrag={(e) => {
-                    const idx = Math.round(e.nativeEvent.contentOffset.y / CARD_HEIGHT);
-                    if (idx !== activeTutIndex) {
-                        setActiveTutIndex(idx);
-                        if (isTutorialMode && idx <= 2) {
-                            setShowHint(true);
-                        }
-                        if (idx > 2) {
-                            setIsTutorialMode(false);
-                            AsyncStorage.setItem('HAS_SEEN_TUTORIAL_V17', 'true').catch(() => { });
-                        }
-                    }
+                onScrollEndDrag={() => {
+                    // Lift finger
                 }}
-                scrollEventThrottle={16} // ✅ Optimized for 60fps (less JS load)
-                removeClippedSubviews={true} // ✅ CRITICAL: Unmount off-screen views for performance
-                windowSize={15} // ✅ Increased to keep more items in memory (prevents reloading on scroll up)
-                initialNumToRender={4}
-                maxToRenderPerBatch={5}
+                scrollEventThrottle={1} // Optimized for highest animation precision (UI thread worklets)
+                removeClippedSubviews={false} // ✅ Prevent flickering/unmounting during snap
+                windowSize={5} // ✅ Balanced for stability and memory
+                initialNumToRender={3}
+                maxToRenderPerBatch={3}
+                overScrollMode="never" // ✅ Prevents edge bounce shakiness
+                pagingEnabled={true} // ✅ Enforce one-page paging strictly on both platforms
+                disableIntervalMomentum={true} // ✅ Crucial for one-page-at-a-time focus
                 getItemLayout={(data, index) => ({
                     length: CARD_HEIGHT,
                     offset: CARD_HEIGHT * index,
@@ -2907,6 +3096,7 @@ export default function NewsFeedScreen() {
                                 setIsHUDVisible(nextHUDState);
 
                                 if (nextHUDState) {
+                                    // Only show trending hint if it's the first run
                                     if (!hasSeenTrendingHint) {
                                         setIsTrendingTopHintVisible(true);
                                     }
@@ -4629,7 +4819,9 @@ export default function NewsFeedScreen() {
                                     </View>
                                 </View>
                                 <Image source={require('../assets/images/res_8k_logo_1.png')} style={styles.magViewerLogo} contentFit="contain" />
-
+                                <TouchableOpacity style={styles.magViewerDownloadBtn} onPress={() => setIsMagDownloadVisible(true)}>
+                                    <Ionicons name="download-outline" size={24} color="#fff" />
+                                </TouchableOpacity>
                             </View>
 
                             <View style={[styles.magViewerContent, { overflow: 'hidden' }]}>
@@ -4798,6 +4990,46 @@ export default function NewsFeedScreen() {
                                     </Text>
                                 </View>
                             </View>
+
+                            {/* 📥 MAGAZINE DOWNLOAD MENU MODAL */}
+                            {isMagDownloadVisible && (
+                                <View style={styles.modalOverlay}>
+                                    <TouchableOpacity
+                                        style={StyleSheet.absoluteFill}
+                                        onPress={() => setIsMagDownloadVisible(false)}
+                                    />
+                                    <View style={[styles.downloadModalContainer, isNightModeEnabled && { backgroundColor: '#151718' }]}>
+                                        <Text style={[styles.downloadModalTitle, isNightModeEnabled && { color: '#fff' }]}>డౌన్లోడ్ ఆప్షన్స్</Text>
+
+                                        <TouchableOpacity
+                                            style={[styles.downloadOptionBtn, { borderBottomWidth: 1, borderBottomColor: isNightModeEnabled ? '#333' : '#eee' }]}
+                                            onPress={() => {
+                                                const url = magazinePages[currentPageIndex]?.url;
+                                                handleDownloadMagPage(url);
+                                                setIsMagDownloadVisible(false);
+                                            }}
+                                        >
+                                            <Ionicons name="document-text-outline" size={22} color={isNightModeEnabled ? "#fff" : "#333"} />
+                                            <Text style={[styles.downloadOptionText, isNightModeEnabled && { color: '#fff' }]}>ఈ పేజీని డౌన్లోడ్ చెయ్యండి (Current Page)</Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                            style={styles.downloadOptionBtn}
+                                            onPress={() => handleDownloadFullMag()}
+                                        >
+                                            <Ionicons name="library-outline" size={22} color={isNightModeEnabled ? "#fff" : "#333"} />
+                                            <Text style={[styles.downloadOptionText, isNightModeEnabled && { color: '#fff' }]}>మొత్తం మ్యాగజైన్ ని డౌన్లోడ్ చెయ్యండి (Whole Magazine)</Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                            style={[styles.downloadCancelBtn, { backgroundColor: isNightModeEnabled ? '#333' : '#f0f0f0' }]}
+                                            onPress={() => setIsMagDownloadVisible(false)}
+                                        >
+                                            <Text style={[styles.downloadCancelText, isNightModeEnabled && { color: '#fff' }]}>రద్దు చేయు (Cancel)</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            )}
                         </SafeAreaView>
                     </GestureHandlerRootView>
 
@@ -4850,168 +5082,59 @@ export default function NewsFeedScreen() {
                     <Animated.View style={[styles.modalOverlay, overlayAnimationStyle]}>
                         <Pressable style={styles.fullSpace} onPress={closeComments} />
                         <Animated.View style={[styles.commentContainer, commentAnimationStyle, isNightModeEnabled && { backgroundColor: '#000' }]}>
-                            {/* 1. Header: Back | Title | Toggle */}
-                            <View style={[styles.commentHeader, isNightModeEnabled && { backgroundColor: '#151718', borderBottomColor: '#333' }]}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                                    <TouchableOpacity onPress={closeComments} style={{ padding: 5, marginRight: 8 }}>
-                                        <Ionicons name="arrow-back" size={24} color={isNightModeEnabled ? "#fff" : "#999"} />
-                                    </TouchableOpacity>
-                                    <Text style={[styles.commentHeaderTitle, isNightModeEnabled && { color: '#fff' }]} numberOfLines={1}>{currentNewsTitle}</Text>
-                                </View>
-                                <View style={{ alignItems: 'center' }}>
-                                    <Text style={{ fontSize: 10, color: '#666', marginBottom: -4 }}>నోటిఫికేషన్లు</Text>
-                                    <Switch
-                                        value={currentNewsId ? (notificationPreferences[currentNewsId] ?? true) : true}
-                                        onValueChange={toggleNotifications}
-                                        trackColor={{ false: "#D1D1D1", true: "#4A90E2" }}
-                                        thumbColor="#fff"
-                                        style={{ transform: [{ scaleX: 0.7 }, { scaleY: 0.7 }] }}
-                                    />
-                                </View>
-                            </View>
-
-                            {/* 2. Scrollable Comment List */}
-                            <ScrollView style={styles.commentList} showsVerticalScrollIndicator={false}>
-                                {isViewingVideoComments && (
-                                    <View style={styles.relevantDropdown}>
-                                        <Text style={styles.relevantText}>Most relevant</Text>
-                                        <Ionicons name="chevron-down" size={16} color="#000" />
+                            <KeyboardAvoidingView
+                                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                                style={{ flex: 1 }}
+                                keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}
+                            >
+                                {/* 1. Header: Back | Title | Toggle */}
+                                <View style={[styles.commentHeader, isNightModeEnabled && { backgroundColor: '#151718', borderBottomColor: '#333' }]}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                        <TouchableOpacity onPress={closeComments} style={{ padding: 5, marginRight: 8 }}>
+                                            <Ionicons name="arrow-back" size={24} color={isNightModeEnabled ? "#fff" : "#999"} />
+                                        </TouchableOpacity>
+                                        <Text style={[styles.commentHeaderTitle, isNightModeEnabled && { color: '#fff' }]} numberOfLines={1}>{currentNewsTitle}</Text>
                                     </View>
-                                )}
+                                    <View style={{ alignItems: 'center' }}>
+                                        <Text style={{ fontSize: 10, color: '#666', marginBottom: -4 }}>నోటిఫికేషన్లు</Text>
+                                        <Switch
+                                            value={currentNewsId ? (notificationPreferences[currentNewsId] ?? true) : true}
+                                            onValueChange={toggleNotifications}
+                                            trackColor={{ false: "#D1D1D1", true: "#4A90E2" }}
+                                            thumbColor="#fff"
+                                            style={{ transform: [{ scaleX: 0.7 }, { scaleY: 0.7 }] }}
+                                        />
+                                    </View>
+                                </View>
 
-                                {comments.filter(c => !blockedCommentIds.includes(c.id) && !blockedUserIds.includes(c.userId || c.user)).map((item, index) => {
-                                    const commentNumber = comments.length - index;
-                                    const isBlocked = blockedCommentIds.includes(item.id) || blockedUserIds.includes(item.userId || item.user);
+                                {/* 2. Scrollable Comment List */}
+                                <ScrollView style={styles.commentList} showsVerticalScrollIndicator={false}>
+                                    {isViewingVideoComments && (
+                                        <View style={styles.relevantDropdown}>
+                                            <Text style={styles.relevantText}>Most relevant</Text>
+                                            <Ionicons name="chevron-down" size={16} color="#000" />
+                                        </View>
+                                    )}
 
-                                    if (isViewingVideoComments) {
-                                        return (
-                                            <View key={item.id} style={styles.videoCommentItem}>
-                                                {/* Left: Avatar */}
-                                                <View style={[styles.videoAvatar, { backgroundColor: ['#00BFA5', '#00C853', '#FFD600', '#FF4081'][index % 4], justifyContent: 'center', alignItems: 'center' }]}>
-                                                    {/* Using placeholder initials if no image */}
-                                                    <Text style={{ color: '#fff', fontSize: 14, fontWeight: 'bold' }}>{item.user.charAt(0)}</Text>
-                                                </View>
+                                    {comments.filter(c => !blockedCommentIds.includes(c.id) && !blockedUserIds.includes(c.userId || c.user)).map((item, index) => {
+                                        const commentNumber = comments.length - index;
+                                        const isBlocked = blockedCommentIds.includes(item.id) || blockedUserIds.includes(item.userId || item.user);
 
-                                                {/* Right: Content */}
-                                                <View style={styles.videoContent}>
-                                                    <View style={styles.videoUserRow}>
-                                                        <Text style={styles.videoUserName}>{item.user}</Text>
-                                                        <Text style={styles.videoTime}>· {getTimeAgo(item.timestamp).replace(' ago', '')}</Text>
+                                        if (isViewingVideoComments) {
+                                            return (
+                                                <View key={item.id} style={styles.videoCommentItem}>
+                                                    {/* Left: Avatar */}
+                                                    <View style={[styles.videoAvatar, { backgroundColor: ['#00BFA5', '#00C853', '#FFD600', '#FF4081'][index % 4], justifyContent: 'center', alignItems: 'center' }]}>
+                                                        {/* Using placeholder initials if no image */}
+                                                        <Text style={{ color: '#fff', fontSize: 14, fontWeight: 'bold' }}>{item.user.charAt(0)}</Text>
                                                     </View>
 
-                                                    {item.isSensitive && !revealedSensitiveIds.includes(item.id) ? (
-                                                        <TouchableOpacity style={styles.sensitiveContainer} onPress={() => revealSensitive(item.id)}>
-                                                            <View style={styles.sensitiveContentRow}>
-                                                                <Ionicons name="eye-off-outline" size={20} color="#666" />
-                                                                <Text style={styles.sensitiveText}>Sensitive content</Text>
-                                                            </View>
-                                                            <View style={styles.sensitiveTapBtn}>
-                                                                <Text style={styles.sensitiveTapText}>Tap to</Text>
-                                                            </View>
-                                                        </TouchableOpacity>
-                                                    ) : (
-                                                        <View>
-                                                            {item.text.trim().length > 0 && <Text style={styles.videoCommentText}>{item.text}</Text>}
-                                                            {item.gifUrl && (
-                                                                <Image
-                                                                    source={{ uri: item.gifUrl }}
-                                                                    style={styles.commentGif}
-                                                                    contentFit="cover"
-                                                                />
-                                                            )}
+                                                    {/* Right: Content */}
+                                                    <View style={styles.videoContent}>
+                                                        <View style={styles.videoUserRow}>
+                                                            <Text style={styles.videoUserName}>{item.user}</Text>
+                                                            <Text style={styles.videoTime}>· {getTimeAgo(item.timestamp).replace(' ago', '')}</Text>
                                                         </View>
-                                                    )}
-
-                                                    <View style={styles.videoActionRow}>
-                                                        <TouchableOpacity onPress={() => setReplyTarget({ commentId: item.id, userName: item.user })}>
-                                                            <Text style={styles.videoActionText}>Reply</Text>
-                                                        </TouchableOpacity>
-
-                                                        <TouchableOpacity style={styles.videoLikeContainer} onPress={() => handleLikeComment(item.id)}>
-                                                            <View style={styles.videoLikeBadge}>
-                                                                <Ionicons name="thumbs-up" size={10} color="#fff" />
-                                                            </View>
-                                                            <Text style={styles.videoLikeCount}>{item.likeCount}</Text>
-                                                        </TouchableOpacity>
-
-                                                        <View style={styles.videoReactionIcons}>
-                                                            <TouchableOpacity onPress={() => handleLikeComment(item.id)}>
-                                                                <Ionicons name={item.likedByMe ? "thumbs-up" : "thumbs-up-outline"} size={20} color={item.likedByMe ? "#1a73e8" : "#65676b"} />
-                                                            </TouchableOpacity>
-                                                            <Ionicons name="thumbs-down-outline" size={20} color="#65676b" />
-                                                        </View>
-                                                    </View>
-
-                                                    {item.replies.length > 0 && (
-                                                        <TouchableOpacity onPress={() => toggleReplies(item.id)}>
-                                                            <Text style={styles.viewRepliesText}>
-                                                                <Ionicons name={item.showReplies ? "chevron-up" : "return-down-forward"} size={14} color="#65676b" /> {item.showReplies ? "Hide" : `View ${item.replies.length}`} reply
-                                                            </Text>
-                                                        </TouchableOpacity>
-                                                    )}
-
-                                                    {/* Nested Replies for Video */}
-                                                    {item.showReplies && item.replies.map(reply => (
-                                                        <View key={reply.id} style={styles.videoReplyItem}>
-                                                            <View style={[styles.videoAvatar, { width: 24, height: 24, borderRadius: 12, backgroundColor: '#8BC34A', justifyContent: 'center', alignItems: 'center' }]}>
-                                                                <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>{reply.user.charAt(0)}</Text>
-                                                            </View>
-                                                            <View style={styles.videoContent}>
-                                                                <View style={styles.videoUserRow}>
-                                                                    <Text style={[styles.videoUserName, { fontSize: 11 }]}>{reply.user}</Text>
-                                                                    <Text style={[styles.videoTime, { fontSize: 10 }]}>· {getTimeAgo(reply.timestamp).replace(' ago', '')}</Text>
-                                                                </View>
-                                                                <View>
-                                                                    {reply.text.trim().length > 0 && <Text style={[styles.videoCommentText, { fontSize: 13 }]}>{reply.text}</Text>}
-                                                                    {reply.gifUrl && (
-                                                                        <Image
-                                                                            source={{ uri: reply.gifUrl }}
-                                                                            style={[styles.commentGif, { width: 120, height: 120 }]}
-                                                                            contentFit="cover"
-                                                                        />
-                                                                    )}
-                                                                </View>
-                                                                <View style={styles.videoActionRow}>
-                                                                    <TouchableOpacity onPress={() => handleLikeComment(item.id, reply.id)}>
-                                                                        <Ionicons name={reply.likedByMe ? "thumbs-up" : "thumbs-up-outline"} size={16} color={reply.likedByMe ? "#1a73e8" : "#65676b"} />
-                                                                    </TouchableOpacity>
-                                                                </View>
-                                                            </View>
-                                                        </View>
-                                                    ))}
-                                                </View>
-                                            </View>
-                                        );
-                                    }
-
-                                    const visibleReplies = item.replies.filter(r => !blockedUserIds.includes(r.userId || r.user));
-
-                                    return (
-                                        <View key={item.id} style={styles.commentItemWrap}>
-                                            <View style={styles.commentItem}>
-                                                {/* Left: Avatar with Number */}
-                                                <View style={[styles.avatarCircle, { backgroundColor: ['#00BFA5', '#00C853', '#FFD600', '#FF4081'][index % 4] }]}>
-                                                    <Text style={styles.avatarNumber}>{commentNumber}</Text>
-                                                </View>
-
-                                                {/* Right: Content */}
-                                                <View style={styles.commentContentWrapper}>
-                                                    {/* Gray Box for Text */}
-                                                    <View style={styles.commentBubble}>
-                                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                                <Text style={styles.commentUserName}>{item.user}</Text>
-                                                                {item.isMe && (
-                                                                    <View style={styles.mePill}>
-                                                                        <Text style={styles.meText}>me</Text>
-                                                                    </View>
-                                                                )}
-                                                            </View>
-                                                            <Text style={styles.footerTimeText}>{getTimeAgo(item.timestamp)}</Text>
-                                                        </View>
-                                                        <TouchableOpacity disabled>
-                                                            <Text style={styles.commentLocation}>📍 {item.location || 'Ranga Reddy (D)'}</Text>
-                                                        </TouchableOpacity>
 
                                                         {item.isSensitive && !revealedSensitiveIds.includes(item.id) ? (
                                                             <TouchableOpacity style={styles.sensitiveContainer} onPress={() => revealSensitive(item.id)}>
@@ -5025,7 +5148,7 @@ export default function NewsFeedScreen() {
                                                             </TouchableOpacity>
                                                         ) : (
                                                             <View>
-                                                                {item.text.trim().length > 0 && <Text style={styles.commentTextContent}>{item.text}</Text>}
+                                                                {item.text.trim().length > 0 && <Text style={styles.videoCommentText}>{item.text}</Text>}
                                                                 {item.gifUrl && (
                                                                     <Image
                                                                         source={{ uri: item.gifUrl }}
@@ -5035,201 +5158,312 @@ export default function NewsFeedScreen() {
                                                                 )}
                                                             </View>
                                                         )}
+
+                                                        <View style={styles.videoActionRow}>
+                                                            <TouchableOpacity onPress={() => setReplyTarget({ commentId: item.id, userName: item.user })}>
+                                                                <Text style={styles.videoActionText}>Reply</Text>
+                                                            </TouchableOpacity>
+
+                                                            <TouchableOpacity style={styles.videoLikeContainer} onPress={() => handleLikeComment(item.id)}>
+                                                                <View style={styles.videoLikeBadge}>
+                                                                    <Ionicons name="thumbs-up" size={10} color="#fff" />
+                                                                </View>
+                                                                <Text style={styles.videoLikeCount}>{item.likeCount}</Text>
+                                                            </TouchableOpacity>
+
+                                                            <View style={styles.videoReactionIcons}>
+                                                                <TouchableOpacity onPress={() => handleLikeComment(item.id)}>
+                                                                    <Ionicons name={item.likedByMe ? "thumbs-up" : "thumbs-up-outline"} size={20} color={item.likedByMe ? "#1a73e8" : "#65676b"} />
+                                                                </TouchableOpacity>
+                                                                <Ionicons name="thumbs-down-outline" size={20} color="#65676b" />
+                                                            </View>
+                                                        </View>
+
+                                                        {item.replies.length > 0 && (
+                                                            <TouchableOpacity onPress={() => toggleReplies(item.id)}>
+                                                                <Text style={styles.viewRepliesText}>
+                                                                    <Ionicons name={item.showReplies ? "chevron-up" : "return-down-forward"} size={14} color="#65676b" /> {item.showReplies ? "Hide" : `View ${item.replies.length}`} reply
+                                                                </Text>
+                                                            </TouchableOpacity>
+                                                        )}
+
+                                                        {/* Nested Replies for Video */}
+                                                        {item.showReplies && item.replies.map(reply => (
+                                                            <View key={reply.id} style={styles.videoReplyItem}>
+                                                                <View style={[styles.videoAvatar, { width: 24, height: 24, borderRadius: 12, backgroundColor: '#8BC34A', justifyContent: 'center', alignItems: 'center' }]}>
+                                                                    <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>{reply.user.charAt(0)}</Text>
+                                                                </View>
+                                                                <View style={styles.videoContent}>
+                                                                    <View style={styles.videoUserRow}>
+                                                                        <Text style={[styles.videoUserName, { fontSize: 11 }]}>{reply.user}</Text>
+                                                                        <Text style={[styles.videoTime, { fontSize: 10 }]}>· {getTimeAgo(reply.timestamp).replace(' ago', '')}</Text>
+                                                                    </View>
+                                                                    <View>
+                                                                        {reply.text.trim().length > 0 && <Text style={[styles.videoCommentText, { fontSize: 13 }]}>{reply.text}</Text>}
+                                                                        {reply.gifUrl && (
+                                                                            <Image
+                                                                                source={{ uri: reply.gifUrl }}
+                                                                                style={[styles.commentGif, { width: 120, height: 120 }]}
+                                                                                contentFit="cover"
+                                                                            />
+                                                                        )}
+                                                                    </View>
+                                                                    <View style={styles.videoActionRow}>
+                                                                        <TouchableOpacity onPress={() => handleLikeComment(item.id, reply.id)}>
+                                                                            <Ionicons name={reply.likedByMe ? "thumbs-up" : "thumbs-up-outline"} size={16} color={reply.likedByMe ? "#1a73e8" : "#65676b"} />
+                                                                        </TouchableOpacity>
+                                                                    </View>
+                                                                </View>
+                                                            </View>
+                                                        ))}
+                                                    </View>
+                                                </View>
+                                            );
+                                        }
+
+                                        const visibleReplies = item.replies.filter(r => !blockedUserIds.includes(r.userId || r.user));
+
+                                        return (
+                                            <View key={item.id} style={styles.commentItemWrap}>
+                                                <View style={styles.commentItem}>
+                                                    {/* Left: Avatar with Number */}
+                                                    <View style={[styles.avatarCircle, { backgroundColor: ['#00BFA5', '#00C853', '#FFD600', '#FF4081'][index % 4] }]}>
+                                                        <Text style={styles.avatarNumber}>{commentNumber}</Text>
                                                     </View>
 
-                                                    {/* Footer: Reply | Delete | Icons */}
-                                                    <View style={styles.commentFooterRow}>
-                                                        <View style={styles.footerLeft}>
-                                                            <TouchableOpacity style={styles.footerAction} onPress={() => setReplyTarget({ commentId: item.id, userName: item.user })}>
-                                                                <Ionicons name="arrow-undo" size={14} color="#666" />
-                                                                <Text style={styles.footerReplyText}>Reply</Text>
+                                                    {/* Right: Content */}
+                                                    <View style={styles.commentContentWrapper}>
+                                                        {/* Gray Box for Text */}
+                                                        <View style={styles.commentBubble}>
+                                                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                                    <Text style={styles.commentUserName}>{item.user}</Text>
+                                                                    {item.isMe && (
+                                                                        <View style={styles.mePill}>
+                                                                            <Text style={styles.meText}>me</Text>
+                                                                        </View>
+                                                                    )}
+                                                                </View>
+                                                                <Text style={styles.footerTimeText}>{getTimeAgo(item.timestamp)}</Text>
+                                                            </View>
+                                                            <TouchableOpacity disabled>
+                                                                <Text style={styles.commentLocation}>📍 {item.location || 'Ranga Reddy (D)'}</Text>
                                                             </TouchableOpacity>
 
-                                                            <TouchableOpacity style={styles.footerAction} onPress={() => handleLikeComment(item.id)}>
-                                                                <Ionicons name={item.likedByMe ? "heart" : "heart-outline"} size={16} color={item.likedByMe ? "#e44" : "#666"} />
-                                                                <Text style={[styles.footerReplyText, item.likedByMe && { color: '#e44' }]}>{item.likeCount > 0 ? item.likeCount : 'Like'}</Text>
-                                                            </TouchableOpacity>
-
-                                                            {item.isMe && (
-                                                                <TouchableOpacity style={styles.footerAction} onPress={() => handleDeleteAction(item.id)}>
-                                                                    <Ionicons name="trash-outline" size={14} color="#666" />
-                                                                    <Text style={styles.footerReplyText}>Delete</Text>
+                                                            {item.isSensitive && !revealedSensitiveIds.includes(item.id) ? (
+                                                                <TouchableOpacity style={styles.sensitiveContainer} onPress={() => revealSensitive(item.id)}>
+                                                                    <View style={styles.sensitiveContentRow}>
+                                                                        <Ionicons name="eye-off-outline" size={20} color="#666" />
+                                                                        <Text style={styles.sensitiveText}>Sensitive content</Text>
+                                                                    </View>
+                                                                    <View style={styles.sensitiveTapBtn}>
+                                                                        <Text style={styles.sensitiveTapText}>Tap to</Text>
+                                                                    </View>
                                                                 </TouchableOpacity>
+                                                            ) : (
+                                                                <View>
+                                                                    {item.text.trim().length > 0 && <Text style={styles.commentTextContent}>{item.text}</Text>}
+                                                                    {item.gifUrl && (
+                                                                        <Image
+                                                                            source={{ uri: item.gifUrl }}
+                                                                            style={styles.commentGif}
+                                                                            contentFit="cover"
+                                                                        />
+                                                                    )}
+                                                                </View>
                                                             )}
                                                         </View>
 
-                                                        <View style={styles.footerRight}>
-                                                            <TouchableOpacity onPress={() => handleCopyComment(item.text)}>
-                                                                <Ionicons name="copy-outline" size={16} color="#aaa" style={styles.footerIcon} />
-                                                            </TouchableOpacity>
-                                                            <TouchableOpacity onPress={() => handleReportComment(item.id)}>
-                                                                <Ionicons name="alert-circle-outline" size={18} color="#aaa" />
-                                                            </TouchableOpacity>
+                                                        {/* Footer: Reply | Delete | Icons */}
+                                                        <View style={styles.commentFooterRow}>
+                                                            <View style={styles.footerLeft}>
+                                                                <TouchableOpacity style={styles.footerAction} onPress={() => setReplyTarget({ commentId: item.id, userName: item.user })}>
+                                                                    <Ionicons name="arrow-undo" size={14} color="#666" />
+                                                                    <Text style={styles.footerReplyText}>Reply</Text>
+                                                                </TouchableOpacity>
+
+                                                                <TouchableOpacity style={styles.footerAction} onPress={() => handleLikeComment(item.id)}>
+                                                                    <Ionicons name={item.likedByMe ? "heart" : "heart-outline"} size={16} color={item.likedByMe ? "#e44" : "#666"} />
+                                                                    <Text style={[styles.footerReplyText, item.likedByMe && { color: '#e44' }]}>{item.likeCount > 0 ? item.likeCount : 'Like'}</Text>
+                                                                </TouchableOpacity>
+
+                                                                {item.isMe && (
+                                                                    <TouchableOpacity style={styles.footerAction} onPress={() => handleDeleteAction(item.id)}>
+                                                                        <Ionicons name="trash-outline" size={14} color="#666" />
+                                                                        <Text style={styles.footerReplyText}>Delete</Text>
+                                                                    </TouchableOpacity>
+                                                                )}
+                                                            </View>
+
+                                                            <View style={styles.footerRight}>
+                                                                <TouchableOpacity onPress={() => handleCopyComment(item.text)}>
+                                                                    <Ionicons name="copy-outline" size={16} color="#aaa" style={styles.footerIcon} />
+                                                                </TouchableOpacity>
+                                                                <TouchableOpacity onPress={() => handleReportComment(item.id)}>
+                                                                    <Ionicons name="alert-circle-outline" size={18} color="#aaa" />
+                                                                </TouchableOpacity>
+                                                            </View>
                                                         </View>
-                                                    </View>
 
-                                                    {/* REPLIES SECTION */}
-                                                    {visibleReplies.length > 0 && (
-                                                        <View style={styles.repliesContainer}>
-                                                            {visibleReplies.map((reply) => (
-                                                                <View key={reply.id} style={styles.replyItem}>
-                                                                    <View style={styles.replyThreadLine} />
-                                                                    <View style={styles.replyContent}>
-                                                                        <View style={styles.replyBubble}>
-                                                                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                                                    <Text style={styles.commentUserName}># {reply.user}</Text>
-                                                                                    {reply.isMe && (
-                                                                                        <View style={styles.mePill}>
-                                                                                            <Text style={styles.meText}>me</Text>
+                                                        {/* REPLIES SECTION */}
+                                                        {visibleReplies.length > 0 && (
+                                                            <View style={styles.repliesContainer}>
+                                                                {visibleReplies.map((reply) => (
+                                                                    <View key={reply.id} style={styles.replyItem}>
+                                                                        <View style={styles.replyThreadLine} />
+                                                                        <View style={styles.replyContent}>
+                                                                            <View style={styles.replyBubble}>
+                                                                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                                                        <Text style={styles.commentUserName}># {reply.user}</Text>
+                                                                                        {reply.isMe && (
+                                                                                            <View style={styles.mePill}>
+                                                                                                <Text style={styles.meText}>me</Text>
+                                                                                            </View>
+                                                                                        )}
+                                                                                    </View>
+                                                                                    <Text style={styles.footerTimeText}>{getTimeAgo(reply.timestamp)}</Text>
+                                                                                </View>
+
+                                                                                {reply.isSensitive && !revealedSensitiveIds.includes(reply.id) ? (
+                                                                                    <TouchableOpacity style={styles.sensitiveContainer} onPress={() => revealSensitive(reply.id)}>
+                                                                                        <View style={styles.sensitiveContentRow}>
+                                                                                            <Ionicons name="eye-off-outline" size={16} color="#666" />
+                                                                                            <Text style={[styles.sensitiveText, { fontSize: 12 }]}>Sensitive content</Text>
                                                                                         </View>
-                                                                                    )}
-                                                                                </View>
-                                                                                <Text style={styles.footerTimeText}>{getTimeAgo(reply.timestamp)}</Text>
-                                                                            </View>
-
-                                                                            {reply.isSensitive && !revealedSensitiveIds.includes(reply.id) ? (
-                                                                                <TouchableOpacity style={styles.sensitiveContainer} onPress={() => revealSensitive(reply.id)}>
-                                                                                    <View style={styles.sensitiveContentRow}>
-                                                                                        <Ionicons name="eye-off-outline" size={16} color="#666" />
-                                                                                        <Text style={[styles.sensitiveText, { fontSize: 12 }]}>Sensitive content</Text>
-                                                                                    </View>
-                                                                                    <View style={[styles.sensitiveTapBtn, { paddingHorizontal: 8, paddingVertical: 4 }]}>
-                                                                                        <Text style={[styles.sensitiveTapText, { fontSize: 11 }]}>Tap to</Text>
-                                                                                    </View>
-                                                                                </TouchableOpacity>
-                                                                            ) : (
-                                                                                <View>
-                                                                                    {reply.text.trim().length > 0 && <Text style={styles.commentTextContent}>{reply.text}</Text>}
-                                                                                    {reply.gifUrl && (
-                                                                                        <Image
-                                                                                            source={{ uri: reply.gifUrl }}
-                                                                                            style={[styles.commentGif, { width: 120, height: 120 }]}
-                                                                                            contentFit="cover"
-                                                                                        />
-                                                                                    )}
-                                                                                </View>
-                                                                            )}
-                                                                        </View>
-
-                                                                        <View style={styles.commentFooterRow}>
-                                                                            <View style={styles.footerLeft}>
-                                                                                <TouchableOpacity style={styles.footerAction} onPress={() => handleLikeComment(item.id, reply.id)}>
-                                                                                    <Ionicons name={reply.likedByMe ? "heart" : "heart-outline"} size={14} color={reply.likedByMe ? "#e44" : "#666"} />
-                                                                                    <Text style={[styles.footerReplyText, reply.likedByMe && { color: '#e44' }]}>{reply.likeCount > 0 ? reply.likeCount : 'Like'}</Text>
-                                                                                </TouchableOpacity>
-                                                                                {reply.isMe && (
-                                                                                    <TouchableOpacity style={styles.footerAction} onPress={() => handleDeleteAction(item.id, reply.id)}>
-                                                                                        <Ionicons name="trash-outline" size={12} color="#666" />
-                                                                                        <Text style={styles.footerReplyText}>Delete</Text>
+                                                                                        <View style={[styles.sensitiveTapBtn, { paddingHorizontal: 8, paddingVertical: 4 }]}>
+                                                                                            <Text style={[styles.sensitiveTapText, { fontSize: 11 }]}>Tap to</Text>
+                                                                                        </View>
                                                                                     </TouchableOpacity>
+                                                                                ) : (
+                                                                                    <View>
+                                                                                        {reply.text.trim().length > 0 && <Text style={styles.commentTextContent}>{reply.text}</Text>}
+                                                                                        {reply.gifUrl && (
+                                                                                            <Image
+                                                                                                source={{ uri: reply.gifUrl }}
+                                                                                                style={[styles.commentGif, { width: 120, height: 120 }]}
+                                                                                                contentFit="cover"
+                                                                                            />
+                                                                                        )}
+                                                                                    </View>
                                                                                 )}
                                                                             </View>
-                                                                            <View style={styles.footerRight}>
-                                                                                <TouchableOpacity onPress={() => handleReportComment(item.id, reply.id)}>
-                                                                                    <Ionicons name="alert-circle-outline" size={14} color="#aaa" />
-                                                                                </TouchableOpacity>
+
+                                                                            <View style={styles.commentFooterRow}>
+                                                                                <View style={styles.footerLeft}>
+                                                                                    <TouchableOpacity style={styles.footerAction} onPress={() => handleLikeComment(item.id, reply.id)}>
+                                                                                        <Ionicons name={reply.likedByMe ? "heart" : "heart-outline"} size={14} color={reply.likedByMe ? "#e44" : "#666"} />
+                                                                                        <Text style={[styles.footerReplyText, reply.likedByMe && { color: '#e44' }]}>{reply.likeCount > 0 ? reply.likeCount : 'Like'}</Text>
+                                                                                    </TouchableOpacity>
+                                                                                    {reply.isMe && (
+                                                                                        <TouchableOpacity style={styles.footerAction} onPress={() => handleDeleteAction(item.id, reply.id)}>
+                                                                                            <Ionicons name="trash-outline" size={12} color="#666" />
+                                                                                            <Text style={styles.footerReplyText}>Delete</Text>
+                                                                                        </TouchableOpacity>
+                                                                                    )}
+                                                                                </View>
+                                                                                <View style={styles.footerRight}>
+                                                                                    <TouchableOpacity onPress={() => handleReportComment(item.id, reply.id)}>
+                                                                                        <Ionicons name="alert-circle-outline" size={14} color="#aaa" />
+                                                                                    </TouchableOpacity>
+                                                                                </View>
                                                                             </View>
                                                                         </View>
                                                                     </View>
-                                                                </View>
-                                                            ))}
-                                                        </View>
-                                                    )}
+                                                                ))}
+                                                            </View>
+                                                        )}
+                                                    </View>
                                                 </View>
                                             </View>
-                                        </View>
-                                    );
-                                })}
-                            </ScrollView>
+                                        );
+                                    })}
+                                </ScrollView>
 
-                            {/* 3. Bottom: Reactions + Input */}
-                            <KeyboardAvoidingView
-                                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-                            >
-                                {isViewingVideoComments ? (
-                                    <View style={[styles.videoInputContainer, { paddingBottom: Math.max(insets.bottom, 10) }]}>
+                                { /* 3. Bottom: Reactions + Input (Matching Reference Screenshot) */}
+                                <View style={[styles.bottomInputContainer, { paddingBottom: Math.max(insets.bottom, 10) }]}>
+                                    {/* Row 1: Tools & Reactions */}
+                                    <View style={styles.commentInputRow1}>
+                                        <View style={styles.toolsGroup}>
+                                            <TouchableOpacity
+                                                style={styles.gifBoxSmall}
+                                                onPress={() => { setShowGifPicker(!showGifPicker); setShowEmojiPicker(false); }}
+                                            >
+                                                <Text style={styles.gifTextSmall}>GIF</Text>
+                                            </TouchableOpacity>
+
+                                            <TouchableOpacity
+                                                style={styles.stickerBtnSmall}
+                                                onPress={() => { setShowEmojiPicker(!showEmojiPicker); setShowGifPicker(false); }}
+                                            >
+                                                <Ionicons name="happy-outline" size={22} color="#666" />
+                                            </TouchableOpacity>
+
+                                            <View style={styles.dividerVertical} />
+                                        </View>
+
+                                        <View style={styles.reactionScrollGroup}>
+                                            <Ionicons name="chevron-back" size={16} color="#999" />
+                                            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 4 }}>
+                                                {['😂', '❤️', '😍', '🤣', '😆', '🔥', '👏', '😢'].map((emoji) => (
+                                                    <TouchableOpacity
+                                                        key={emoji}
+                                                        style={styles.reactionBtnMinimal}
+                                                        onPress={() => setNewComment(prev => prev + emoji)}
+                                                    >
+                                                        <Text style={{ fontSize: 18 }}>{emoji}</Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </ScrollView>
+                                            <Ionicons name="chevron-forward" size={16} color="#999" />
+                                        </View>
+                                    </View>
+
+                                    {/* Row 2: Text Input */}
+                                    <View style={styles.commentInputRow2}>
                                         <View style={{ flex: 1 }}>
                                             {replyTarget && (
-                                                <View style={[styles.replyIndicator, { paddingVertical: 4, paddingHorizontal: 10 }]}>
-                                                    <Text style={[styles.replyIndicatorText, { fontSize: 11 }]}>Replying to @{replyTarget.userName}</Text>
+                                                <View style={[styles.replyIndicator, { marginBottom: 4 }]}>
+                                                    <Text style={styles.replyIndicatorText}>Replying to @{replyTarget.userName}</Text>
                                                     <TouchableOpacity onPress={() => setReplyTarget(null)}>
-                                                        <Ionicons name="close-circle" size={14} color="#65676b" />
+                                                        <Ionicons name="close-circle" size={14} color="#666" />
                                                     </TouchableOpacity>
                                                 </View>
                                             )}
                                             <TextInput
-                                                style={styles.videoInput}
-                                                placeholder={replyTarget ? "Reply..." : "Add a comment..."}
-                                                placeholderTextColor="#65676b"
+                                                style={[styles.mainCommentInputField, isNightModeEnabled && { color: '#fff' }]}
+                                                placeholder={replyTarget ? `Reply to ${replyTarget.userName}...` : `Comment as ${user?.name || 'Guest'}...`}
+                                                placeholderTextColor="#999"
                                                 value={newComment}
                                                 onChangeText={setNewComment}
+                                                multiline
+                                                autoFocus={false}
                                             />
                                         </View>
-                                        {newComment.trim().length > 0 && (
-                                            <TouchableOpacity style={styles.videoSendBtn} onPress={() => handleAddComment()}>
-                                                <Ionicons name="send" size={20} color="#1a73e8" />
+
+                                        {(newComment.trim().length > 0) && (
+                                            <TouchableOpacity
+                                                style={styles.sendIconBtn}
+                                                onPress={() => handleAddComment(currentNewsId || '')}
+                                            >
+                                                <Ionicons name="send" size={24} color="#1a73e8" />
+                                            </TouchableOpacity>
+                                        )}
+
+                                        {newComment.trim().length === 0 && (
+                                            <TouchableOpacity style={styles.micIconBtn}>
+                                                <Ionicons name="mic-outline" size={24} color="#666" />
                                             </TouchableOpacity>
                                         )}
                                     </View>
-                                ) : (
-                                    <View style={[styles.bottomInputContainer, { paddingBottom: Math.max(insets.bottom, 10) }]}>
-                                        {/* Emoji Reaction Bar */}
-                                        <View style={styles.reactionBar}>
-                                            <Pressable style={styles.reactionEmoji} onPress={() => setNewComment(prev => prev + '😂')}><Text style={{ fontSize: 20 }}>😂</Text></Pressable>
-                                            <Pressable style={styles.reactionEmoji} onPress={() => setNewComment(prev => prev + '❤️')}><Text style={{ fontSize: 20 }}>❤️</Text></Pressable>
-                                            <Pressable style={styles.reactionEmoji} onPress={() => setNewComment(prev => prev + '😍')}><Text style={{ fontSize: 20 }}>😍</Text></Pressable>
-                                            <Pressable style={styles.reactionEmoji} onPress={() => setNewComment(prev => prev + '🤣')}><Text style={{ fontSize: 20 }}>🤣</Text></Pressable>
-                                            <Pressable style={styles.reactionEmoji} onPress={() => setNewComment(prev => prev + '😆')}><Text style={{ fontSize: 20 }}>😆</Text></Pressable>
-                                            <Ionicons name="chevron-forward" size={20} color="#999" />
+
+                                    {/* Optional Pickers */}
+                                    {showGifPicker && (
+                                        <View style={{ height: 200, backgroundColor: '#f9f9f9' }}>
+                                            <Text style={{ textAlign: 'center', marginTop: 20, color: '#999' }}>GIF Picker</Text>
                                         </View>
-
-                                        <View style={styles.inputRow}>
-                                            <View style={styles.inputLeftIcons}>
-                                                <TouchableOpacity onPress={() => { setShowGifPicker(!showGifPicker); setShowEmojiPicker(false); }}>
-                                                    <View style={styles.giftIconBox}>
-                                                        <Text style={{ fontSize: 9, fontWeight: 'bold' }}>GIF</Text>
-                                                    </View>
-                                                </TouchableOpacity>
-                                                <TouchableOpacity onPress={() => { setShowEmojiPicker(!showEmojiPicker); setShowGifPicker(false); }}>
-                                                    <Ionicons name="happy-outline" size={24} color="#666" style={{ marginLeft: 15 }} />
-                                                </TouchableOpacity>
-                                            </View>
-
-                                            <View style={{ flex: 1 }}>
-                                                {replyTarget && (
-                                                    <View style={styles.replyIndicator}>
-                                                        <Text style={styles.replyIndicatorText}>Replying to @{replyTarget.userName}</Text>
-                                                        <TouchableOpacity onPress={() => setReplyTarget(null)}>
-                                                            <Ionicons name="close-circle" size={16} color="#444" />
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                )}
-                                                <TextInput
-                                                    style={styles.newInputStyle}
-                                                    placeholder={replyTarget ? "రిప్లై ఇవ్వండి..." : "కామెంట్ చేయండి"}
-                                                    placeholderTextColor="#999"
-                                                    value={newComment}
-                                                    onChangeText={setNewComment}
-                                                />
-                                            </View>
-
-                                            {/* Action Buttons */}
-                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
-                                                <Pressable style={styles.langToggleBtn}>
-                                                    <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>అ/A</Text>
-                                                </Pressable>
-
-                                                {newComment.trim().length > 0 && (
-                                                    <Pressable style={styles.sendBtn} onPress={() => handleAddComment()}>
-                                                        <Ionicons name="send" size={20} color="#1a73e8" />
-                                                    </Pressable>
-                                                )}
-                                            </View>
-                                        </View>
-                                    </View>
-                                )}
+                                    )}
+                                </View>
                                 {showEmojiPicker && (
                                     <EmojiSelector
                                         onEmojiSelect={(emoji) => {
@@ -5246,63 +5480,62 @@ export default function NewsFeedScreen() {
                                         isNightMode={isNightModeEnabled}
                                     />
                                 )}
+
                             </KeyboardAvoidingView>
                         </Animated.View>
-
-                        {/* 🚩 REPORT / MODERATION MODAL (IN-MODAL OVERLAY) */}
-                        {reportModalVisible && (
-                            <View style={[styles.modalOverlay, { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1200 }]}>
-                                <Pressable style={styles.fullSpace} onPress={() => { setReportModalVisible(false); setReportingItem(null); }} />
-                                <View style={[styles.reportSheetContainer, isNightModeEnabled && { backgroundColor: '#151718' }, { paddingBottom: Math.max(insets.bottom, 30) }]}>
-                                    <View style={[styles.reportSheetPill, isNightModeEnabled && { backgroundColor: '#333' }]} />
-                                    <Text style={[styles.reportSheetTitle, isNightModeEnabled && { color: '#fff' }]}>కామెంట్ మీద చర్య</Text>
-
-                                    <TouchableOpacity style={styles.reportActionItem} onPress={handleBlockComment}>
-                                        <View style={[styles.reportIconBox, { backgroundColor: '#fdecea' }]}>
-                                            <Ionicons name="chatbubble-outline" size={22} color="#d93025" />
-                                        </View>
-                                        <View style={styles.reportActionTextContent}>
-                                            <Text style={styles.reportActionLabel}>బ్లాక్ కామెంట్</Text>
-                                            <Text style={styles.reportActionSub}>ఈ కామెంట్‌ను మళ్లీ చూడకూడదు</Text>
-                                        </View>
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity style={styles.reportActionItem} onPress={handleBlockUser}>
-                                        <View style={[styles.reportIconBox, { backgroundColor: '#fdecea' }]}>
-                                            <Ionicons name="person-remove-outline" size={22} color="#d93025" />
-                                        </View>
-                                        <View style={styles.reportActionTextContent}>
-                                            <Text style={styles.reportActionLabel}>బ్లాక్ యూజర్</Text>
-                                            <Text style={styles.reportActionSub}>ఈ యూజర్ నుండి వచ్చే అన్ని కామెంట్స్‌ను బ్లాక్ చేయండి</Text>
-                                        </View>
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity style={styles.reportActionItem} onPress={handleSubmitModerationReport}>
-                                        <View style={[styles.reportIconBox, { backgroundColor: '#e8f0fe' }]}>
-                                            <Ionicons name="flag-outline" size={22} color="#1a73e8" />
-                                        </View>
-                                        <View style={styles.reportActionTextContent}>
-                                            <Text style={styles.reportActionLabel}>రిపోర్ట్ ఇష్యూ</Text>
-                                            <Text style={styles.reportActionSub}>ఈ కామెంట్‌పై మా టీమ్‌కు ఫిర్యాదు చేయండి</Text>
-                                        </View>
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity
-                                        style={styles.reportCancelBtn}
-                                        onPress={() => { setReportModalVisible(false); setReportingItem(null); }}
-                                    >
-                                        <Text style={styles.reportCancelText}>రద్దు చేయి</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        )}
                     </Animated.View>
-                )
-            }
-        </View >
+                )}
 
+            {/* 🚩 REPORT / MODERATION MODAL (IN-MODAL OVERLAY) */}
+            {reportModalVisible && (
+                <View style={[styles.modalOverlay, { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1200 }]}>
+                    <Pressable style={styles.fullSpace} onPress={() => { setReportModalVisible(false); setReportingItem(null); }} />
+                    <View style={[styles.reportSheetContainer, isNightModeEnabled && { backgroundColor: '#151718' }, { paddingBottom: Math.max(insets.bottom, 30) }]}>
+                        <View style={[styles.reportSheetPill, isNightModeEnabled && { backgroundColor: '#333' }]} />
+                        <Text style={[styles.reportSheetTitle, isNightModeEnabled && { color: '#fff' }]}>కామెంట్ మీద చర్య</Text>
+
+                        <TouchableOpacity style={styles.reportActionItem} onPress={handleBlockComment}>
+                            <View style={[styles.reportIconBox, { backgroundColor: '#fdecea' }]}>
+                                <Ionicons name="chatbubble-outline" size={22} color="#d93025" />
+                            </View>
+                            <View style={styles.reportActionTextContent}>
+                                <Text style={styles.reportActionLabel}>బ్లాక్ కామెంట్</Text>
+                                <Text style={styles.reportActionSub}>ఈ కామెంట్‌ను మళ్లీ చూడకూడదు</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.reportActionItem} onPress={handleBlockUser}>
+                            <View style={[styles.reportIconBox, { backgroundColor: '#fdecea' }]}>
+                                <Ionicons name="person-remove-outline" size={22} color="#d93025" />
+                            </View>
+                            <View style={styles.reportActionTextContent}>
+                                <Text style={styles.reportActionLabel}>బ్లాక్ యూజర్</Text>
+                                <Text style={styles.reportActionSub}>ఈ యూజర్ నుండి వచ్చే అన్ని కామెంట్స్‌ను బ్లాక్ చేయండి</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.reportActionItem} onPress={handleSubmitModerationReport}>
+                            <View style={[styles.reportIconBox, { backgroundColor: '#e8f0fe' }]}>
+                                <Ionicons name="flag-outline" size={22} color="#1a73e8" />
+                            </View>
+                            <View style={styles.reportActionTextContent}>
+                                <Text style={styles.reportActionLabel}>రిపోర్ట్ ఇష్యూ</Text>
+                                <Text style={styles.reportActionSub}>ఈ కామెంట్‌పై మా టీమ్‌కు ఫిర్యాదు చేయండి</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.reportCancelBtn}
+                            onPress={() => { setReportModalVisible(false); setReportingItem(null); }}
+                        >
+                            <Text style={styles.reportCancelText}>రద్దు చేయి</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
+        </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -5447,7 +5680,7 @@ const styles = StyleSheet.create({
         height: '100%',
         width: '100%',
         maxWidth: 420,
-        paddingBottom: Platform.OS === 'ios' ? 20 : 0,
+        paddingBottom: 0,
         overflow: 'hidden',
     },
     commentHeader: {
@@ -5668,6 +5901,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         fontSize: 14,
         color: '#000',
+        textAlignVertical: 'center',
     },
     videoSendBtn: {
         marginLeft: 10,
@@ -5773,7 +6007,8 @@ const styles = StyleSheet.create({
     },
     bottomInputContainer: {
         backgroundColor: '#fff',
-        paddingVertical: 10,
+        paddingTop: 10,
+        paddingBottom: 10,
         paddingHorizontal: 15,
         borderTopWidth: 1,
         borderTopColor: '#f0f0f0',
@@ -5787,6 +6022,36 @@ const styles = StyleSheet.create({
     },
     reactionEmoji: {
         padding: 5,
+        marginHorizontal: 4,
+    },
+    commentInputTopRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+        paddingBottom: 5,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
+    },
+    verticalDivider: {
+        width: 1,
+        height: 24,
+        backgroundColor: '#ddd',
+        marginHorizontal: 15,
+    },
+    inputAreaRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    bigInputStyle: {
+        flex: 1,
+        backgroundColor: '#F0F2F5',
+        borderRadius: 20,
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        fontSize: 16,
+        color: '#000',
+        minHeight: 45,
+        textAlignVertical: 'center',
     },
     inputRow: {
         flexDirection: 'row',
@@ -5813,6 +6078,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#000',
         minHeight: 40,
+        textAlignVertical: 'top',
     },
     langToggleBtn: {
         width: 32,
@@ -7945,6 +8211,118 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
         lineHeight: 32,
+    },
+    magViewerDownloadBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    downloadModalContainer: {
+        backgroundColor: '#fff',
+        width: '90%',
+        borderRadius: 20,
+        padding: 20,
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+    },
+    downloadModalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#000',
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    downloadOptionBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 18,
+        gap: 15,
+    },
+    downloadOptionText: {
+        fontSize: 16,
+        color: '#333',
+        fontWeight: '500',
+        flex: 1,
+    },
+    downloadCancelBtn: {
+        marginTop: 15,
+        backgroundColor: '#f0f0f0',
+        paddingVertical: 15,
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+    downloadCancelText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#666',
+    },
+    commentInputRow1: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
+    },
+    toolsGroup: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingRight: 10,
+    },
+    gifBoxSmall: {
+        borderWidth: 1.5,
+        borderColor: '#999',
+        borderRadius: 4,
+        paddingHorizontal: 4,
+        paddingVertical: 1,
+        marginRight: 10,
+    },
+    gifTextSmall: {
+        fontSize: 10,
+        fontWeight: 'bold',
+        color: '#666',
+    },
+    dividerVertical: {
+        width: 1,
+        height: 20,
+        backgroundColor: '#ddd',
+        marginHorizontal: 10,
+    },
+    reactionScrollGroup: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    reactionBtnMinimal: {
+        paddingHorizontal: 8,
+    },
+    commentInputRow2: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 4,
+    },
+    mainCommentInputField: {
+        flex: 1,
+        fontSize: 16,
+        paddingHorizontal: 0,
+        paddingVertical: 8,
+        maxHeight: 120,
+    },
+    stickerBtnSmall: {
+        padding: 4,
+    },
+    sendIconBtn: {
+        padding: 8,
+        marginLeft: 10,
+    },
+    micIconBtn: {
+        padding: 8,
+        marginLeft: 10,
     },
 });
 

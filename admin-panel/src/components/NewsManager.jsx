@@ -31,7 +31,7 @@ const NewsManager = ({ viewMode }) => {
         try {
             // Ideally backend supports filtering, but for now we fetch all and filter client side
             // to avoid modifying backend as per constraints.
-            const response = await axios.get('http://localhost:3000/api/news', {
+            const response = await axios.get('http://192.168.29.70:3000/api/news', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setNews(response.data);
@@ -50,7 +50,7 @@ const NewsManager = ({ viewMode }) => {
         if (!isApproval && !remarks.trim()) return alert("Remarks are mandatory for rejections.");
 
         try {
-            await axios.patch(`http://localhost:3000/api/news/${id}/status`, {
+            await axios.patch(`http://192.168.29.70:3000/api/news/${id}/status`, {
                 status: newStatus,
                 remarks: remarks || 'Approved'
             }, {
@@ -230,7 +230,7 @@ const NewsManager = ({ viewMode }) => {
                         <div style={styles.modalBody}>
                             {selectedItem.image && (
                                 <img
-                                    src={`http://localhost:3000${selectedItem.image}`}
+                                    src={`http://192.168.29.70:3000${selectedItem.image}`}
                                     alt="News"
                                     style={styles.reviewImage}
                                 />

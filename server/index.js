@@ -313,7 +313,7 @@ app.post('/api/news', authenticateToken, upload.fields([{ name: 'image', maxCoun
                             const mediaDocs = pageUrls.map((url, index) => ({
                                 news_id: newsId,
                                 type: 'image',
-                                url: `http://localhost:3000${url}`,
+                                url: `http://192.168.29.70:3000${url}`,
                                 is_primary: index === 0,
                                 page_number: index + 1,
                                 created_at: new Date()
@@ -334,7 +334,7 @@ app.post('/api/news', authenticateToken, upload.fields([{ name: 'image', maxCoun
                     const mediaDocs = magPagesFiles.map((file, index) => ({
                         news_id: newsId,
                         type: 'image',
-                        url: `http://localhost:3000/uploads/${file.filename}`,
+                        url: `http://192.168.29.70:3000/uploads/${file.filename}`,
                         is_primary: index === 0,
                         page_number: index + 1,
                         created_at: new Date()
@@ -355,7 +355,7 @@ app.post('/api/news', authenticateToken, upload.fields([{ name: 'image', maxCoun
                 await db.collection("news_media").insertOne({
                     news_id: newsId,
                     type: is_video === 'true' ? 'video' : 'image',
-                    url: `http://localhost:3000${imageUrl}`,
+                    url: `http://192.168.29.70:3000${imageUrl}`,
                     is_primary: true,
                     created_at: new Date()
                 });
@@ -483,8 +483,20 @@ app.get('/api/news/:id/comments', async (req, res) => {
             {
                 $lookup: {
                     from: "replies",
-                    localField: "_id",
-                    foreignField: "comment_id",
+                    let: { commentId: "$_id" },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ["$comment_id", "$$commentId"] } } },
+                        {
+                            $lookup: {
+                                from: "reply_likes",
+                                localField: "_id",
+                                foreignField: "reply_id",
+                                as: "likes"
+                            }
+                        },
+                        { $addFields: { like_count: { $size: "$likes" }, liked_user_ids: "$likes.user_id" } },
+                        { $project: { likes: 0 } }
+                    ],
                     as: "replies"
                 }
             },
@@ -497,11 +509,117 @@ app.get('/api/news/:id/comments', async (req, res) => {
                 }
             },
             {
-                $addFields: { like_count: { $size: "$likes" } }
+                $addFields: { like_count: { $size: "$likes" }, liked_user_ids: "$likes.user_id" }
             },
-            { $project: { likes: 0 } }
+            { $project: { likes: 0 } },
+            { $sort: { timestamp: -1 } }
         ]).toArray();
         res.json(comments);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// --- COMMENTS POST/PUT/DELETE ---
+
+app.post('/api/news/:id/comments', async (req, res) => {
+    const { user_id, user_name, text, gif_url } = req.body;
+    if (!text && !gif_url) return res.status(400).json({ error: "Comment text or GIF required" });
+
+    try {
+        const comment = {
+            news_id: toId(req.params.id),
+            text: text || "",
+            user: user_name || "Guest User",
+            userId: user_id || null,
+            gifUrl: gif_url || null,
+            timestamp: Date.now(),
+            created_at: new Date()
+        };
+        const result = await db.collection("comments").insertOne(comment);
+        res.json({ success: true, id: result.insertedId, comment: { ...comment, _id: result.insertedId, replies: [], like_count: 0 } });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/comments/:id/reply', async (req, res) => {
+    const { user_id, user_name, text, gif_url } = req.body;
+    if (!text && !gif_url) return res.status(400).json({ error: "Reply text or GIF required" });
+
+    try {
+        const reply = {
+            comment_id: toId(req.params.id),
+            text: text || "",
+            user: user_name || "Guest User",
+            userId: user_id || null,
+            gifUrl: gif_url || null,
+            timestamp: Date.now(),
+            created_at: new Date()
+        };
+        const result = await db.collection("replies").insertOne(reply);
+        res.json({ success: true, id: result.insertedId, reply: { ...reply, _id: result.insertedId, like_count: 0 } });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/comments/:id/like', async (req, res) => {
+    const { user_id } = req.body;
+    if (!user_id) return res.status(400).json({ error: "User ID required" });
+
+    try {
+        const safeId = (id) => { try { return new ObjectId(id); } catch { return id; } };
+        const uId = safeId(user_id);
+        const cId = toId(req.params.id);
+
+        const existing = await db.collection("comment_likes").findOne({ comment_id: cId, user_id: uId });
+
+        if (existing) {
+            await db.collection("comment_likes").deleteOne({ _id: existing._id });
+            res.json({ success: true, liked: false });
+        } else {
+            await db.collection("comment_likes").insertOne({
+                comment_id: cId,
+                user_id: uId,
+                created_at: new Date()
+            });
+            res.json({ success: true, liked: true });
+        }
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/replies/:id/like', async (req, res) => {
+    const { user_id } = req.body;
+    if (!user_id) return res.status(400).json({ error: "User ID required" });
+
+    try {
+        const safeId = (id) => { try { return new ObjectId(id); } catch { return id; } };
+        const uId = safeId(user_id);
+        const rId = toId(req.params.id);
+
+        const existing = await db.collection("reply_likes").findOne({ reply_id: rId, user_id: uId });
+
+        if (existing) {
+            await db.collection("reply_likes").deleteOne({ _id: existing._id });
+            res.json({ success: true, liked: false });
+        } else {
+            await db.collection("reply_likes").insertOne({
+                reply_id: rId,
+                user_id: uId,
+                created_at: new Date()
+            });
+            res.json({ success: true, liked: true });
+        }
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/comments/:id', async (req, res) => {
+    try {
+        await db.collection("comments").deleteOne({ _id: toId(req.params.id) });
+        await db.collection("replies").deleteMany({ comment_id: toId(req.params.id) });
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/replies/:id', async (req, res) => {
+    try {
+        await db.collection("replies").deleteOne({ _id: toId(req.params.id) });
+        res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -570,6 +688,35 @@ app.get('/api/ads', async (req, res) => {
     try {
         const ads = await db.collection("advertisements").find({ active: true }).toArray();
         res.json(ads);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// --- COMMENT REPORTING ---
+app.post('/api/comments/:id/report', async (req, res) => {
+    const { user_id, reason } = req.body;
+    try {
+        await db.collection("comment_reports").insertOne({
+            comment_id: toId(req.params.id),
+            user_id: user_id ? toId(user_id) : null,
+            reason: reason || "Inappropriate content",
+            status: "pending",
+            created_at: new Date()
+        });
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/replies/:id/report', async (req, res) => {
+    const { user_id, reason } = req.body;
+    try {
+        await db.collection("reply_reports").insertOne({
+            reply_id: toId(req.params.id),
+            user_id: user_id ? toId(user_id) : null,
+            reason: reason || "Inappropriate content",
+            status: "pending",
+            created_at: new Date()
+        });
+        res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
